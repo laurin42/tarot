@@ -1,7 +1,12 @@
+import TarotCard from "@/components/ui/TarotCard";
 import { Image, StyleSheet, Platform, View } from "react-native";
 
 export default function HomeScreen() {
-  return <View></View>;
+  return (
+    <View>
+      <TarotCard />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
