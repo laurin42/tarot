@@ -1,22 +1,55 @@
-import { View, Image, StyleSheet, Dimensions } from "react-native";
+import { Text, View, Image, StyleSheet, Dimensions } from "react-native";
 
-export default function TarotCard() {
+interface TarotCardProps {
+  image: any;
+  name: string;
+  description: string;
+}
+
+export default function TarotCard({
+  image,
+  name,
+  description,
+}: TarotCardProps) {
   return (
     <View style={styles.CardView}>
-      <Image
-        source={require("@/assets/images/TarotCards/Ace_of_cups.jpg")}
-        style={styles.TarotCardFront}
-      />
+      <Image source={image} style={styles.TarotCardFront} />
+      <View style={styles.CardInfo}>
+        <Text style={styles.CardName}>{name}</Text>
+        <Text style={styles.CardDescription}>{description}</Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   CardView: {
-    margin: "auto",
-    height: Dimensions.get("window").height * 0.9,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
   },
   TarotCardFront: {
+    width: Dimensions.get("screen").width * 0.9,
+    height: Dimensions.get("screen").height * 0.8,
+    borderRadius: 10,
+  },
+  CardInfo: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "white",
+    width: Dimensions.get("screen").width * 0.9,
+    height: Dimensions.get("screen").height * 0.1,
+    marginTop: 10,
+    borderRadius: 10,
+  },
+  CardName: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  CardDescription: {
+    fontSize: 16,
+    textAlign: "center",
   },
 });
