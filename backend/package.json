@@ -6,7 +6,8 @@
   },
   "scripts": {
     "start": "node index.ts",
-    "dev": "nodemon index.ts"
+    "dev": "nodemon index.ts",
+    "build": "npx tsc"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
