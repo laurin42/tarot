@@ -22,6 +22,12 @@ app.get("/", async (req: Request, res: Response) => {
   res.send(response);
 });
 
+app.post("/", async (req: Request, res: Response) => {
+  const prompt = req.body.prompt;
+  const response = await model.generateContent(prompt);
+  res.send(response);
+});
+
 app.listen(port, () => {
   console.log(`Server is Fire at http://localhost:${port}`);
 });
