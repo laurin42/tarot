@@ -14,7 +14,7 @@ export default function TarotCard() {
 const styles = StyleSheet.create({
   CardView: {
     margin: "auto",
-    height: Dimensions.get() * 0.9,
+    height: Dimensions.get("window").height * 0.9,
   },
   TarotCardFront: {
     backgroundColor: "white",
