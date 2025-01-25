@@ -23,7 +23,18 @@ app.get("/", async (req: Request, res: Response) => {
 });
 
 app.post("/", async (req: Request, res: Response) => {
+  if (!req.body.prompt) {
+    res.status(400).send("Prompt is required");
+    return;
+  }
+
+  if (!req.headers.authorization) {
+    res.status(401).send("Authorization header is required");
+    return;
+  }
+
   const prompt = req.body.prompt;
+  const model = req.body.model;
   const response = await model.generateContent(prompt);
   res.send(response);
 });
