@@ -1,14 +1,23 @@
 import TarotCard from "@/components/ui/TarotCard";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Text,
-  Image,
+  Animated,
   StyleSheet,
   Platform,
   View,
   Pressable,
   Dimensions,
 } from "react-native";
+
+const scaleValue = new Animated.Value(1.2);
+
+useEffect(() => {
+  Animated.timing(scaleValue, {
+    toValue: 1.2,
+    duration: 500,
+  }).start();
+}, []);
 
 export default function HomeScreen() {
   const [appStarted, setAppStarted] = useState(true);
@@ -32,17 +41,25 @@ export default function HomeScreen() {
     return startMesage();
   }
 
-  return (
-    <View>
-      <Pressable onPress={() => setAppStarted(false)}>
-        <TarotCard
-          image={require("@/assets/images/tarot_cards/Ace_of_cups.jpg")}
-          name="The Fool"
-          description="New beginnings, innocence, spontaneity, and free spirit"
-        />
-      </Pressable>
-    </View>
-  );
+  <Animated.View
+    style={[
+      styles.tarotCard,
+      {
+        transform: [
+          {
+            scale: scaleValue,
+          },
+        ],
+      },
+    ]}
+  ></Animated.View>;
+  <Pressable onPress={() => setAppStarted(false)}>
+    <TarotCard
+      image={require("@/assets/images/tarot_cards/Card_back.png")}
+      name="The Fool"
+      description="New beginnings, innocence, spontaneity, and free spirit"
+    />
+  </Pressable>;
 }
 
 const styles = StyleSheet.create({
@@ -76,5 +93,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     position: "absolute",
+  },
+  tarotCard: {
+    backgroundColor: "white",
   },
 });
