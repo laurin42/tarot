@@ -49,12 +49,10 @@ export default function CardStackAnimator({ onAnimationComplete }) {
             },
           ]}
         >
-          <View style={styles.container}>
-            <Image
-              source={require("@/assets/images/tarot_cards/Card_back.png")}
-              style={styles.cardBack}
-            />
-          </View>
+          <Image
+            source={require("@/assets/images/tarot_cards/Card_back.png")}
+            style={styles.cardBack}
+          />
         </Animated.View>
       ))}
       {activeCards.length === 0 && (
