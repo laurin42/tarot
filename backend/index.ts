@@ -1,4 +1,5 @@
 import express, { Request, Response, Application } from "express";
+import cors from "cors";
 import dotenv from "dotenv";
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
@@ -16,25 +17,16 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 const app: Application = express();
 const port = process.env.PORT || 8002;
 
+app.use(cors());
+
 app.get("/", async (req: Request, res: Response) => {
   const prompt = "Explain something to me about the world";
   const response = await model.generateContent(prompt);
   res.send(response);
 });
 
-app.post("/", async (req: Request, res: Response) => {
-  if (!req.body.prompt) {
-    res.status(400).send("Prompt is required");
-    return;
-  }
-
-  if (!req.headers.authorization) {
-    res.status(401).send("Authorization header is required");
-    return;
-  }
-
-  const prompt = req.body.prompt;
-  const model = req.body.model;
+app.get("/tarot/cards", async (req: Request, res: Response) => {
+  const prompt = "Generate a tarot card";
   const response = await model.generateContent(prompt);
   res.send(response);
 });
