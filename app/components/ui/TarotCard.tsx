@@ -4,16 +4,25 @@ interface TarotCardProps {
   image: any;
   name: string;
   description: string;
+  isShown: boolean;
 }
 
 export default function TarotCard({
   image,
   name,
   description,
+  isShown,
 }: TarotCardProps) {
   return (
     <View style={styles.CardView}>
-      <Image source={image} style={styles.TarotCardFront} />
+      <Image
+        source={
+          isShown
+            ? image
+            : require("@/assets/images/tarot_cards/back_of_card.png")
+        }
+        style={styles.TarotCardFront}
+      />
       <View style={styles.CardInfo}>
         <Text style={styles.CardName}>{name}</Text>
         <Text style={styles.CardDescription}>{description}</Text>
