@@ -7,6 +7,7 @@ import {
   Text,
   Dimensions,
   Image,
+  Easing,
 } from "react-native";
 
 export default function CardStackAnimator({ onAnimationComplete }) {
@@ -21,8 +22,9 @@ export default function CardStackAnimator({ onAnimationComplete }) {
     const animations = translateYValues.map((value, index) =>
       Animated.timing(value, {
         toValue: 0,
-        duration: 500,
-        delay: index * 300,
+        duration: 200,
+        delay: index * 200,
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1.0),
         useNativeDriver: true,
       })
     );
