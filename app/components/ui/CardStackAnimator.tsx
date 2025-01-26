@@ -37,26 +37,28 @@ export default function CardStackAnimator({ onAnimationComplete }) {
 
   return (
     <View style={styles.container}>
-      {translateYValues.map((value, index) => (
-        <Animated.View
-          key={index}
-          style={[
-            styles.card,
-            {
-              transform: [
-                { translateY: value },
-                { rotate: `${index * 16}deg` },
-              ],
-              top: index * +70,
-            },
-          ]}
-        >
-          <Image
-            source={require("@/assets/images/tarot_cards/Card_back.png")}
-            style={styles.cardBack}
-          />
-        </Animated.View>
-      ))}
+      <View style={styles.cardBackContainer}>
+        {translateYValues.map((value, index) => (
+          <Animated.View
+            key={index}
+            style={[
+              styles.card,
+              {
+                transform: [
+                  { translateY: value },
+                  { rotate: `${index * 16}deg` },
+                ],
+                top: index * +70,
+              },
+            ]}
+          >
+            <Image
+              source={require("@/assets/images/tarot_cards/Card_back.png")}
+              style={styles.cardBack}
+            />
+          </Animated.View>
+        ))}
+      </View>
       {activeCards.length === 0 && (
         <Pressable style={styles.startButton} onPress={pullCards}>
           <Text style={styles.startText}>PULL CARDS</Text>
@@ -68,7 +70,12 @@ export default function CardStackAnimator({ onAnimationComplete }) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cardBackContainer: {
+    marginBlockEnd: 500,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "black",
