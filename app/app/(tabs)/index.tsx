@@ -1,5 +1,5 @@
 import TarotCard from "@/components/ui/TarotCard";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Text,
   Image,
@@ -27,6 +27,16 @@ export default function HomeScreen() {
       </View>
     );
   };
+  const fetchCards = async () => {
+    const response = await fetch("http://localhost:8000/tarot/cards", {
+      method: "GET",
+    });
+    const json = await response.json();
+  };
+
+  useEffect(() => {
+    fetchCards();
+  }, []);
 
   if (appStarted) {
     return startMesage();
@@ -38,6 +48,7 @@ export default function HomeScreen() {
         <TarotCard
           image={require("@/assets/images/tarot_cards/Ace_of_cups.jpg")}
           name="The Fool"
+          isShown={true}
           description="New beginnings, innocence, spontaneity, and free spirit"
         />
       </Pressable>
