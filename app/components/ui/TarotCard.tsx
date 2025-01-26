@@ -17,9 +17,7 @@ export default function TarotCard({
     <View style={styles.CardView}>
       <Image
         source={
-          isShown
-            ? image
-            : require("@/assets/images/tarot_cards/back_of_card.png")
+          isShown ? image : require("@/assets/images/tarot_cards/Card_back.png")
         }
         style={styles.TarotCardFront}
       />
