@@ -1,18 +1,13 @@
 import { Text, View, Image, StyleSheet, Dimensions } from "react-native";
+import FetchCardExplanation from "./FetchCardExplanation";
 
 interface TarotCardProps {
   image: any;
   name: string;
-  description: string;
   isShown: boolean;
 }
 
-export default function TarotCard({
-  image,
-  name,
-  description,
-  isShown,
-}: TarotCardProps) {
+export default function TarotCard({ image, name, isShown }: TarotCardProps) {
   return (
     <View style={styles.CardView}>
       <Image
@@ -23,7 +18,7 @@ export default function TarotCard({
       />
       <View style={styles.CardInfo}>
         <Text style={styles.CardName}>{name}</Text>
-        <Text style={styles.CardDescription}>{description}</Text>
+        {isShown && <FetchCardExplanation cardName={name} />}
       </View>
     </View>
   );
@@ -54,9 +49,5 @@ const styles = StyleSheet.create({
   CardName: {
     fontSize: 20,
     fontWeight: "bold",
-  },
-  CardDescription: {
-    fontSize: 16,
-    textAlign: "center",
   },
 });

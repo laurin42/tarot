@@ -47,11 +47,11 @@ app.post("/tarot/cards/summary", async (req: Request, res: Response) => {
   });
 
   res.send(entry);
-  // const prompt = `You recieved the following tarot cards: ${cards.join(
-  //   ", "
-  // )}, explain something to me about the tarot cards in short.`;
-  // const response = await model.generateContent(prompt);
-  // const geminiResponse = response.response.text();
+   const prompt = `You recieved the following tarot cards: ${cards.join(
+     ", "
+   )}, explain something to me about the tarot cards in short.`;
+   const response = await model.generateContent(prompt);
+   const geminiResponse = response.response.text();
 });
 
 app.get("/tarot/cards", async (req: Request, res: Response) => {

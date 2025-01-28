@@ -10,8 +10,14 @@ import {
   Easing,
 } from "react-native";
 
-export default function CardStackAnimator({ onAnimationComplete }) {
-  const [activeCards, setActiveCards] = useState([]);
+interface CardStackAnimatorProps {
+  onAnimationComplete?: () => void;
+}
+
+export default function CardStackAnimator({
+  onAnimationComplete,
+}: CardStackAnimatorProps) {
+  const [activeCards, setActiveCards] = useState<number[]>([]);
   const translateYValues = useRef(
     Array(3)
       .fill(0)
