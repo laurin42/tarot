@@ -15,12 +15,8 @@ const pool = new Pool({
 
 const db = drizzle(pool);
 
-// Access your API key as an environment variable (see "Set up your API key" above)
 const genAI = new GoogleGenerativeAI(process.env.API_KEY);
 
-// ...
-
-// The Gemini 1.5 models are versatile and work with most use cases
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const app: Application = express();
@@ -54,14 +50,18 @@ app.post("/tarot/cards/summary", async (req: Request, res: Response) => {
    const geminiResponse = response.response.text();
 });
 
-app.get("/tarot/cards", async (req: Request, res: Response) => {
+app.get("/tarot/cards/:cardName", async (req: Request, res: Response) => {
   try {
-    const prompt = "Generate 3 tarot cards";
+    const cardName = decodeURIComponent(req.params.cardName);
+    const prompt = `Erkläre kurz und prägnant die Bedeutung der Tarotkarte "${cardName}". Konzentriere dich auf die wesentlichen Aspekte.`;
+    
     const response = await model.generateContent(prompt);
-    const geminiResponse = response.response.text();
-    res.send(geminiResponse);
+    const geminiResponse = response.response.candidates[0].content.parts[0].text;
+    
+    res.json({ explanation: geminiResponse });
   } catch (error) {
-    res.status(500).send("Internal Server Error");
+    console.error(error);
+    res.status(500).json({ error: "Fehler bei der Erklärungserstellung" });
   }
 });
 
