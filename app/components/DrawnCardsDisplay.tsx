@@ -5,10 +5,6 @@ import TarotCard from "./TarotCard";
 import { ITarotCard } from "@/constants/tarotcards";
 import FetchCardExplanation from "./FetchCardExplanation";
 
-interface FetchCardExplanationProps {
-  cardName: string;
-}
-
 interface DrawnCardsDisplayProps {
   cards: ITarotCard[];
 }
@@ -45,7 +41,6 @@ export default function DrawnCardsDisplay({ cards }: DrawnCardsDisplayProps) {
             isShown={true}
             showExplanation={expandedCard === card.id}
           />
-          <FetchCardExplanation />
         </TouchableOpacity>
       ))}
     </View>
