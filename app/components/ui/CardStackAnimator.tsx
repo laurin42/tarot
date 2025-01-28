@@ -36,7 +36,6 @@ export default function CardStackAnimator({
     );
 
     Animated.sequence(animations).start(() => {
-      setActiveCards([0, 1, 2]);
       onAnimationComplete && onAnimationComplete();
     });
   };

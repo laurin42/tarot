@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 
 interface FetchCardExplanationProps {
   cardName: string;
@@ -15,7 +15,7 @@ export default function FetchCardExplanation({
     const fetchData = async () => {
       try {
         const res = await fetch(
-          `http://192.168.1.10:8002/tarot/cards/${cardName}`
+          `http://192.168.2.187:8000/tarot/cards/${cardName}`
         );
         const data = await res.json();
         setResponse(data.explanation);
@@ -28,9 +28,32 @@ export default function FetchCardExplanation({
   }, [cardName]);
 
   return (
-    <View>
-      {response ? <Text>{response}</Text> : <Text>Loading...</Text>}
+    <View style={styles.container}>
+      {response ? (
+        <Text style={styles.responseText}>{response}</Text>
+      ) : (
+        <Text>Loading...</Text>
+      )}
       {error && <Text>{error}</Text>}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  responseText: {
+    position: "relative",
+    width: 200,
+    height: 300,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    backgroundColor: "transparent",
+  },
+});
