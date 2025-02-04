@@ -1,54 +1,102 @@
 // app/app/components/DrawnCardsDisplay.tsx
-import React, { useState } from "react";
-import { View, TouchableOpacity, Dimensions, Text } from "react-native";
+import React, { useState, useRef } from "react";
+import {
+  View,
+  TouchableOpacity,
+  Dimensions,
+  Text,
+  ScrollView,
+} from "react-native";
 import TarotCard from "./TarotCard";
 import { ITarotCard } from "@/constants/tarotcards";
+import { PanResponder } from "react-native";
+import FetchCardExplanation from "./FetchCardExplanation";
 
-const screenWidth = Dimensions.get("screen").width;
+const { width: screenWidth } = Dimensions.get("screen");
 
-interface DrawnCardsDisplayProps {
-  cards: ITarotCard[];
-}
-
-export default function DrawnCardsDisplay({ cards }: DrawnCardsDisplayProps) {
+export default function DrawnCardsDisplay({ cards }: { cards: ITarotCard[] }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
-  const [explanations, setExplanations] = useState<{ [key: string]: string }>(
-    {}
-  );
+  const scrollViewRef = useRef<ScrollView>(null);
 
-  const handleCardPress = (cardId: string, cardName: string) => {
-    setExpandedCard(expandedCard === cardId ? null : cardId);
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onPanResponderRelease: (_, gestureState) => {
+      if (gestureState.dx > 50) {
+        handleSwipe("left");
+      } else if (gestureState.dx < -50) {
+        handleSwipe("right");
+      }
+    },
+  });
+
+  const handleSwipe = (direction: "left" | "right") => {
+    const newIndex =
+      direction === "right"
+        ? (currentIndex + 1) % cards.length
+        : (currentIndex - 1 + cards.length) % cards.length;
+
+    setCurrentIndex(newIndex);
+    scrollViewRef.current?.scrollTo({
+      x: newIndex * screenWidth,
+      animated: true,
+    });
   };
 
   return (
-    <View className="flex-1 items-center justify-center mt-12">
-      {[...cards].reverse().map((card, index) => (
-        <TouchableOpacity
-          key={card.id}
-          onPress={() => handleCardPress(card.id, card.name)}
-          className="absolute shadow-lg" // Tailwind-Klassen direkt hier
-          style={{
-            zIndex: expandedCard === card.id ? 1000 : cards.length - index,
-            transform: [
-              { translateY: -index * 20 },
-              { scale: expandedCard === card.id ? 1 : 1 },
-            ],
-          }}
-        >
-          <TarotCard image={card.image} name={card.name} isShown={true} />
-
-          {expandedCard === card.id && (
-            <View
-              className="absolute top-0 w-80 h-[500px] bg-white/95 rounded-xl p-4 shadow-xl" // Tailwind-Klassen
-              style={{ elevation: 10 }} // Android Schatten
+    <View className="flex-1 bg-gray-900" {...panResponder.panHandlers}>
+      <ScrollView
+        ref={scrollViewRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        scrollEnabled={false}
+      >
+        {cards.map((card) => (
+          <View
+            key={card.id}
+            style={{ width: screenWidth }}
+            className="items-center justify-center"
+          >
+            <TouchableOpacity
+              onPress={() =>
+                setExpandedCard(expandedCard === card.id ? null : card.id)
+              }
+              className="relative"
             >
-              <Text className="text-base leading-6 text-gray-800">
-                {explanations[card.id] || "Lade Erklärung..."}
-              </Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      ))}
+              <TarotCard
+                image={card.image}
+                name={card.name}
+                isShown={true}
+                className="w-[90%] h-[75vh] shadow-xl"
+              />
+
+              {expandedCard === card.id && (
+                <TouchableOpacity
+                  className="absolute inset-0 justify-center p-6 bg-black/75"
+                  onPress={() => setExpandedCard(null)}
+                >
+                  <FetchCardExplanation
+                    cardName={card.name}
+                    className="text-lg text-white leading-relaxed"
+                  />
+                </TouchableOpacity>
+              )}
+            </TouchableOpacity>
+          </View>
+        ))}
+      </ScrollView>
+
+      <View className="absolute bottom-8 w-full flex-row justify-center space-x-2">
+        {cards.map((_, index) => (
+          <View
+            key={index}
+            className={`w-2 h-2 rounded-full ${
+              index === currentIndex ? "bg-white" : "bg-gray-500"
+            }`}
+          />
+        ))}
+      </View>
     </View>
   );
 }

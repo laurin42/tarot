@@ -1,59 +1,48 @@
+// app/app/components/FetchCardExplanation.tsx
 import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Dimensions } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 
 interface FetchCardExplanationProps {
   cardName: string;
+  className?: string;
 }
 
 export default function FetchCardExplanation({
   cardName,
+  className,
 }: FetchCardExplanationProps) {
   const [response, setResponse] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchExplanation = async () => {
       try {
+        const formattedName = cardName.toLowerCase().replace(/ /g, "_");
         const res = await fetch(
-          `http://192.168.2.187:8000/tarot/cards/${cardName}`
+          `http://192.168.2.187:8000/tarot/cards/${formattedName}`
         );
         const data = await res.json();
         setResponse(data.explanation);
       } catch (err) {
-        setError("Failed To Fetch");
+        setError("Erklärung konnte nicht geladen werden");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchData();
+    fetchExplanation();
   }, [cardName]);
 
   return (
-    <View style={styles.container}>
-      {response ? (
-        <Text style={styles.responseText}>{response}</Text>
+    <View className="flex-1 justify-center">
+      {loading ? (
+        <ActivityIndicator size="large" color="#FFF" />
+      ) : error ? (
+        <Text className="text-red-400 text-center">{error}</Text>
       ) : (
-        <Text>Loading...</Text>
+        <Text className={`${className}`}>{response}</Text>
       )}
-      {error && <Text>{error}</Text>}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  responseText: {
-    position: "relative",
-    width: 200,
-    height: 300,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    backgroundColor: "transparent",
-  },
-});
