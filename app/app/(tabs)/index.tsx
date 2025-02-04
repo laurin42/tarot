@@ -1,4 +1,3 @@
-// app/app/tabs/index.tsx
 import React, { useState } from "react";
 import { View, StyleSheet, Pressable, Text } from "react-native";
 import CardStackAnimator from "@/components/ui/CardStackAnimator";
