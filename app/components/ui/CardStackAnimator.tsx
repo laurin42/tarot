@@ -1,120 +1,46 @@
-import React, { useRef, useState } from "react";
-import {
-  Animated,
-  View,
-  StyleSheet,
-  Pressable,
-  Text,
-  Dimensions,
-  Image,
-  Easing,
-} from "react-native";
-
-interface CardStackAnimatorProps {
-  onAnimationComplete?: () => void;
-}
+// app/app/components/CardStackAnimator.tsx
+import React, { useRef } from "react";
+import { View, Animated, Pressable, Text, Image } from "react-native";
 
 export default function CardStackAnimator({
   onAnimationComplete,
-}: CardStackAnimatorProps) {
-  const [activeCards, setActiveCards] = useState<number[]>([]);
-  const translateYValues = useRef(
-    Array(3)
-      .fill(0)
-      .map(() => new Animated.Value(Dimensions.get("window").height))
-  ).current;
+}: {
+  onAnimationComplete: () => void;
+}) {
+  const translateY = useRef(new Animated.Value(1000)).current;
 
-  const pullCards = () => {
-    const animations = translateYValues.map((value, index) =>
-      Animated.timing(value, {
-        toValue: 0,
-        duration: 200,
-        delay: index * 200,
-        easing: Easing.bezier(0.25, 0.1, 0.25, 1.0),
-        useNativeDriver: true,
-      })
-    );
-
-    Animated.sequence(animations).start(() => {
-      onAnimationComplete && onAnimationComplete();
-    });
+  const animateCards = () => {
+    Animated.spring(translateY, {
+      toValue: 0,
+      friction: 8,
+      tension: 40,
+      useNativeDriver: true,
+    }).start(onAnimationComplete);
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.cardBackContainer}>
-        {translateYValues.map((value, index) => (
-          <Animated.View
-            key={index}
-            style={[
-              styles.card,
-              {
-                transform: [
-                  { translateY: value },
-                  { rotate: `${index * 16}deg` },
-                ],
-                top: index * +70,
-              },
-            ]}
-          >
-            <Image
-              source={require("@/assets/images/tarot_cards/Card_back.png")}
-              style={styles.cardBack}
-            />
-          </Animated.View>
-        ))}
-      </View>
-      {activeCards.length === 0 && (
-        <Pressable style={styles.startButton} onPress={pullCards}>
-          <Text style={styles.startText}>PULL CARDS</Text>
-        </Pressable>
-      )}
+    <View className="flex-1 items-center justify-center bg-gray-950">
+      <Animated.View
+        className="absolute"
+        style={{
+          transform: [{ translateY }],
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 4,
+        }}
+      >
+        <Image
+          source={require("@/assets/images/tarot_cards/Card_back.png")}
+          className="w-64 h-96 rounded-xl border-2 border-white shadow-2xl"
+        />
+      </Animated.View>
+
+      <Pressable
+        onPress={animateCards}
+        className="relative bottom-20 bg-red-600 px-8 py-3 rounded-2xl shadow-md"
+      >
+        <Text className="text-white text-lg font-bold">Karten ziehen</Text>
+      </Pressable>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  cardBackContainer: {
-    marginBlockEnd: 500,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "black",
-  },
-  card: {
-    position: "absolute",
-    width: 200,
-    height: 300,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    backgroundColor: "transparent",
-  },
-  cardBack: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 10,
-    backgroundColor: "gray", // Rückseite der Karte
-    borderWidth: 2,
-    borderColor: "white",
-  },
-  startButton: {
-    position: "absolute",
-    bottom: 50,
-    backgroundColor: "red",
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-  },
-  startText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-});
