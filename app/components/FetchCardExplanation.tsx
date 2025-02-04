@@ -15,7 +15,7 @@ export default function FetchCardExplanation({
     const fetchData = async () => {
       try {
         const res = await fetch(
-          `http://192.168.178.67:8000/tarot/cards/${cardName}`
+          `http://192.168.2.187:8000/tarot/cards/${cardName}`
         );
         const data = await res.json();
         setResponse(data.explanation);
