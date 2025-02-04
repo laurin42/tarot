@@ -1,15 +1,15 @@
 module.exports = {
+  content: [
+    "./App.{js,jsx,ts,tsx}",
+    "./app/**/*.{js,jsx,ts,tsx}",
+    "./components/**/*.{js,jsx,ts,tsx}",
+    "./constants/**/*.{js,jsx,ts,tsx}",
+    "./hooks/**/*.{js,jsx,ts,tsx}",
+    "./scripts/**/*.{js,jsx,ts,tsx}",
+    "./utils/**/*.{js,jsx,ts,tsx}"
+  ],
   theme: {
-    extend: {
-      colors: {
-        customBlue: '#1DA1F2',
-      },
-    },
+    extend: {},
   },
   plugins: [],
-  content: [
-    "./app/app/**/*.{js,jsx,ts,tsx}",  // Passe dies an, je nachdem, wie deine Ordnerstruktur aussieht
-    "./app/components/**/*.{js,jsx,ts,tsx}",  // Passe dies an, je nachdem, wie deine Ordnerstruktur aussieht
-    "./app/hooks/components/**/*.{js,jsx,ts,tsx}",  // Passe dies an, je nachdem, wie deine Ordnerstruktur aussieht
-  ],
-};
+}
