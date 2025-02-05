@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { ViewStyle } from "react-native";
-import { VStack, Text, Spinner, Center, NativeBaseProvider } from "native-base";
+import { VStack, Text, Spinner, Center } from "native-base";
 
 interface FetchCardExplanationProps {
   cardName: string;
   className?: string;
+  onDismiss?: () => void;
 }
 
 export default function FetchCardExplanation({
@@ -35,20 +36,18 @@ export default function FetchCardExplanation({
   }, [cardName]);
 
   return (
-    <NativeBaseProvider>
-      <Center flex={1}>
-        {loading ? (
-          <Spinner size="lg" color="white" />
-        ) : error ? (
-          <Text color="red.400" textAlign="center">
-            {error}
-          </Text>
-        ) : (
-          <Text style={{ color: "white" }} textAlign="center">
-            {response}
-          </Text>
-        )}
-      </Center>
-    </NativeBaseProvider>
+    <Center flex={1}>
+      {loading ? (
+        <Spinner size="lg" color="white" />
+      ) : error ? (
+        <Text color="red.400" textAlign="center">
+          {error}
+        </Text>
+      ) : (
+        <Text style={{ color: "white" }} textAlign="center">
+          {response}
+        </Text>
+      )}
+    </Center>
   );
 }

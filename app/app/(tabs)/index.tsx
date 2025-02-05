@@ -32,7 +32,7 @@ export default function CardStackAnimator({
 
   return (
     <NativeBaseProvider>
-      <Center flex={1} bg="blue.900">
+      <Center flex={1} bg="black.900">
         <Animated.View
           style={{
             transform: [{ translateY }],
