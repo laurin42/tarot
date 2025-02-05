@@ -1,15 +1,17 @@
-// app/app/components/DrawnCardsDisplay.tsx
 import React, { useState, useRef } from "react";
+import { Dimensions, ScrollView, Animated, PanResponder } from "react-native";
 import {
-  View,
-  TouchableOpacity,
-  Dimensions,
+  Box,
+  Center,
+  Button,
+  HStack,
+  Pressable,
   Text,
-  ScrollView,
-} from "react-native";
+  VStack,
+  NativeBaseProvider,
+} from "native-base";
 import TarotCard from "./TarotCard";
 import { ITarotCard } from "@/constants/tarotcards";
-import { PanResponder } from "react-native";
 import FetchCardExplanation from "./FetchCardExplanation";
 
 const { width: screenWidth } = Dimensions.get("screen");
@@ -44,59 +46,73 @@ export default function DrawnCardsDisplay({ cards }: { cards: ITarotCard[] }) {
   };
 
   return (
-    <View className="flex-1 bg-gray-900" {...panResponder.panHandlers}>
-      <ScrollView
-        ref={scrollViewRef}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        scrollEnabled={false}
-      >
-        {cards.map((card) => (
-          <View
-            key={card.id}
-            style={{ width: screenWidth }}
-            className="items-center justify-center"
-          >
-            <TouchableOpacity
-              onPress={() =>
-                setExpandedCard(expandedCard === card.id ? null : card.id)
-              }
-              className="relative"
-            >
-              <TarotCard
-                image={card.image}
-                name={card.name}
-                isShown={true}
-                className="w-[90%] h-[75vh] shadow-xl"
-              />
+    <NativeBaseProvider>
+      <VStack flex={1} bg="gray.900" {...panResponder.panHandlers}>
+        <ScrollView
+          ref={scrollViewRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          scrollEnabled={false}
+        >
+          {cards.map((card) => (
+            <Center key={card.id} w={screenWidth}>
+              <Pressable
+                onPress={() =>
+                  setExpandedCard(expandedCard === card.id ? null : card.id)
+                }
+              >
+                <TarotCard
+                  image={card.image}
+                  name={card.name}
+                  isShown={true}
+                  style={{
+                    width: "90%",
+                    height: "75%",
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.4,
+                    shadowRadius: 4,
+                  }}
+                />
 
-              {expandedCard === card.id && (
-                <TouchableOpacity
-                  className="absolute inset-0 justify-center p-6 bg-black/75"
-                  onPress={() => setExpandedCard(null)}
-                >
-                  <FetchCardExplanation
-                    cardName={card.name}
-                    className="text-lg text-white leading-relaxed"
-                  />
-                </TouchableOpacity>
-              )}
-            </TouchableOpacity>
-          </View>
-        ))}
-      </ScrollView>
+                {expandedCard === card.id && (
+                  <Center
+                    position="absolute"
+                    top={0}
+                    left={0}
+                    right={0}
+                    bottom={0}
+                    bg="black:alpha.75"
+                    p={6}
+                  >
+                    <Pressable onPress={() => setExpandedCard(null)}>
+                      <FetchCardExplanation cardName={card.name} />
+                    </Pressable>
+                  </Center>
+                )}
+              </Pressable>
+            </Center>
+          ))}
+        </ScrollView>
 
-      <View className="absolute bottom-8 w-full flex-row justify-center space-x-2">
-        {cards.map((_, index) => (
-          <View
-            key={index}
-            className={`w-2 h-2 rounded-full ${
-              index === currentIndex ? "bg-white" : "bg-gray-500"
-            }`}
-          />
-        ))}
-      </View>
-    </View>
+        <HStack
+          position="absolute"
+          bottom={8}
+          justifyContent="center"
+          w="full"
+          space={2}
+        >
+          {cards.map((_, index) => (
+            <Box
+              key={index}
+              size={2}
+              borderRadius="full"
+              bg={index === currentIndex ? "white" : "gray.500"}
+            />
+          ))}
+        </HStack>
+      </VStack>
+    </NativeBaseProvider>
   );
 }

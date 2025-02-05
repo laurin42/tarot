@@ -1,6 +1,6 @@
-// app/app/components/CardStackAnimator.tsx
 import React, { useRef } from "react";
-import { View, Animated, Pressable, Text, Image } from "react-native";
+import { Animated } from "react-native";
+import { Box, Button, Image, Center, NativeBaseProvider } from "native-base";
 
 export default function CardStackAnimator({
   onAnimationComplete,
@@ -19,28 +19,42 @@ export default function CardStackAnimator({
   };
 
   return (
-    <View className="flex-1 items-center justify-center bg-gray-950">
-      <Animated.View
-        className="absolute"
-        style={{
-          transform: [{ translateY }],
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 4,
-        }}
-      >
-        <Image
-          source={require("@/assets/images/tarot_cards/Card_back.png")}
-          className="w-64 h-96 rounded-xl border-2 border-white shadow-2xl"
-        />
-      </Animated.View>
+    <NativeBaseProvider>
+      <Center flex={1} bg="blue.900">
+        <Animated.View
+          style={{
+            transform: [{ translateY }],
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+          }}
+        >
+          <Image
+            source={require("@/assets/images/tarot_cards/Card_back.png")}
+            alt="Tarot Card Back"
+            size="2xl"
+            borderRadius="xl"
+            borderWidth={2}
+            borderColor="white"
+            shadow="9"
+          />
+        </Animated.View>
 
-      <Pressable
-        onPress={animateCards}
-        className="relative bottom-20 bg-red-600 px-8 py-3 rounded-2xl shadow-md"
-      >
-        <Text className="text-white text-lg font-bold">Karten ziehen</Text>
-      </Pressable>
-    </View>
+        <Button
+          mt={8}
+          bg="red.600"
+          rounded="2xl"
+          shadow="3"
+          onPress={animateCards}
+          _text={{
+            fontSize: "lg",
+            fontWeight: "bold",
+            color: "white",
+          }}
+        >
+          Karten ziehen
+        </Button>
+      </Center>
+    </NativeBaseProvider>
   );
 }

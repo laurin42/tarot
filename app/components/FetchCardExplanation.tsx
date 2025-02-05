@@ -1,6 +1,6 @@
-// app/app/components/FetchCardExplanation.tsx
 import { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { ViewStyle } from "react-native";
+import { VStack, Text, Spinner, Center, NativeBaseProvider } from "native-base";
 
 interface FetchCardExplanationProps {
   cardName: string;
@@ -11,9 +11,9 @@ export default function FetchCardExplanation({
   cardName,
   className,
 }: FetchCardExplanationProps) {
-  const [response, setResponse] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [response, setResponse] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchExplanation = async () => {
@@ -35,14 +35,20 @@ export default function FetchCardExplanation({
   }, [cardName]);
 
   return (
-    <View className="flex-1 justify-center">
-      {loading ? (
-        <ActivityIndicator size="large" color="#FFF" />
-      ) : error ? (
-        <Text className="text-red-400 text-center">{error}</Text>
-      ) : (
-        <Text className={`${className}`}>{response}</Text>
-      )}
-    </View>
+    <NativeBaseProvider>
+      <Center flex={1}>
+        {loading ? (
+          <Spinner size="lg" color="white" />
+        ) : error ? (
+          <Text color="red.400" textAlign="center">
+            {error}
+          </Text>
+        ) : (
+          <Text style={{ color: "white" }} textAlign="center">
+            {response}
+          </Text>
+        )}
+      </Center>
+    </NativeBaseProvider>
   );
 }

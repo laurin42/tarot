@@ -1,17 +1,21 @@
+import React from "react";
 import { Link, Stack } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
+import { NativeBaseProvider } from "native-base";
 
 export default function NotFoundScreen() {
   return (
-    <>
-      <Stack.Screen options={{ title: "Oops!" }} />
-      <View style={styles.container}>
-        <Text> screen doesn't exist.</Text>
-        <Link href="/" style={styles.link}>
-          <Text> to home screen!</Text>
-        </Link>
-      </View>
-    </>
+    <NativeBaseProvider>
+      <>
+        <Stack.Screen options={{ title: "Oops!" }} />
+        <View style={styles.container}>
+          <Text> screen doesn't exist.</Text>
+          <Link href="/" style={styles.link}>
+            <Text> to home screen!</Text>
+          </Link>
+        </View>
+      </>
+    </NativeBaseProvider>
   );
 }
 
