@@ -1,4 +1,3 @@
-// DrawnCardsDisplay.tsx
 import React, { useState, useRef, useEffect } from "react";
 import { Dimensions, Animated, PanResponder } from "react-native";
 import {
@@ -26,18 +25,18 @@ export default function DrawnCardsDisplay({ cards }: { cards: ITarotCard[] }) {
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onPanResponderMove: Animated.event([null, { dx: pan.x }], {
-      useNativeDriver: false,
+      useNativeDriver: true, // Native Driver aktiviert
     }),
     onPanResponderRelease: (_, gesture) => {
       if (Math.abs(gesture.dx) > screenWidth / 4) {
         Animated.spring(pan, {
           toValue: { x: gesture.dx > 0 ? screenWidth : -screenWidth, y: 0 },
-          useNativeDriver: true,
+          useNativeDriver: true, // Native Driver aktiviert
         }).start(() => handleSwipeComplete(gesture.dx > 0 ? "left" : "right"));
       } else {
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
-          useNativeDriver: true,
+          useNativeDriver: true, // Native Driver aktiviert
         }).start();
       }
     },
@@ -59,7 +58,7 @@ export default function DrawnCardsDisplay({ cards }: { cards: ITarotCard[] }) {
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 500,
-        useNativeDriver: true,
+        useNativeDriver: true, // Native Driver aktiviert
       }).start();
     }
   }, [expandedCard]);
@@ -97,7 +96,7 @@ export default function DrawnCardsDisplay({ cards }: { cards: ITarotCard[] }) {
                   Animated.timing(fadeAnim, {
                     toValue: 0,
                     duration: 300,
-                    useNativeDriver: true,
+                    useNativeDriver: true, // Native Driver aktiviert
                   }).start(() => setExpandedCard(null));
                 }}
               />

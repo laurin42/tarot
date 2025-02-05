@@ -38,5 +38,9 @@
       "typedRoutes": true
     },
     "jsEngine": "jsc"
+  },
+  "updates": {
+    "enabled": true,
+    "checkAutomatically": "ON_LOAD"
   }
 }

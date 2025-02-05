@@ -1,4 +1,3 @@
-// CardStackAnimator.tsx
 import React, { useRef, useState } from "react";
 import {
   Animated,
@@ -28,11 +27,13 @@ export default function CardStackAnimator({
       .fill(null)
       .map((_, i) => new Animated.Value(i * 20))
   ).current;
+
   const rotations = useRef(
     Array(CARD_COUNT)
       .fill(null)
       .map(() => new Animated.Value(0))
   ).current;
+
   const [isDealing, setIsDealing] = useState(false);
   const [red] = useToken("colors", ["red.600"]);
 
@@ -44,7 +45,7 @@ export default function CardStackAnimator({
         duration: 800,
         delay: i * 150,
         easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
+        useNativeDriver: false,
       })
     );
 

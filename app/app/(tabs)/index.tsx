@@ -25,14 +25,13 @@ export default function CardStackAnimator({
     }).start(onAnimationComplete);
   };
 
-  // Move the buttonSize and cardSize calculation outside of JSX
   const buttonSize = useBreakpointValue({ base: "md", md: "lg", lg: "xl" });
   const { width } = Dimensions.get("window");
   const cardSize = width > 400 ? "2xl" : "lg";
 
   return (
     <NativeBaseProvider>
-      <Center flex={1} bg="black.900">
+      <Center flex={1} bg="gray.900">
         <Animated.View
           style={{
             transform: [{ translateY }],
