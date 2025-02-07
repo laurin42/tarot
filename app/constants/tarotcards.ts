@@ -4,6 +4,11 @@ export interface ITarotCard {
   image: any;
 }
 
+export interface ICardWithShowFront extends ITarotCard {
+  showFront: boolean;
+  isSelected: boolean;
+}
+
 export const tarotCards: ITarotCard[] = [
   {
     id: "0",

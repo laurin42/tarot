@@ -1,11 +1,10 @@
 import React from "react";
 import { Link, Stack } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
-import { NativeBaseProvider } from "native-base";
 
 export default function NotFoundScreen() {
   return (
-    <NativeBaseProvider>
+    <View>
       <>
         <Stack.Screen options={{ title: "Oops!" }} />
         <View style={styles.container}>
@@ -15,7 +14,7 @@ export default function NotFoundScreen() {
           </Link>
         </View>
       </>
-    </NativeBaseProvider>
+    </View>
   );
 }
 

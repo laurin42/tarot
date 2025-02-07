@@ -1,42 +1,43 @@
+// DrawnCardsDisplay.tsx
 import React, { useState, useRef, useEffect } from "react";
-import { Dimensions, Animated, PanResponder } from "react-native";
 import {
-  Box,
-  Center,
-  HStack,
-  Pressable,
+  Dimensions,
+  Animated,
+  PanResponder,
+  View,
   Text,
-  VStack,
-  useToken,
-} from "native-base";
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 import TarotCard from "./TarotCard";
 import { ITarotCard } from "@/constants/tarotcards";
-import FetchCardExplanation from "./FetchCardExplanation";
+import FetchCardExplanation from "@/components/FetchCardExplanation";
 
 const { width: screenWidth } = Dimensions.get("screen");
 
 export default function DrawnCardsDisplay({ cards }: { cards: ITarotCard[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [expandedCard, setExpandedCard] = useState<string | null>(null);
-  const [gray900] = useToken("colors", ["gray.900"]);
+  const [expanded, setExpanded] = useState(false); // Ob die Karte aufgeklappt ist
+  const [showExplanation, setShowExplanation] = useState(false);
   const pan = useRef(new Animated.ValueXY()).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onPanResponderMove: Animated.event([null, { dx: pan.x }], {
-      useNativeDriver: true, // Native Driver aktiviert
+      useNativeDriver: false,
     }),
     onPanResponderRelease: (_, gesture) => {
       if (Math.abs(gesture.dx) > screenWidth / 4) {
+        const direction = gesture.dx > 0 ? "right" : "left";
         Animated.spring(pan, {
           toValue: { x: gesture.dx > 0 ? screenWidth : -screenWidth, y: 0 },
-          useNativeDriver: true, // Native Driver aktiviert
-        }).start(() => handleSwipeComplete(gesture.dx > 0 ? "left" : "right"));
+          useNativeDriver: false,
+        }).start(() => handleSwipeComplete(direction));
       } else {
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
-          useNativeDriver: true, // Native Driver aktiviert
+          useNativeDriver: false,
         }).start();
       }
     },
@@ -50,77 +51,126 @@ export default function DrawnCardsDisplay({ cards }: { cards: ITarotCard[] }) {
 
     pan.setValue({ x: 0, y: 0 });
     setCurrentIndex(newIndex);
-    setExpandedCard(null);
+    setExpanded(false);
+    setShowExplanation(false);
   };
 
+  // Wenn die Karte aufgeklappt wird, warte 4 Sekunden und zeige dann das Erklärungsoverlay an
   useEffect(() => {
-    if (expandedCard) {
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true, // Native Driver aktiviert
-      }).start();
+    let timer: NodeJS.Timeout;
+    if (expanded && !showExplanation) {
+      timer = setTimeout(() => {
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: false,
+        }).start();
+        setShowExplanation(true);
+      }, 4000);
     }
-  }, [expandedCard]);
+    return () => clearTimeout(timer);
+  }, [expanded]);
+
+  const cardWidth = 250;
+  const cardHeight = cardWidth * 1.6;
 
   return (
-    <VStack flex={1} bg="gray.900">
+    <View style={styles.container}>
       <Animated.View
-        style={{
-          transform: [{ translateX: pan.x }],
-          flex: 1,
-        }}
+        style={{ transform: [{ translateX: pan.x }], flex: 1 }}
         {...panResponder.panHandlers}
       >
-        <Center flex={1}>
-          <Pressable onPress={() => setExpandedCard(cards[currentIndex].id)}>
+        <View style={styles.center}>
+          <TouchableOpacity
+            onPress={() => {
+              if (!expanded) {
+                setExpanded(true);
+              }
+            }}
+          >
             <TarotCard
               image={cards[currentIndex].image}
               name={cards[currentIndex].name}
               isShown={true}
-              style={{ transform: [{ scale: expandedCard ? 1.1 : 1 }] }}
-            />
-          </Pressable>
-
-          {expandedCard && (
-            <Animated.View
               style={{
-                position: "absolute",
-                opacity: fadeAnim,
-                transform: [{ scale: fadeAnim }],
+                width: cardWidth,
+                height: cardHeight,
+                transform: [{ scale: expanded ? 1.1 : 1 }],
               }}
+            />
+          </TouchableOpacity>
+
+          {showExplanation && (
+            <Animated.View
+              style={[
+                styles.explanationOverlay,
+                { width: cardWidth, height: cardHeight, opacity: fadeAnim },
+              ]}
             >
-              <FetchCardExplanation
-                cardName={cards[currentIndex].name}
-                onDismiss={() => {
+              <TouchableOpacity
+                onPress={() => {
+                  // Overlay ein- bzw. ausblenden
                   Animated.timing(fadeAnim, {
-                    toValue: 0,
+                    toValue: fadeAnim._value > 0 ? 0 : 1,
                     duration: 300,
-                    useNativeDriver: true, // Native Driver aktiviert
-                  }).start(() => setExpandedCard(null));
+                    useNativeDriver: false,
+                  }).start(() => setShowExplanation((prev) => !prev));
                 }}
-              />
+              >
+                <FetchCardExplanation
+                  cardName={cards[currentIndex].name}
+                  onDismiss={() => {
+                    Animated.timing(fadeAnim, {
+                      toValue: 0,
+                      duration: 300,
+                      useNativeDriver: false,
+                    }).start(() => setShowExplanation(false));
+                  }}
+                />
+              </TouchableOpacity>
             </Animated.View>
           )}
-        </Center>
+        </View>
       </Animated.View>
 
-      <HStack
-        position="absolute"
-        bottom={8}
-        justifyContent="center"
-        w="full"
-        space={2}
-      >
+      <View style={styles.stackIndicator}>
         {cards.map((_, index) => (
-          <Box
+          <View
             key={index}
-            size={2}
-            borderRadius="full"
-            bg={index === currentIndex ? "white" : "gray.500"}
+            style={[
+              styles.stackIndicatorItem,
+              index === currentIndex && styles.stackIndicatorActive,
+            ]}
           />
         ))}
-      </HStack>
-    </VStack>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "black" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  stackIndicator: {
+    position: "absolute",
+    bottom: 8,
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  stackIndicatorItem: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "gray",
+    marginHorizontal: 4,
+  },
+  stackIndicatorActive: { backgroundColor: "white" },
+  explanationOverlay: {
+    position: "absolute",
+    backgroundColor: "rgba(255,255,255,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 8,
+  },
+});

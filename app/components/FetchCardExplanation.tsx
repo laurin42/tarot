@@ -1,16 +1,20 @@
 import { useEffect, useState } from "react";
-import { ViewStyle } from "react-native";
-import { VStack, Text, Spinner, Center } from "native-base";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 
 interface FetchCardExplanationProps {
   cardName: string;
-  className?: string;
   onDismiss?: () => void;
 }
 
 export default function FetchCardExplanation({
   cardName,
-  className,
+  onDismiss,
 }: FetchCardExplanationProps) {
   const [response, setResponse] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -26,6 +30,7 @@ export default function FetchCardExplanation({
         const data = await res.json();
         setResponse(data.explanation);
       } catch (err) {
+        console.error("Fehler beim Laden der Karte:", err);
         setError("Erklärung konnte nicht geladen werden");
       } finally {
         setLoading(false);
@@ -35,19 +40,57 @@ export default function FetchCardExplanation({
     fetchExplanation();
   }, [cardName]);
 
+  const renderContent = () => {
+    if (loading) {
+      return <ActivityIndicator size="large" color="white" />;
+    }
+
+    if (error) {
+      return <Text style={styles.errorText}>{error}</Text>;
+    }
+
+    return <Text style={styles.responseText}>{response}</Text>;
+  };
+
   return (
-    <Center flex={1}>
-      {loading ? (
-        <Spinner size="lg" color="white" />
-      ) : error ? (
-        <Text color="red.400" textAlign="center">
-          {error}
-        </Text>
-      ) : (
-        <Text style={{ color: "white" }} textAlign="center">
-          {response}
-        </Text>
+    <View style={styles.container}>
+      {renderContent()}
+      {onDismiss && (
+        <TouchableOpacity onPress={onDismiss} style={styles.dismissButton}>
+          <Text style={styles.dismissButtonText}>Schließen</Text>
+        </TouchableOpacity>
       )}
-    </Center>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#000",
+    padding: 16,
+  },
+  errorText: {
+    color: "red",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  responseText: {
+    color: "white",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  dismissButton: {
+    backgroundColor: "gray",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  dismissButtonText: {
+    color: "white",
+    fontWeight: "bold",
+  },
+});
