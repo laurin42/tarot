@@ -1,5 +1,4 @@
-// DrawnCardsDisplay.tsx
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import {
   Dimensions,
   Animated,
@@ -11,16 +10,19 @@ import {
 } from "react-native";
 import TarotCard from "./TarotCard";
 import { ITarotCard } from "@/constants/tarotcards";
-import FetchCardExplanation from "@/components/FetchCardExplanation";
 
 const { width: screenWidth } = Dimensions.get("screen");
 
-export default function DrawnCardsDisplay({ cards }: { cards: ITarotCard[] }) {
+interface DrawnCardsDisplayProps {
+  selectedCards: ITarotCard[];
+}
+
+export default function DrawnCardsDisplay({
+  selectedCards,
+}: DrawnCardsDisplayProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [expanded, setExpanded] = useState(false); // Ob die Karte aufgeklappt ist
-  const [showExplanation, setShowExplanation] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const pan = useRef(new Animated.ValueXY()).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
@@ -46,95 +48,49 @@ export default function DrawnCardsDisplay({ cards }: { cards: ITarotCard[] }) {
   const handleSwipeComplete = (direction: "left" | "right") => {
     const newIndex =
       direction === "right"
-        ? (currentIndex + 1) % cards.length
-        : (currentIndex - 1 + cards.length) % cards.length;
+        ? (currentIndex + 1) % selectedCards.length
+        : (currentIndex - 1 + selectedCards.length) % selectedCards.length;
 
     pan.setValue({ x: 0, y: 0 });
     setCurrentIndex(newIndex);
     setExpanded(false);
-    setShowExplanation(false);
   };
 
-  // Wenn die Karte aufgeklappt wird, warte 4 Sekunden und zeige dann das Erklärungsoverlay an
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (expanded && !showExplanation) {
-      timer = setTimeout(() => {
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: false,
-        }).start();
-        setShowExplanation(true);
-      }, 4000);
-    }
-    return () => clearTimeout(timer);
-  }, [expanded]);
+  const handleCardClick = () => {
+    setExpanded(!expanded);
+  };
 
-  const cardWidth = 250;
+  const cardWidth = 200;
   const cardHeight = cardWidth * 1.6;
 
   return (
     <View style={styles.container}>
-      <Animated.View
-        style={{ transform: [{ translateX: pan.x }], flex: 1 }}
-        {...panResponder.panHandlers}
-      >
-        <View style={styles.center}>
-          <TouchableOpacity
-            onPress={() => {
-              if (!expanded) {
-                setExpanded(true);
-              }
-            }}
-          >
-            <TarotCard
-              image={cards[currentIndex].image}
-              name={cards[currentIndex].name}
-              isShown={true}
-              style={{
-                width: cardWidth,
-                height: cardHeight,
-                transform: [{ scale: expanded ? 1.1 : 1 }],
-              }}
-            />
-          </TouchableOpacity>
-
-          {showExplanation && (
-            <Animated.View
-              style={[
-                styles.explanationOverlay,
-                { width: cardWidth, height: cardHeight, opacity: fadeAnim },
-              ]}
-            >
-              <TouchableOpacity
-                onPress={() => {
-                  // Overlay ein- bzw. ausblenden
-                  Animated.timing(fadeAnim, {
-                    toValue: fadeAnim._value > 0 ? 0 : 1,
-                    duration: 300,
-                    useNativeDriver: false,
-                  }).start(() => setShowExplanation((prev) => !prev));
+      {selectedCards.length > 0 && (
+        <Animated.View
+          style={{ transform: [{ translateX: pan.x }], flex: 1 }}
+          {...panResponder.panHandlers}
+        >
+          <View style={styles.center}>
+            <TouchableOpacity onPress={handleCardClick}>
+              <TarotCard
+                image={selectedCards[currentIndex].image}
+                isShown={true}
+                style={{
+                  width: cardWidth,
+                  height: cardHeight,
+                  transform: [{ scale: expanded ? 1.1 : 1 }],
                 }}
-              >
-                <FetchCardExplanation
-                  cardName={cards[currentIndex].name}
-                  onDismiss={() => {
-                    Animated.timing(fadeAnim, {
-                      toValue: 0,
-                      duration: 300,
-                      useNativeDriver: false,
-                    }).start(() => setShowExplanation(false));
-                  }}
-                />
-              </TouchableOpacity>
-            </Animated.View>
-          )}
-        </View>
-      </Animated.View>
+              />
+              <Text style={styles.cardName}>
+                {selectedCards[currentIndex].name}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      )}
 
       <View style={styles.stackIndicator}>
-        {cards.map((_, index) => (
+        {selectedCards.map((_, index) => (
           <View
             key={index}
             style={[
@@ -149,7 +105,12 @@ export default function DrawnCardsDisplay({ cards }: { cards: ITarotCard[] }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "black" },
+  container: {
+    flex: 1,
+    backgroundColor: "transparent",
+    justifyContent: "center",
+    marginBottom: 88,
+  },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   stackIndicator: {
     position: "absolute",
@@ -166,11 +127,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   stackIndicatorActive: { backgroundColor: "white" },
-  explanationOverlay: {
-    position: "absolute",
-    backgroundColor: "rgba(255,255,255,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 8,
+  cardName: {
+    color: "yellow",
+    textAlign: "center",
+    marginTop: 10,
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

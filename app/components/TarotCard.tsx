@@ -14,18 +14,30 @@ export default function TarotCard({
   name,
   isShown,
   className,
+  style,
 }: TarotCardProps) {
   return (
-    <View className={`relative ${className}`}>
+    <View style={[{ position: "relative" }, style]}>
       <Image
         source={
           isShown ? image : require("@/assets/images/tarot_cards/Card_back.png")
         }
-        className="w-full h-full rounded-xl"
+        style={{ width: "100%", height: "100%", borderRadius: 16 }}
       />
-      <Text className="absolute bottom-4 left-4 text-white text-xl font-bold">
-        {name}
-      </Text>
+      {isShown && (
+        <Text
+          style={{
+            position: "absolute",
+            bottom: 4,
+            left: 4,
+            color: "white",
+            fontSize: 16,
+            fontWeight: "bold",
+          }}
+        >
+          {name}
+        </Text>
+      )}
     </View>
   );
 }

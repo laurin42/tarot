@@ -5,16 +5,23 @@ import {
   ActivityIndicator,
   StyleSheet,
   TouchableOpacity,
+  PanResponder,
 } from "react-native";
 
 interface FetchCardExplanationProps {
   cardName: string;
   onDismiss?: () => void;
+  onSwipeLeft?: () => void;
+  onSwipeRight?: () => void;
+  onFetchComplete?: (explanation: string | null, error: string | null) => void;
 }
 
 export default function FetchCardExplanation({
   cardName,
   onDismiss,
+  onSwipeLeft,
+  onSwipeRight,
+  onFetchComplete,
 }: FetchCardExplanationProps) {
   const [response, setResponse] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -25,13 +32,26 @@ export default function FetchCardExplanation({
       try {
         const formattedName = cardName.toLowerCase().replace(/ /g, "_");
         const res = await fetch(
-          `http://192.168.2.187:8000/tarot/cards/${formattedName}`
+          `http://192.168.178.67:8000/tarot/cards/${formattedName}`
         );
+        if (!res.ok) {
+          if (res.status === 500) {
+            throw new Error("Internal Server Error");
+          } else {
+            throw new Error("Network response was not ok");
+          }
+        }
         const data = await res.json();
         setResponse(data.explanation);
+        onFetchComplete && onFetchComplete(data.explanation, null);
       } catch (err) {
         console.error("Fehler beim Laden der Karte:", err);
-        setError("Erklärung konnte nicht geladen werden");
+        if (err.message === "Internal Server Error") {
+          setError("Serverfehler: Bitte versuchen Sie es später erneut.");
+        } else {
+          setError("Erklärung konnte nicht geladen werden");
+        }
+        onFetchComplete && onFetchComplete(null, error);
       } finally {
         setLoading(false);
       }
@@ -39,6 +59,21 @@ export default function FetchCardExplanation({
 
     fetchExplanation();
   }, [cardName]);
+
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gestureState) => {
+      return Math.abs(gestureState.dx) > 10; // Adjusted sensitivity
+    },
+    onPanResponderRelease: (_, gestureState) => {
+      if (gestureState.dx > 30 && onSwipeRight) {
+        // Adjusted sensitivity
+        onSwipeRight();
+      } else if (gestureState.dx < -30 && onSwipeLeft) {
+        // Adjusted sensitivity
+        onSwipeLeft();
+      }
+    },
+  });
 
   const renderContent = () => {
     if (loading) {
@@ -53,7 +88,7 @@ export default function FetchCardExplanation({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} {...panResponder.panHandlers}>
       {renderContent()}
       {onDismiss && (
         <TouchableOpacity onPress={onDismiss} style={styles.dismissButton}>
@@ -66,10 +101,14 @@ export default function FetchCardExplanation({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#000",
+    backgroundColor: "black",
     padding: 16,
   },
   errorText: {

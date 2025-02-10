@@ -153,9 +153,11 @@ export const tarotCards: ITarotCard[] = [
 ];
 
 export const cardImageMap: { [key: string]: any } = tarotCards.reduce(
-  (map, card) => {
+  (map: { [key: string]: any }, card) => {
     map[card.name] = card.image;
     return map;
   },
   {} as { [key: string]: any }
 );
+
+console.log(cardImageMap);
