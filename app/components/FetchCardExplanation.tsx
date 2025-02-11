@@ -46,7 +46,7 @@ export default function FetchCardExplanation({
         onFetchComplete && onFetchComplete(data.explanation, null);
       } catch (err) {
         console.error("Fehler beim Laden der Karte:", err);
-        if (err.message === "Internal Server Error") {
+        if (err instanceof Error && err.message === "Internal Server Error") {
           setError("Serverfehler: Bitte versuchen Sie es später erneut.");
         } else {
           setError("Erklärung konnte nicht geladen werden");

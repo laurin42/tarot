@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Dimensions,
   Animated,
@@ -23,6 +23,33 @@ export default function DrawnCardsDisplay({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const pan = useRef(new Animated.ValueXY()).current;
+
+  useEffect(() => {
+    if (selectedCards.length === 3) {
+      storeDrawnCards(selectedCards);
+    }
+  }, [selectedCards]);
+
+  const storeDrawnCards = async (cards: ITarotCard[]) => {
+    try {
+      const response = await fetch("http://localhost:8000/tarot/drawn-cards", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ drawnCards: cards }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          `Fehler beim Speichern der gezogenen Karten: ${errorData.details}`
+        );
+      }
+      console.log("Drawn cards saved successfully");
+    } catch (error) {
+      console.error("Error:", error.message);
+    }
+  };
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
