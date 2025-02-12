@@ -35,13 +35,16 @@ export default function DrawnCardsDisplay({
 
   const storeDrawnCard = async (card: ITarotCard, index: number) => {
     try {
-      const response = await fetch("http://localhost:8000/tarot/drawn-card", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ card, index }),
-      });
+      const response = await fetch(
+        "http://192.168.178.67:8000/tarot/drawn-card",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ card, index }),
+        }
+      );
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
@@ -62,7 +65,7 @@ export default function DrawnCardsDisplay({
     try {
       const formattedName = cardName.toLowerCase().replace(/ /g, "_");
       const response = await fetch(
-        `http://localhost:8000/tarot/cards/${formattedName}`
+        `http://192.168.178.67:8000/tarot/cards/${formattedName}`
       );
       if (!response.ok) {
         throw new Error("Network response was not ok");

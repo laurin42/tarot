@@ -76,5 +76,5 @@ app.get("/tarot/cards/:cardName", async (req: Request, res: Response) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server ist aktiv auf http://localhost:${port}`);
+  console.log(`Server ist aktiv auf http://192.168.178.67:${port}`);
 });
