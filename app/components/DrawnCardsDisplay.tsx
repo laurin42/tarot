@@ -1,8 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dimensions,
-  Animated,
-  PanResponder,
   View,
   Text,
   TouchableOpacity,
@@ -22,69 +20,72 @@ export default function DrawnCardsDisplay({
 }: DrawnCardsDisplayProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [expanded, setExpanded] = useState(false);
-  const pan = useRef(new Animated.ValueXY()).current;
+  const [explanations, setExplanations] = useState<{ [key: string]: string }>(
+    {}
+  );
 
   useEffect(() => {
-    if (selectedCards.length === 3) {
-      storeDrawnCards(selectedCards);
+    if (selectedCards.length > 0) {
+      storeDrawnCard(selectedCards[currentIndex], currentIndex);
+      if (!explanations[selectedCards[currentIndex].name]) {
+        fetchCardExplanation(selectedCards[currentIndex].name);
+      }
     }
-  }, [selectedCards]);
+  }, [selectedCards, currentIndex]);
 
-  const storeDrawnCards = async (cards: ITarotCard[]) => {
+  const storeDrawnCard = async (card: ITarotCard, index: number) => {
     try {
-      const response = await fetch("http://localhost:8000/tarot/drawn-cards", {
+      const response = await fetch("http://localhost:8000/tarot/drawn-card", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ drawnCards: cards }),
+        body: JSON.stringify({ card, index }),
       });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          `Fehler beim Speichern der gezogenen Karten: ${errorData.details}`
+          `Fehler beim Speichern der gezogenen Karte: ${errorData.details}`
         );
       }
-      console.log("Drawn cards saved successfully");
+      console.log("Drawn card saved successfully");
     } catch (error) {
-      console.error("Error:", error.message);
+      if (error instanceof Error) {
+        console.error("Error:", error.message);
+      } else {
+        console.error("An unknown error occurred");
+      }
     }
   };
 
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onPanResponderMove: Animated.event([null, { dx: pan.x }], {
-      useNativeDriver: false,
-    }),
-    onPanResponderRelease: (_, gesture) => {
-      if (Math.abs(gesture.dx) > screenWidth / 4) {
-        const direction = gesture.dx > 0 ? "right" : "left";
-        Animated.spring(pan, {
-          toValue: { x: gesture.dx > 0 ? screenWidth : -screenWidth, y: 0 },
-          useNativeDriver: false,
-        }).start(() => handleSwipeComplete(direction));
-      } else {
-        Animated.spring(pan, {
-          toValue: { x: 0, y: 0 },
-          useNativeDriver: false,
-        }).start();
+  const fetchCardExplanation = async (cardName: string) => {
+    try {
+      const formattedName = cardName.toLowerCase().replace(/ /g, "_");
+      const response = await fetch(
+        `http://localhost:8000/tarot/cards/${formattedName}`
+      );
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
       }
-    },
-  });
-
-  const handleSwipeComplete = (direction: "left" | "right") => {
-    const newIndex =
-      direction === "right"
-        ? (currentIndex + 1) % selectedCards.length
-        : (currentIndex - 1 + selectedCards.length) % selectedCards.length;
-
-    pan.setValue({ x: 0, y: 0 });
-    setCurrentIndex(newIndex);
-    setExpanded(false);
+      const data = await response.json();
+      setExplanations((prev) => ({ ...prev, [cardName]: data.explanation }));
+    } catch (error) {
+      console.error("Error fetching card explanation:", error);
+      setExplanations((prev) => ({
+        ...prev,
+        [cardName]: "Erklärung konnte nicht geladen werden",
+      }));
+    }
   };
 
   const handleCardClick = () => {
     setExpanded(!expanded);
+  };
+
+  const handleDismiss = () => {
+    const newIndex = (currentIndex + 1) % selectedCards.length;
+    setCurrentIndex(newIndex);
+    setExpanded(false);
   };
 
   const cardWidth = 200;
@@ -93,14 +94,12 @@ export default function DrawnCardsDisplay({
   return (
     <View style={styles.container}>
       {selectedCards.length > 0 && (
-        <Animated.View
-          style={{ transform: [{ translateX: pan.x }], flex: 1 }}
-          {...panResponder.panHandlers}
-        >
+        <View style={{ flex: 1 }}>
           <View style={styles.center}>
             <TouchableOpacity onPress={handleCardClick}>
               <TarotCard
                 image={selectedCards[currentIndex].image}
+                name={selectedCards[currentIndex].name}
                 isShown={true}
                 style={{
                   width: cardWidth,
@@ -113,7 +112,20 @@ export default function DrawnCardsDisplay({
               </Text>
             </TouchableOpacity>
           </View>
-        </Animated.View>
+          {expanded && (
+            <View style={styles.explanationContainer}>
+              <Text style={styles.explanationText}>
+                {explanations[selectedCards[currentIndex].name]}
+              </Text>
+              <TouchableOpacity
+                onPress={handleDismiss}
+                style={styles.dismissButton}
+              >
+                <Text style={styles.dismissButtonText}>Schließen</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
       )}
 
       <View style={styles.stackIndicator}>
@@ -160,5 +172,28 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     fontWeight: "bold",
+  },
+  explanationContainer: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "black",
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  explanationText: {
+    color: "white",
+    fontSize: 16,
+    textAlign: "center",
+  },
+  dismissButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "gray",
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  dismissButtonText: {
+    color: "white",
+    fontSize: 16,
   },
 });

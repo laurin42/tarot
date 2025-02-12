@@ -7,13 +7,8 @@ export const usersTable = pgTable("users", {
   email: varchar({ length: 255 }).notNull().unique(),
 });
 
-export const tarotCardsTable = pgTable("tarot_cards", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  name: varchar({ length: 255 }).notNull(),
-  description: text().notNull(),
-});
-
 export const drawnCardsTable = pgTable("drawn_cards", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 255 }).notNull(),
+  description: text().notNull(),
 });

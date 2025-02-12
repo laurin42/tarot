@@ -15,7 +15,7 @@ const CARD_COUNT = 5;
 
 interface CardStackViewProps {
   onAnimationComplete?: () => void;
-  onCardSelect: (card: ICardWithShowFront) => void;
+  onCardSelect: (card: ICardWithShowFront, index: number) => void;
 }
 
 export default function CardStackView({
@@ -42,6 +42,7 @@ export default function CardStackView({
   });
 
   const [drawnCards, setDrawnCards] = useState<ICardWithShowFront[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const {
     translateY,
@@ -74,8 +75,9 @@ export default function CardStackView({
 
   const handleCardSelect = (index: number) => {
     const selectedCard = cards[index];
-    onCardSelect(selectedCard);
+    onCardSelect(selectedCard, currentIndex);
     handleCardClick(index, drawnSlotPositions);
+    setCurrentIndex((index) => index + 1);
   };
 
   return (

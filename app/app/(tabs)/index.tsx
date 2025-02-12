@@ -54,14 +54,7 @@ export default function Index() {
           <DrawnCardsDisplay selectedCards={selectedCards} />
         </View>
       )}
-      {selectedCard && (
-        <FetchCardExplanation
-          cardName={selectedCard}
-          onDismiss={handleDismissExplanation}
-          onSwipeLeft={handleSwipeLeft}
-          onSwipeRight={handleSwipeRight}
-        />
-      )}
+
       {showSummary && (
         <SummaryView cards={selectedCards} onDismiss={handleDismissSummary} />
       )}

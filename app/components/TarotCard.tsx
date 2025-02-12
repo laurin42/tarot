@@ -9,6 +9,19 @@ interface TarotCardProps {
   style?: ViewStyle;
 }
 
+export interface ITarotCard {
+  id: string;
+  name: string;
+  image: {
+    uri: string;
+    width: number;
+    height: number;
+  };
+  description: string;
+  showFront: boolean;
+  isSelected: boolean;
+}
+
 export default function TarotCard({
   image,
   name,
