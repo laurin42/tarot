@@ -42,44 +42,29 @@ export async function getRandomDrawnCards(): Promise<ISelectedAndShownCard[]> {
 }
 
 export async function getRandomDrawnCard(): Promise<ISelectedAndShownCard> {
-  const shuffledCards = [...tarotCards].sort(() => Math.random() - 0.5);
-  const drawnCard = shuffledCards[0];
-
   try {
-    const formattedName = drawnCard.name.toLowerCase().replace(/ /g, "_");
+    // Hole die bereits gezogenen Karten vom Server
     const response = await fetch(
-      `http://192.168.178.67:8000/tarot/cards/${formattedName}`
+      "http://192.168.178.67:8000/tarot/drawn-cards"
     );
     if (!response.ok) {
       throw new Error("Network response was not ok");
     }
-    const data = await response.json();
+    const drawnCards = await response.json();
 
-    // Speichern der gezogenen Karte in der Datenbank
-    await fetch("http://192.168.178.67:8000/tarot/drawn-card", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        card: drawnCard,
-        explanation: data.explanation,
-      }),
-    });
+    // Wähle eine zufällige Karte aus den bereits gezogenen
+    const randomCard =
+      drawnCards[Math.floor(Math.random() * drawnCards.length)];
 
     return {
-      ...drawnCard,
+      ...randomCard,
       showFront: false,
-      explanation: data.explanation,
-      image: drawnCard.image,
+      explanation: randomCard.explanation,
+      image: randomCard.image,
       onNextCard: () => {},
     };
   } catch (error) {
-    console.error("Error fetching card explanation:", error);
-    return {
-      ...drawnCard,
-      showFront: false,
-      explanation: "Erklärung konnte nicht geladen werden",
-      image: drawnCard.image,
-      onNextCard: () => {},
-    };
+    console.error("Error fetching drawn card:", error);
+    throw error;
   }
 }

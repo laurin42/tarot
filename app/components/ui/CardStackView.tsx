@@ -51,6 +51,7 @@ export default function CardStackView({
   const [deckInitialized, setDeckInitialized] = useState(false); // Zustand, um zu verfolgen, ob das Deck initialisiert wurde
   const [animationComplete, setAnimationComplete] = useState(false);
   const [hasSelectedFirst, setHasSelectedFirst] = useState(false);
+  const [showExplanation, setShowExplanation] = useState(true);
 
   const {
     translateY,
@@ -70,15 +71,42 @@ export default function CardStackView({
   });
 
   useEffect(() => {
+    async function fetchInitialDrawnCards() {
+      try {
+        // Hole die initialen 3 Karten
+        const cards = await getRandomDrawnCards();
+        setDrawnCards(cards);
+        const explanationMap: { [key: string]: string } = {};
+        cards.forEach((card) => {
+          explanationMap[card.name] =
+            card.explanation || "Erklärung konnte nicht geladen werden";
+        });
+        setExplanations(explanationMap);
+        setDeckInitialized(true);
+      } catch (error) {
+        console.error("Error fetching initial drawn cards:", error);
+      }
+    }
+    fetchInitialDrawnCards();
+  }, []);
+
+  useEffect(() => {
     async function initializeDeck() {
       try {
+        // Wähle eine zufällige Karte aus dem Deck
         const shuffled = [...tarotCards].sort(() => Math.random() - 0.5);
-        const newCards = shuffled.slice(0, CARD_COUNT).map((card) => ({
-          ...card,
-          showFront: false,
-          isSelected: false,
-          onNextCard: () => {},
-        }));
+        const selectedCard = shuffled[0];
+
+        // Erstelle 5 Kopien dieser Karte für das Deck
+        const newCards = Array(CARD_COUNT)
+          .fill(null)
+          .map(() => ({
+            ...selectedCard,
+            showFront: false,
+            isSelected: false,
+            onNextCard: () => {},
+          }));
+
         setCards(newCards);
         setDeckInitialized(true);
       } catch (error) {
@@ -120,44 +148,27 @@ export default function CardStackView({
     }
 
     try {
-      // Hole eine neue Karte
-      const drawnCard = await getRandomDrawnCard();
-
-      const selectedCard = {
-        ...cards[index],
-        showFront: true,
-        isSelected: true,
-      };
-      onCardSelect(selectedCard, currentIndex);
+      const drawnCard = drawnCards[currentRound];
       handleCardClick(index, drawnSlotPositions);
+      setShowExplanation(true); // Zeige die Erklärung für die neue Karte
 
-      // Füge die neue Karte zu drawnCards hinzu
-      setDrawnCards((prev) => [...prev, drawnCard]);
-      setExplanations((prev) => ({
-        ...prev,
-        [drawnCard.name]:
-          drawnCard.explanation || "Erklärung konnte nicht geladen werden",
-      }));
-
-      if (drawnCards.length < 2) {
-        // Wenn weniger als 2 Karten gezogen wurden
-        resetDeck();
-      } else {
-        // Bei der dritten Karte
-        setShowSummaryButton(true);
-      }
+      // Warte mit dem Erhöhen des currentRound und dem Reset des Decks
+      // bis der Benutzer auf "Weiter" klickt
     } catch (error) {
       console.error("Error in handleCardSelect:", error);
     }
   };
 
-  // Die handleNextCard Funktion anpassen
   const handleNextCard = () => {
-    if (drawnCards.length > 1) {
-      setCurrentIndex((prevIndex) => {
-        const nextIndex = (prevIndex + 1) % drawnCards.length;
-        return nextIndex;
-      });
+    setShowExplanation(false); // Ausblenden der Erklärung
+
+    // Hier die Logik für die nächste Runde
+    if (currentRound < 2) {
+      setCurrentRound((prev) => prev + 1);
+      resetDeck();
+    }
+    if (currentRound === 2) {
+      setShowSummaryButton(true);
     }
   };
 
@@ -225,32 +236,31 @@ export default function CardStackView({
         })}
 
       {/* Zeige die gezogenen Karten nur an, wenn bereits eine erste Karte ausgewählt wurde */}
-      {deckInitialized && hasSelectedFirst && drawnCards.length > 0 && (
-        <View style={styles.selectedCardContainer}>
-          <CardImage
-            name={drawnCards[currentIndex]?.name}
-            showFront={true}
-            width={cardWidth}
-            height={cardHeight}
-            image={drawnCards[currentIndex]?.image}
-          />
+      {deckInitialized &&
+        hasSelectedFirst &&
+        drawnCards.length > 0 &&
+        showExplanation && (
+          <View style={styles.selectedCardContainer}>
+            <CardImage
+              name={drawnCards[currentRound]?.name}
+              showFront={true}
+              width={cardWidth}
+              height={cardHeight}
+              image={drawnCards[currentRound]?.image}
+            />
 
-          <Text style={styles.explanationText}>
-            {explanations[drawnCards[currentIndex]?.name] ||
-              "Erklärung konnte nicht geladen werden"}
-          </Text>
-          {drawnCards.length > 1 && ( // Nur anzeigen wenn es mehr als eine Karte gibt
+            <Text style={styles.explanationText}>
+              {explanations[drawnCards[currentRound]?.name] ||
+                "Erklärung konnte nicht geladen werden"}
+            </Text>
             <TouchableOpacity
               onPress={handleNextCard}
               style={styles.nextButton}
             >
-              <Text style={styles.nextButtonText}>
-                Nächste Karte ({currentIndex + 1}/{drawnCards.length})
-              </Text>
+              <Text style={styles.nextButtonText}>Weiter</Text>
             </TouchableOpacity>
-          )}
-        </View>
-      )}
+          </View>
+        )}
 
       {/* Zeige den Zusammenfassungs-Button nur an, wenn drei Karten ausgewählt wurden */}
       {deckInitialized && showSummaryButton && hasSelectedFirst && (
