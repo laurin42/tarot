@@ -4,9 +4,14 @@ export interface ITarotCard {
   image: any;
 }
 
-export interface ICardWithShowFront extends ITarotCard {
-  showFront: boolean;
-  isSelected: boolean;
+export interface ISelectedAndShownCard extends ITarotCard {
+  name: string;
+  showFront?: boolean;
+  isSelected?: boolean;
+  currentIndex?: number;
+  explanation?: string;
+  image: any;
+  onNextCard: () => void;
 }
 
 export const tarotCards: ITarotCard[] = [
@@ -152,12 +157,57 @@ export const tarotCards: ITarotCard[] = [
   },
 ];
 
-export const cardImageMap: { [key: string]: any } = tarotCards.reduce(
-  (map: { [key: string]: any }, card) => {
-    map[card.name] = card.image;
-    return map;
-  },
-  {} as { [key: string]: any }
-);
+export async function getRandomDrawnCards(): Promise<ISelectedAndShownCard[]> {
+  const shuffledCards = [...tarotCards].sort(() => Math.random() - 0.5);
+  const drawnCards = shuffledCards.slice(0, 3);
 
-console.log(cardImageMap);
+  const explanations: { [key: string]: string } = {};
+
+  await Promise.all(
+    drawnCards.map(async (card, index) => {
+      try {
+        const formattedName = encodeURIComponent(card.name.toLowerCase().replace(/ /g, "_"));
+        console.log(`Fetching explanation for: ${card.name} (${formattedName})`);
+
+        const response = await fetch(
+          `http://192.168.178.67:8000/tarot/cards/${formattedName}`
+        );
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${card.name}`);
+        }
+        const data = await response.json();
+        explanations[card.name] = data.explanation || "Keine Erklärung verfügbar";
+
+        // Speichern der gezogenen Karte
+        await fetch("http://192.168.178.67:8000/tarot/drawn-card", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ card, index, explanation: data.explanation }),
+        });
+      } catch (error) {
+        console.error(`Error fetching/storing ${card.name}:`, error);
+        explanations[card.name] = "Erklärung konnte nicht geladen werden";
+      }
+    })
+  );
+
+  // Debugging-Ausgabe für die finalen Karten
+  console.log(
+    "Final Drawn Cards:",
+    drawnCards.map((card) => ({
+      name: card.name,
+      imageExists: card.image ? "✅" : "❌",
+      explanation: explanations[card.name] || "Keine Erklärung",
+    }))
+  );
+
+  return drawnCards.map((card) => ({
+    ...card,
+    showFront: false,
+    isSelected: false,
+    explanation: explanations[card.name] || "Keine Erklärung",
+    image: card.image || require("@/assets/images/tarot_cards/Card_back.png"),
+    onNextCard: () => {},
+  }));
+}
+

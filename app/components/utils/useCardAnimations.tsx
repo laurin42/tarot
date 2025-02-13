@@ -1,14 +1,14 @@
 import { useRef } from "react";
 import { Animated, Dimensions } from "react-native";
-import { ICardWithShowFront, tarotCards } from "@/constants/tarotcards";
+import { ISelectedAndShownCard, tarotCards } from "@/constants/tarotcards";
 
 const CARD_COUNT = 5;
 const MAX_SELECTIONS = 3;
 
 interface IUseCardAnimationsParams {
-  drawnCards: ICardWithShowFront[];
-  setDrawnCards: React.Dispatch<React.SetStateAction<ICardWithShowFront[]>>;
-  setCards: React.Dispatch<React.SetStateAction<ICardWithShowFront[]>>;
+  drawnCards: ISelectedAndShownCard[];
+  setDrawnCards: React.Dispatch<React.SetStateAction<ISelectedAndShownCard[]>>;
+  setCards: React.Dispatch<React.SetStateAction<ISelectedAndShownCard[]>>;
   onAnimationComplete?: () => void;
 }
 
@@ -49,7 +49,7 @@ export const useCardAnimations = ({
   const rotations = useRef(
     Array(CARD_COUNT)
       .fill(null)
-      .map(() => new Animated.Value(0))
+      .map(() => new Animated.Value(180)) // Initial um 180 Grad gedreht
   ).current;
   const scales = useRef(
     Array(CARD_COUNT)
@@ -74,8 +74,8 @@ export const useCardAnimations = ({
       });
     });
     const xAnimations = translateX.map((xValue, index) => {
-      const targetX = (index - (CARD_COUNT - 1) / 2) * 40;
-      const rotationValue = (index - (CARD_COUNT - 1) / 2) * 4.8;
+      const targetX = (index - (CARD_COUNT - 1) / 2) * -52;
+      const rotationValue = (index - (CARD_COUNT - 1) / 2) * 8.8;
       return [
         Animated.spring(xValue, {
           toValue: targetX,
@@ -85,7 +85,7 @@ export const useCardAnimations = ({
           useNativeDriver: true,
         }),
         Animated.spring(rotations[index], {
-          toValue: rotationValue,
+          toValue: rotationValue + 180, // Beibehalten der 180-Grad-Drehung
           friction: 6,
           tension: 50,
           delay: 0,
@@ -113,18 +113,19 @@ export const useCardAnimations = ({
 
   const resetDeck = () => {
     const shuffled = [...tarotCards].sort(() => Math.random() - 0.5);
-    const newCards: ICardWithShowFront[] = shuffled
+    const newCards: ISelectedAndShownCard[] = shuffled
       .slice(0, CARD_COUNT)
       .map((card) => ({
         ...card,
         showFront: false,
         isSelected: false,
+        onNextCard: () => {},
       }));
     setCards(newCards);
     for (let i = 0; i < CARD_COUNT; i++) {
       translateY[i].setValue(-1000);
       translateX[i].setValue(0);
-      rotations[i].setValue(0);
+      rotations[i].setValue(180); // Beibehalten der 180-Grad-Drehung
       scales[i].setValue(1);
       flipAnim[i].setValue(0);
     }
@@ -168,26 +169,55 @@ export const useCardAnimations = ({
       });
 
       const slotIndex = drawnCards.length;
-      const targetX = drawnSlotPositions[slotIndex].x;
-      const targetY = drawnSlotPositions[slotIndex].y;
+      // Überprüfen, ob slotIndex innerhalb der Grenzen von drawnSlotPositions liegt
+      if (slotIndex < drawnSlotPositions.length) {
+        const targetX = drawnSlotPositions[slotIndex].x;
+        const targetY = drawnSlotPositions[slotIndex].y;
 
-      Animated.parallel([
-        Animated.timing(translateX[index], {
-          toValue: targetX,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(translateY[index], {
-          toValue: targetY,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setDrawnCards((prev) => [...prev, updatedCards[index]]);
-        if (drawnCards.length + 1 < MAX_SELECTIONS) {
-          resetDeck();
-        }
-      });
+        Animated.parallel([
+          Animated.timing(translateX[index], {
+            toValue: targetX,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(translateY[index], {
+            toValue: targetY,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          setDrawnCards((prev) => [...prev, updatedCards[index]]);
+          if (drawnCards.length + 1 < MAX_SELECTIONS) {
+            resetDeck();
+          }
+        });
+      } else {
+        console.warn(
+          "slotIndex is out of bounds of drawnSlotPositions. Provide a default position."
+        );
+        // Hier können Sie eine Standardposition festlegen oder die Animation abbrechen
+        // Zum Beispiel:
+        const defaultX = 0;
+        const defaultY = 0;
+
+        Animated.parallel([
+          Animated.timing(translateX[index], {
+            toValue: defaultX,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(translateY[index], {
+            toValue: defaultY,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          setDrawnCards((prev) => [...prev, updatedCards[index]]);
+          if (drawnCards.length + 1 < MAX_SELECTIONS) {
+            resetDeck();
+          }
+        });
+      }
     });
   };
 

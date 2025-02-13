@@ -7,12 +7,12 @@ import {
   StyleSheet,
 } from "react-native";
 import TarotCard from "./TarotCard";
-import { ITarotCard } from "@/constants/tarotcards";
+import { ISelectedAndShownCard, ITarotCard } from "@/constants/tarotcards";
 
 const { width: screenWidth } = Dimensions.get("screen");
 
 interface DrawnCardsDisplayProps {
-  selectedCards: ITarotCard[];
+  selectedCards: ISelectedAndShownCard[];
 }
 
 export default function DrawnCardsDisplay({
@@ -23,63 +23,6 @@ export default function DrawnCardsDisplay({
   const [explanations, setExplanations] = useState<{ [key: string]: string }>(
     {}
   );
-
-  useEffect(() => {
-    if (selectedCards.length > 0) {
-      storeDrawnCard(selectedCards[currentIndex], currentIndex);
-      if (!explanations[selectedCards[currentIndex].name]) {
-        fetchCardExplanation(selectedCards[currentIndex].name);
-      }
-    }
-  }, [selectedCards, currentIndex]);
-
-  const storeDrawnCard = async (card: ITarotCard, index: number) => {
-    try {
-      const response = await fetch(
-        "http://192.168.178.67:8000/tarot/drawn-card",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ card, index }),
-        }
-      );
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          `Fehler beim Speichern der gezogenen Karte: ${errorData.details}`
-        );
-      }
-      console.log("Drawn card saved successfully");
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error:", error.message);
-      } else {
-        console.error("An unknown error occurred");
-      }
-    }
-  };
-
-  const fetchCardExplanation = async (cardName: string) => {
-    try {
-      const formattedName = cardName.toLowerCase().replace(/ /g, "_");
-      const response = await fetch(
-        `http://192.168.178.67:8000/tarot/cards/${formattedName}`
-      );
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      setExplanations((prev) => ({ ...prev, [cardName]: data.explanation }));
-    } catch (error) {
-      console.error("Error fetching card explanation:", error);
-      setExplanations((prev) => ({
-        ...prev,
-        [cardName]: "Erklärung konnte nicht geladen werden",
-      }));
-    }
-  };
 
   const handleCardClick = () => {
     setExpanded(!expanded);

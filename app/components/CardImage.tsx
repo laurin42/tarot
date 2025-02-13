@@ -1,12 +1,12 @@
 import React from "react";
 import { Image, StyleSheet } from "react-native";
-import { cardImageMap } from "@/constants/tarotcards";
 
 interface CardImageProps {
   name: string;
   showFront: boolean;
   width: number;
   height: number;
+  image: any;
 }
 
 const CardImage: React.FC<CardImageProps> = ({
@@ -14,14 +14,13 @@ const CardImage: React.FC<CardImageProps> = ({
   showFront,
   width,
   height,
+  image,
 }) => {
   console.log(`CardImage: name=${name}, showFront=${showFront}`);
   return (
     <Image
       source={
-        showFront
-          ? cardImageMap[name]
-          : require("@/assets/images/tarot_cards/Card_back.png")
+        showFront ? image : require("@/assets/images/tarot_cards/Card_back.png")
       }
       style={[styles.cardImage, { width, height }]}
     />

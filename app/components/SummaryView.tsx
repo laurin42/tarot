@@ -1,10 +1,10 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { ICardWithShowFront } from "@/constants/tarotcards";
+import { ISelectedAndShownCard } from "@/constants/tarotcards";
 import CardImage from "@/components/CardImage";
 
 interface SummaryViewProps {
-  cards: ICardWithShowFront[];
+  cards: ISelectedAndShownCard[];
   onDismiss: () => void;
 }
 
