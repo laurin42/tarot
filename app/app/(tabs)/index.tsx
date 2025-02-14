@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Pressable, Text } from "react-native";
+import { View, StyleSheet, Pressable, Text, Dimensions } from "react-native";
 import CardStackView from "@/components/ui/CardStackView";
 import DrawnCardsDisplay from "@/components/DrawnCardsDisplay";
 import { ISelectedAndShownCard, tarotCards } from "@/constants/tarotcards";
@@ -7,6 +7,23 @@ import FetchCardExplanation from "@/components/FetchCardExplanation";
 import SummaryView from "@/components/SummaryView";
 
 export default function Index() {
+  const { width, height } = Dimensions.get("window");
+
+  // Responsive Dimensionen
+  const baseCardWidth = width > 400 ? 150 : 100;
+  const cardDimensions = {
+    width: baseCardWidth,
+    height: baseCardWidth * 1.6,
+    spacing: baseCardWidth * 0.52, // 52% der Kartenbreite für den Abstand
+  };
+
+  // Positionen für die gezogenen Karten
+  const drawnSlotPositions = [
+    { x: 20, y: height * 0.5 }, // 50% der Bildschirmhöhe
+    { x: (width - cardDimensions.width) / 2, y: height * 0.5 },
+    { x: width - cardDimensions.width - 20, y: height * 0.5 },
+  ];
+
   const [cardsDrawn, setCardsDrawn] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
@@ -53,7 +70,10 @@ export default function Index() {
   return (
     <View style={styles.container}>
       {!sessionStarted ? (
-        <Pressable style={styles.startButton} onPress={handleStartSession}>
+        <Pressable
+          style={[styles.startButton, { bottom: height * 0.05 }]}
+          onPress={handleStartSession}
+        >
           <Text style={styles.buttonText}>Start</Text>
         </Pressable>
       ) : (
@@ -61,6 +81,8 @@ export default function Index() {
           onAnimationComplete={handleAnimationComplete}
           onCardSelect={handleCardSelect}
           sessionStarted={sessionStarted}
+          cardDimensions={cardDimensions}
+          drawnSlotPositions={drawnSlotPositions}
         />
       )}
     </View>
@@ -79,7 +101,6 @@ const styles = StyleSheet.create({
   },
   startButton: {
     position: "absolute",
-    bottom: 40,
     alignSelf: "center",
     backgroundColor: "rgba(112, 62, 229, 0.9)",
     padding: 16,

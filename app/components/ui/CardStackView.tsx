@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Animated,
   Dimensions,
@@ -8,6 +8,7 @@ import {
   Pressable,
   TouchableOpacity,
   Alert,
+  Easing,
 } from "react-native";
 import {
   getRandomDrawnCards,
@@ -16,13 +17,16 @@ import {
 import { ISelectedAndShownCard, tarotCards } from "@/constants/tarotcards";
 import { useCardAnimations } from "@/components/utils/useCardAnimations";
 import CardImage from "@/components/CardImage";
+import { useFloatingAnimation } from "@/components/utils/useFloatingAnimation";
 
 const CARD_COUNT = 5;
 
 interface CardStackViewProps {
-  onAnimationComplete?: () => void;
-  onCardSelect: (card: ISelectedAndShownCard, index: number) => void;
-  sessionStarted: boolean; // neue Prop
+  onAnimationComplete: () => void;
+  onCardSelect: (card: ISelectedAndShownCard) => void;
+  sessionStarted: boolean;
+  drawnSlotPositions: { x: number; y: number }[];
+  cardDimensions: { width: number; height: number; spacing: number };
 }
 
 export default function CardStackView({
@@ -52,6 +56,10 @@ export default function CardStackView({
   const [animationComplete, setAnimationComplete] = useState(false);
   const [hasSelectedFirst, setHasSelectedFirst] = useState(false);
   const [showExplanation, setShowExplanation] = useState(true);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [summaryText, setSummaryText] = useState("");
+
+  const floatingAnim = useFloatingAnimation(currentRound);
 
   const {
     translateY,
@@ -59,6 +67,7 @@ export default function CardStackView({
     rotations,
     scales,
     flipAnim,
+    opacity,
     animateCards,
     centerDrawnCards,
     resetDeck,
@@ -90,57 +99,23 @@ export default function CardStackView({
     fetchInitialDrawnCards();
   }, []);
 
+  // Den useEffect können wir jetzt auf die Start-Animation beschränken
   useEffect(() => {
-    async function initializeDeck() {
-      try {
-        // Wähle eine zufällige Karte aus dem Deck
-        const shuffled = [...tarotCards].sort(() => Math.random() - 0.5);
-        const selectedCard = shuffled[0];
-
-        // Erstelle 5 Kopien dieser Karte für das Deck
+    if (sessionStarted && deckInitialized && currentRound === 0) {
+      const currentCard = drawnCards[currentRound];
+      if (currentCard) {
         const newCards = Array(CARD_COUNT)
           .fill(null)
           .map(() => ({
-            ...selectedCard,
+            ...currentCard,
             showFront: false,
             isSelected: false,
-            onNextCard: () => {},
           }));
-
         setCards(newCards);
-        setDeckInitialized(true);
-      } catch (error) {
-        console.error("Error initializing deck:", error);
+        animateCards();
       }
     }
-    initializeDeck();
-  }, []);
-
-  useEffect(() => {
-    if (drawnCards.length > 0) {
-      setCards(Array(CARD_COUNT).fill(drawnCards[currentRound]));
-    }
-  }, [drawnCards, currentRound]);
-
-  useEffect(() => {
-    if (drawnCards.length === 3) {
-      centerDrawnCards();
-      setShowSummaryButton(true); // Zeige den Button, wenn 3 Karten gezogen wurden
-    }
-  }, [drawnCards]);
-
-  useEffect(() => {
-    if (drawnCards.length >= 3) {
-      setTimeout(() => resetDeck(), 500);
-    }
-  }, [drawnCards]);
-
-  // Starte Animation wenn Session startet
-  useEffect(() => {
-    if (sessionStarted && deckInitialized) {
-      animateCards();
-    }
-  }, [sessionStarted, deckInitialized]);
+  }, [sessionStarted, deckInitialized]); // Entferne currentRound aus den Dependencies
 
   const handleCardSelect = async (index: number) => {
     if (!hasSelectedFirst) {
@@ -149,44 +124,100 @@ export default function CardStackView({
 
     try {
       const drawnCard = drawnCards[currentRound];
-      handleCardClick(index, drawnSlotPositions);
-      setShowExplanation(true); // Zeige die Erklärung für die neue Karte
 
-      // Warte mit dem Erhöhen des currentRound und dem Reset des Decks
-      // bis der Benutzer auf "Weiter" klickt
+      // Speichere die gezogene Karte in der Datenbank
+      await fetch("http://192.168.178.67:8000/tarot/drawn-card", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          card: drawnCard,
+          explanation: explanations[drawnCard.name],
+          round: currentRound + 1, // Runde 1-3
+        }),
+      });
+
+      handleCardClick(index, drawnSlotPositions);
+      setShowExplanation(true);
     } catch (error) {
       console.error("Error in handleCardSelect:", error);
     }
   };
 
+  // Ändern Sie die handleNextCard Funktion
   const handleNextCard = () => {
-    setShowExplanation(false); // Ausblenden der Erklärung
+    setShowExplanation(false);
 
-    // Hier die Logik für die nächste Runde
     if (currentRound < 2) {
       setCurrentRound((prev) => prev + 1);
       resetDeck();
     }
+    // Zeige den Summary Button nach der dritten Karte
     if (currentRound === 2) {
+      console.log("Setting showSummaryButton to true"); // Debug log
       setShowSummaryButton(true);
     }
   };
 
-  const handleShowSummary = () => {
-    // Erstelle einen Prompt mit den Namen der gezogenen Karten
-    const cardNames = drawnCards.map((card) => card.name).join(", ");
-    const prompt = `Gib eine kurze Zusammenfassung der folgenden Tarotkarten: ${cardNames}.`;
+  const handleShowSummary = async () => {
+    try {
+      console.log("Sending cards to summary:", drawnCards);
 
-    // Zeige den Prompt in einem Alert (oder verwende eine andere Methode, um den Prompt anzuzeigen)
-    Alert.alert("Zusammenfassung", prompt);
+      const response = await fetch("http://192.168.178.67:8000/tarot/summary", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cards: drawnCards.slice(0, 3), // Nur die ersten 3 Karten senden
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Received summary data:", data);
+
+      if (!data.summary) {
+        throw new Error("No summary in response data");
+      }
+
+      setSummaryText(data.summary);
+      setShowSummaryModal(true);
+    } catch (error) {
+      console.error("Detailed error in handleShowSummary:", error);
+    }
   };
+
+  const AnimatedTouchableOpacity =
+    Animated.createAnimatedComponent(TouchableOpacity);
 
   return (
     <View style={styles.container}>
       {deckInitialized && cards.length > 0 && drawnCards.length === 0 && (
-        <Pressable style={styles.startButton} onPress={animateCards}>
-          <Text style={styles.buttonText}>Start</Text>
-        </Pressable>
+        <Animated.View
+          style={{
+            position: "absolute",
+            bottom: 40,
+            left: 0,
+            right: 0,
+            alignItems: "center",
+            transform: [{ translateY: floatingAnim }], // Direct value
+          }}
+        >
+          <AnimatedTouchableOpacity
+            style={[
+              styles.startButton,
+              {
+                transform: [{ translateY: floatingAnim }],
+              },
+            ]}
+            onPress={animateCards}
+          >
+            <Text style={styles.buttonText}>Start</Text>
+          </AnimatedTouchableOpacity>
+        </Animated.View>
       )}
 
       {deckInitialized &&
@@ -201,6 +232,7 @@ export default function CardStackView({
                 {
                   top: 88 + verticalOffset,
                   left: leftPosition,
+                  opacity, // Füge opacity hinzu
                   transform: [
                     { translateY: translateY[index] },
                     { translateX: translateX[index] },
@@ -244,8 +276,8 @@ export default function CardStackView({
             <CardImage
               name={drawnCards[currentRound]?.name}
               showFront={true}
-              width={cardWidth}
-              height={cardHeight}
+              width={Dimensions.get("screen").width * 0.8}
+              height={Dimensions.get("screen").height * 0.66}
               image={drawnCards[currentRound]?.image}
             />
 
@@ -253,23 +285,61 @@ export default function CardStackView({
               {explanations[drawnCards[currentRound]?.name] ||
                 "Erklärung konnte nicht geladen werden"}
             </Text>
-            <TouchableOpacity
+            <AnimatedTouchableOpacity
+              style={[
+                styles.nextButton,
+                {
+                  transform: [{ translateY: floatingAnim }],
+                },
+              ]}
               onPress={handleNextCard}
-              style={styles.nextButton}
             >
-              <Text style={styles.nextButtonText}>Weiter</Text>
-            </TouchableOpacity>
+              <Text style={styles.nextButtonText}>Nächste Karte</Text>
+            </AnimatedTouchableOpacity>
           </View>
         )}
 
       {/* Zeige den Zusammenfassungs-Button nur an, wenn drei Karten ausgewählt wurden */}
-      {deckInitialized && showSummaryButton && hasSelectedFirst && (
-        <TouchableOpacity
-          onPress={handleShowSummary}
-          style={styles.summaryButton}
+      {deckInitialized && showSummaryButton && (
+        <Animated.View
+          style={{
+            position: "absolute",
+            bottom: 40,
+            left: 0,
+            right: 0,
+            alignItems: "center",
+            transform: [{ translateY: floatingAnim }], // Direct value
+          }}
         >
-          <Text style={styles.summaryButtonText}>Zusammenfassung anzeigen</Text>
-        </TouchableOpacity>
+          <AnimatedTouchableOpacity
+            onPress={handleShowSummary}
+            style={[
+              styles.summaryButton,
+              {
+                transform: [{ translateY: floatingAnim }],
+              },
+            ]}
+          >
+            <Text style={styles.summaryButtonText}>
+              Jetzt Deutung generieren!
+            </Text>
+          </AnimatedTouchableOpacity>
+        </Animated.View>
+      )}
+
+      {showSummaryModal && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Deine Zusammenfassung</Text>
+            <Text style={styles.modalText}>{summaryText}</Text>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => setShowSummaryModal(false)}
+            >
+              <Text style={styles.modalButtonText}>Schließen</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
     </View>
   );
@@ -279,13 +349,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1a202c",
-    justifyContent: "center",
   },
   cardContainer: {
     position: "absolute",
-    top: 88,
     justifyContent: "center",
     alignItems: "center",
+    top: 88, // Vertikale Position
   },
   startButton: {
     position: "absolute",
@@ -295,6 +364,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     zIndex: 100,
+    transform: [{ translateY: 0 }], // Initial position
   },
   buttonText: {
     color: "white",
@@ -303,7 +373,7 @@ const styles = StyleSheet.create({
   },
   selectedCardContainer: {
     position: "absolute",
-    bottom: 100,
+    bottom: 10,
     left: 20,
     right: 20,
     backgroundColor: "transparent",
@@ -319,11 +389,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   nextButton: {
-    backgroundColor: "gray",
+    backgroundColor: "rgba(112, 62, 229, 0.9)",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
     marginTop: 20,
+    transform: [{ translateY: 1 }], // Initial position
   },
   nextButtonText: {
     color: "white",
@@ -337,10 +408,61 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     zIndex: 100,
+    transform: [{ translateY: 0 }], // Initial position
   },
   summaryButtonText: {
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2000,
+  },
+  modalContent: {
+    backgroundColor: "#2D3748",
+    borderRadius: 16,
+    padding: 20,
+    width: Dimensions.get("screen").width * 0.8,
+    height: Dimensions.get("screen").height * 0.82,
+  },
+  modalTitle: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  modalText: {
+    color: "white",
+    fontSize: 16,
+    lineHeight: 24,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  modalButton: {
+    backgroundColor: "rgba(112, 62, 229, 0.9)",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  modalButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  buttonContainer: {
+    position: "absolute",
+    bottom: 40,
+    left: 0,
+    right: 0,
+    alignItems: "center",
   },
 });

@@ -30,7 +30,7 @@ const CardImage: React.FC<CardImageProps> = ({
 const styles = StyleSheet.create({
   cardImage: {
     borderRadius: 16,
-    borderWidth: 2,
+    borderWidth: 0.75,
     borderColor: "white",
   },
 });

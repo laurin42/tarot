@@ -37,7 +37,7 @@ app.post("/tarot/drawn-card", async (req: Request, res: Response) => {
 
     // Erstelle eine Kopie und entferne evtl. vorhandene id
     const { id, ...rest } = { ...card };
-    const prompt = `Erkläre kurz und prägnant die Bedeutung der Tarotkarte "${card.name}". Konzentriere dich auf die wesentlichen Aspekte.`;
+    const prompt = `Du legst Tarot Karten für Menschen. Erkläre kurz und prägnant die soeben gelegte Karte "${card.name}" ohne Sonderzeichen.`;
     const response = await model.generateContent(prompt);
     const description = response.response.candidates[0].content.parts[0].text;
 
@@ -65,13 +65,53 @@ app.post("/tarot/drawn-card", async (req: Request, res: Response) => {
 app.get("/tarot/cards/:cardName", async (req: Request, res: Response) => {
   try {
     const cardName = decodeURIComponent(req.params.cardName);
-    const prompt = `Erkläre kurz und prägnant die Bedeutung der Tarotkarte "${cardName}". Konzentriere dich auf die wesentlichen Aspekte.`;
+    const prompt = `Du legst Tarot Karten für Menschen. Erkläre kurz und prägnant die Karte "${cardName}" ohne Sonderzeichen.`;
     const response = await model.generateContent(prompt);
     const geminiResponse = response.response.candidates[0].content.parts[0].text;
     res.json({ explanation: geminiResponse });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Fehler bei der Erklärungserstellung" });
+  }
+});
+
+// Füge diesen neuen Endpoint hinzu
+app.post("/tarot/summary", async (req: Request, res: Response) => {
+  try {
+    const { cards } = req.body;
+    console.log('Received cards for summary:', cards); // Debug log
+
+    if (!cards || !Array.isArray(cards) || cards.length === 0) {
+      throw new Error('Invalid or empty cards array received');
+    }
+
+    const cardNames = cards.map((card: any) => card.name).join(", ");
+    console.log('Card names for prompt:', cardNames); // Debug log
+
+    const prompt = `Du bist ein erfahrener Tarot-Kartenleser. 
+    Gib eine zusammenhängende, persönliche Interpretation der folgenden drei Tarotkarten: ${cardNames}. Die erste Karte repräsentiert die jetzige persönliche Lage, die zweite ein mögliches Problem und die dritte ein Lösungsansatz oder Weisung. 
+    Die Interpretation soll motivierend und aufschlussreich sein, aber nicht länger als 5-6 Sätze.`;
+
+    const response = await model.generateContent(prompt);
+    const summary = response.response.candidates[0].content.parts[0].text;
+    console.log('Generated summary:', summary); // Debug log
+
+    if (!summary) {
+      throw new Error("Es wurde keine Zusammenfassung generiert.");
+    }
+
+    res.json({ 
+      success: true,
+      summary,
+      cards: cardNames // Include cards for verification
+    });
+
+  } catch (error) {
+    console.error("Detailed error in /tarot/summary:", error);
+    res.status(500).json({ 
+      error: "Fehler bei der Erstellung der Zusammenfassung",
+      details: (error as Error).message
+    });
   }
 });
 
