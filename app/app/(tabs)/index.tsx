@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Pressable, Text, Dimensions } from "react-native";
+import { View, Pressable, Text, Dimensions } from "react-native";
 import CardStackView from "@/components/ui/CardStackView";
 import DrawnCardsDisplay from "@/components/DrawnCardsDisplay";
 import { ISelectedAndShownCard, tarotCards } from "@/constants/tarotcards";
@@ -14,12 +14,12 @@ export default function Index() {
   const cardDimensions = {
     width: baseCardWidth,
     height: baseCardWidth * 1.6,
-    spacing: baseCardWidth * 0.52, // 52% der Kartenbreite für den Abstand
+    spacing: baseCardWidth * 0.52,
   };
 
   // Positionen für die gezogenen Karten
   const drawnSlotPositions = [
-    { x: 20, y: height * 0.5 }, // 50% der Bildschirmhöhe
+    { x: 20, y: height * 0.5 },
     { x: (width - cardDimensions.width) / 2, y: height * 0.5 },
     { x: width - cardDimensions.width - 20, y: height * 0.5 },
   ];
@@ -68,13 +68,14 @@ export default function Index() {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-gray-900">
       {!sessionStarted ? (
         <Pressable
-          style={[styles.startButton, { bottom: height * 0.05 }]}
+          className="absolute self-center bg-orange-600/90 px-4 py-4 rounded-lg z-50"
+          style={{ bottom: height * 0.05 }}
           onPress={handleStartSession}
         >
-          <Text style={styles.buttonText}>Start</Text>
+          <Text className="text-white text-base font-bold">Start</Text>
         </Pressable>
       ) : (
         <CardStackView
@@ -88,28 +89,3 @@ export default function Index() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#1a202c",
-  },
-  drawnCardsContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  startButton: {
-    position: "absolute",
-    alignSelf: "center",
-    backgroundColor: "rgba(112, 62, 229, 0.9)",
-    padding: 16,
-    borderRadius: 8,
-    zIndex: 100,
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-});
