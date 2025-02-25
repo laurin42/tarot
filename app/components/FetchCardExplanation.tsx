@@ -32,7 +32,7 @@ export default function FetchCardExplanation({
       try {
         const formattedName = cardName.toLowerCase().replace(/ /g, "_");
         const res = await fetch(
-          `http://192.168.178.67:8000/tarot/cards/${formattedName}`
+          `http://192.168.2.187:8000/tarot/cards/${formattedName}`
         );
         if (!res.ok) {
           if (res.status === 500) {

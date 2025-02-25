@@ -170,7 +170,7 @@ export async function getRandomDrawnCards(): Promise<ISelectedAndShownCard[]> {
         console.log(`Fetching explanation for: ${card.name} (${formattedName})`);
 
         const response = await fetch(
-          `http://192.168.178.67:8000/tarot/cards/${formattedName}`
+          `http://192.168.2.187:8000/tarot/cards/${formattedName}`
         );
         if (!response.ok) {
           throw new Error(`Failed to fetch ${card.name}`);
@@ -179,7 +179,7 @@ export async function getRandomDrawnCards(): Promise<ISelectedAndShownCard[]> {
         explanations[card.name] = data.explanation || "Keine Erklärung verfügbar";
 
         // Speichern der gezogenen Karte
-        await fetch("http://192.168.178.67:8000/tarot/drawn-card", {
+        await fetch("http://192.168.2.187:8000/tarot/drawn-card", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ card, index, explanation: data.explanation }),

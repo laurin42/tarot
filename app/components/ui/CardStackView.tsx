@@ -126,7 +126,7 @@ export default function CardStackView({
       const drawnCard = drawnCards[currentRound];
 
       // Speichere die gezogene Karte in der Datenbank
-      await fetch("http://192.168.178.67:8000/tarot/drawn-card", {
+      await fetch("http://192.168.2.187:8000/tarot/drawn-card", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -162,7 +162,7 @@ export default function CardStackView({
     try {
       console.log("Sending cards to summary:", drawnCards);
 
-      const response = await fetch("http://192.168.178.67:8000/tarot/summary", {
+      const response = await fetch("http://192.168.2.187:8000/tarot/summary", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

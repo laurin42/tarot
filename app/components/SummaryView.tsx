@@ -20,6 +20,7 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
               showFront={true}
               width={100}
               height={160}
+              image={card.image}
             />
             <Text style={styles.cardName}>{card.name}</Text>
           </View>

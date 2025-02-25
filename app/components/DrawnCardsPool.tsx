@@ -5,28 +5,26 @@ export async function getRandomDrawnCards(): Promise<ISelectedAndShownCard[]> {
   const drawnCards = shuffledCards.slice(0, 3);
 
   const explanations: { [key: string]: string } = {};
-  const cardImageMap: { [key: string]: any } = drawnCards.reduce(
-    (map: { [key: string]: any }, card) => {
-      map[card.name] = card.image;
-      return map;
-    },
-    {} as { [key: string]: any }
-  );
 
   await Promise.all(
     drawnCards.map(async (card) => {
       try {
-        const formattedName = card.name.toLowerCase().replace(/ /g, "_");
+        // Hole direkt die Erklärung für jede Karte
         const response = await fetch(
-          `http://192.168.178.67:8000/tarot/cards/${formattedName}`
+          `http://192.168.2.187:8000/tarot/cards/${encodeURIComponent(
+            card.name
+          )}`
         );
+
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error(`Failed to get explanation for: ${card.name}`);
         }
+
         const data = await response.json();
-        explanations[card.name] = data.explanation;
+        explanations[card.name] =
+          data.explanation || "Keine Erklärung verfügbar";
       } catch (error) {
-        console.error("Error fetching card explanation:", error);
+        console.error(`Error processing ${card.name}:`, error);
         explanations[card.name] = "Erklärung konnte nicht geladen werden";
       }
     })
@@ -35,36 +33,32 @@ export async function getRandomDrawnCards(): Promise<ISelectedAndShownCard[]> {
   return drawnCards.map((card) => ({
     ...card,
     showFront: false,
+    isSelected: false,
     explanation: explanations[card.name],
-    image: cardImageMap[card.name],
-    onNextCard: () => {}, // Add a placeholder function for onNextCard
+    image: card.image,
+    onNextCard: () => {},
   }));
 }
 
 export async function getRandomDrawnCard(): Promise<ISelectedAndShownCard> {
   try {
-    // Hole die bereits gezogenen Karten vom Server
     const response = await fetch(
-      "http://192.168.178.67:8000/tarot/drawn-cards"
+      "http://192.168.2.187:8000/tarot/cards/random"
     );
     if (!response.ok) {
       throw new Error("Network response was not ok");
     }
-    const drawnCards = await response.json();
-
-    // Wähle eine zufällige Karte aus den bereits gezogenen
-    const randomCard =
-      drawnCards[Math.floor(Math.random() * drawnCards.length)];
+    const drawnCard = await response.json();
 
     return {
-      ...randomCard,
+      ...drawnCard,
       showFront: false,
-      explanation: randomCard.explanation,
-      image: randomCard.image,
+      explanation: drawnCard.explanation,
+      image: drawnCard.image,
       onNextCard: () => {},
     };
   } catch (error) {
-    console.error("Error fetching drawn card:", error);
+    console.error("Error fetching random card:", error);
     throw error;
   }
 }
