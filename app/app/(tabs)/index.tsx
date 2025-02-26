@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Pressable, Text, Dimensions } from "react-native";
-import CardStackView from "@/components/ui/CardStackView";
+import CardStackView from "@/components/CardStackView";
 import DrawnCardsDisplay from "@/components/DrawnCardsDisplay";
 import { ISelectedAndShownCard, tarotCards } from "@/constants/tarotcards";
 import FetchCardExplanation from "@/components/FetchCardExplanation";

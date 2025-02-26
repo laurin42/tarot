@@ -7,6 +7,7 @@ interface CardImageProps {
   width: number;
   height: number;
   image: any;
+  onPress?: () => void;
 }
 
 const CardImage: React.FC<CardImageProps> = ({
