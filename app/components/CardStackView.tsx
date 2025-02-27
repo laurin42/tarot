@@ -128,16 +128,23 @@ const CardStackView = memo(
     };
 
     return (
-      <View className="flex-1 items-center justify-center bg-gray-900">
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#111827",
+        }}
+      >
         {cards.map((card, index) => (
           <Animated.View
             key={`${currentRound}-${index}`}
             style={{
               position: "absolute",
-              zIndex: cards.length - index, // Wichtig für die Überlappung
+              zIndex: cards.length - index,
+              top: translateY[index], // Animierter Y-Wert
+              left: translateX[index], // Animierter X-Wert
               transform: [
-                { translateY: translateY[index] },
-                { translateX: translateX[index] },
                 {
                   rotate: rotations[index].interpolate({
                     inputRange: [-3, 3],
@@ -148,12 +155,12 @@ const CardStackView = memo(
             }}
           >
             <Pressable
-              className="active:opacity-80"
+              style={{ opacity: 1, active: { opacity: 0.8 } }}
               onPress={() => handleCardSelect(card)}
             >
               <CardImage
                 name={card.name}
-                showFront={card.showFront || false} // Zeige Vorderseite wenn showFront true ist
+                showFront={card.showFront || false}
                 width={cardDimensions.width}
                 height={cardDimensions.height}
                 image={card.image}

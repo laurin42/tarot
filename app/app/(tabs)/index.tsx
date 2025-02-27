@@ -39,13 +39,12 @@ export default function Index() {
 
   // Laden der vorbestimmten Karten beim Start
   useEffect(() => {
-    if (sessionStarted) {
-      const loadPredeterminedCards = async () => {
-        const cards = await getRandomDrawnCards();
-        setPredeterminedCards(cards);
-      };
-      loadPredeterminedCards();
-    }
+    sessionStarted
+      ? (async () => {
+          const cards = await getRandomDrawnCards();
+          setPredeterminedCards(cards);
+        })()
+      : null;
   }, [sessionStarted]);
 
   const handleAnimationComplete = () => {
@@ -102,14 +101,27 @@ export default function Index() {
         </Pressable>
       ) : (
         <>
-          <CardStackView
-            onAnimationComplete={handleAnimationComplete}
-            onCardSelect={handleCardSelect}
-            sessionStarted={sessionStarted}
-            cardDimensions={cardDimensions}
-            drawnSlotPositions={drawnSlotPositions}
-            currentRound={currentRound}
-          />
+          {currentRound < 3 ? (
+            <CardStackView
+              onAnimationComplete={handleAnimationComplete}
+              onCardSelect={handleCardSelect}
+              sessionStarted={sessionStarted}
+              cardDimensions={cardDimensions}
+              drawnSlotPositions={drawnSlotPositions}
+              currentRound={currentRound}
+            />
+          ) : (
+            <View className="flex-1 items-center justify-center">
+              <Pressable
+                className="bg-orange-600/90 px-6 py-4 rounded-lg"
+                onPress={() => setShowSummary(true)}
+              >
+                <Text className="text-white text-lg font-bold">
+                  Zusammenfassung anzeigen
+                </Text>
+              </Pressable>
+            </View>
+          )}
 
           {selectedCard ? (
             <View className="absolute inset-0 z-50">
@@ -117,6 +129,15 @@ export default function Index() {
                 selectedCards={selectedCards}
                 onDismiss={handleDismissExplanation}
                 currentRound={currentRound}
+              />
+            </View>
+          ) : null}
+
+          {showSummary ? (
+            <View className="absolute inset-0 z-50">
+              <SummaryView
+                cards={selectedCards}
+                onDismiss={handleDismissSummary}
               />
             </View>
           ) : null}
