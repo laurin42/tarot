@@ -1,145 +1,82 @@
-import React, { useState, useEffect } from "react";
-import {
-  Dimensions,
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
 import TarotCard from "./TarotCard";
-import { ISelectedAndShownCard, ITarotCard } from "@/constants/tarotcards";
-
-const { width: screenWidth } = Dimensions.get("screen");
+import { ISelectedAndShownCard } from "@/constants/tarotcards";
 
 interface DrawnCardsDisplayProps {
   selectedCards: ISelectedAndShownCard[];
+  onDismiss: () => void;
+  currentRound: number;
 }
 
 export default function DrawnCardsDisplay({
   selectedCards,
+  onDismiss,
+  currentRound,
 }: DrawnCardsDisplayProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [expanded, setExpanded] = useState(false);
-  const [explanations, setExplanations] = useState<{ [key: string]: string }>(
-    {}
-  );
-
-  const handleCardClick = () => {
-    setExpanded(!expanded);
-  };
-
-  const handleDismiss = () => {
-    const newIndex = (currentIndex + 1) % selectedCards.length;
-    setCurrentIndex(newIndex);
-    setExpanded(false);
-  };
+  const [currentIndex, setCurrentIndex] = useState(currentRound);
 
   const cardWidth = 200;
   const cardHeight = cardWidth * 1.6;
 
-  return (
-    <View style={styles.container}>
-      {selectedCards.length > 0 && (
-        <View style={{ flex: 1 }}>
-          <View style={styles.center}>
-            <TouchableOpacity onPress={handleCardClick}>
-              <TarotCard
-                image={selectedCards[currentIndex].image}
-                name={selectedCards[currentIndex].name}
-                isShown={true}
-                style={{
-                  width: cardWidth,
-                  height: cardHeight,
-                  transform: [{ scale: expanded ? 1.1 : 1 }],
-                }}
-              />
-              <Text style={styles.cardName}>
-                {selectedCards[currentIndex].name}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          {expanded && (
-            <View style={styles.explanationContainer}>
-              <Text style={styles.explanationText}>
-                {explanations[selectedCards[currentIndex].name]}
-              </Text>
-              <TouchableOpacity
-                onPress={handleDismiss}
-                style={styles.dismissButton}
-              >
-                <Text style={styles.dismissButtonText}>Schließen</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-      )}
+  const handleNextCard = () => {
+    if (currentIndex === selectedCards.length - 1) {
+      onDismiss(); // Dies triggert handleDismissExplanation im Parent
+    } else {
+      setCurrentIndex((prev) => prev + 1);
+    }
+  };
 
-      <View style={styles.stackIndicator}>
-        {selectedCards.map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.stackIndicatorItem,
-              index === currentIndex && styles.stackIndicatorActive,
-            ]}
-          />
-        ))}
+  return (
+    <View
+      style={{
+        position: "absolute",
+        width: "100%",
+        height: "100%",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "rgba(0,0,0,0.5)",
+      }}
+    >
+      <View
+        style={{
+          width: "90%",
+          height: "80%",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "rgba(17, 24, 39, 0.95)",
+          borderRadius: 12,
+          padding: 16,
+          alignSelf: "center",
+        }}
+      >
+        <TarotCard
+          image={selectedCards[currentIndex].image}
+          name={selectedCards[currentIndex].name}
+          isShown={true}
+          style={{
+            width: cardWidth,
+            height: cardHeight,
+          }}
+        />
+
+        <View className="w-full mt-5 p-4 bg-black/80 rounded-lg">
+          <Text className="text-white text-base text-center">
+            {selectedCards[currentIndex].explanation}
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          onPress={handleNextCard}
+          className="mt-5 px-6 py-3 bg-orange-600/90 rounded-lg"
+        >
+          <Text className="text-white text-base font-semibold">
+            {currentIndex === selectedCards.length - 1
+              ? "Nächste Runde"
+              : "Nächste Karte"}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "transparent",
-    justifyContent: "center",
-    marginBottom: 88,
-  },
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  stackIndicator: {
-    position: "absolute",
-    bottom: 8,
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  stackIndicatorItem: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "gray",
-    marginHorizontal: 4,
-  },
-  stackIndicatorActive: { backgroundColor: "white" },
-  cardName: {
-    color: "yellow",
-    textAlign: "center",
-    marginTop: 10,
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  explanationContainer: {
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: "black",
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  explanationText: {
-    color: "white",
-    fontSize: 16,
-    textAlign: "center",
-  },
-  dismissButton: {
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: "gray",
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  dismissButtonText: {
-    color: "white",
-    fontSize: 16,
-  },
-});

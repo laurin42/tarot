@@ -1,4 +1,4 @@
-import React, { useState, memo } from "react";
+import React, { useState, memo, useRef, useEffect } from "react";
 import { View, Animated, Pressable, Dimensions } from "react-native";
 import CardImage from "./CardImage";
 import { ISelectedAndShownCard, tarotCards } from "@/constants/tarotcards";
@@ -11,6 +11,7 @@ interface CardStackViewProps {
   sessionStarted: boolean;
   cardDimensions: { width: number; height: number };
   drawnSlotPositions: { x: number; y: number }[];
+  currentRound: number; // Neue Prop
 }
 
 const CardStackView = memo(
@@ -19,110 +20,118 @@ const CardStackView = memo(
     sessionStarted,
     onAnimationComplete,
     cardDimensions,
+    currentRound,
   }: CardStackViewProps) => {
-    const [currentRound, setCurrentRound] = useState(0);
     const [cards, setCards] = useState<ISelectedAndShownCard[]>([]);
+    const [predeterminedCards, setPredeterminedCards] = useState<
+      ISelectedAndShownCard[]
+    >([]);
 
     // Animation Values für 5 Karten
-    const translateY = React.useRef(
+    const translateY = useRef(
       new Array(5).fill(0).map(() => new Animated.Value(1000))
     ).current;
-    const translateX = React.useRef(
+    const translateX = useRef(
       new Array(5).fill(0).map(() => new Animated.Value(0))
     ).current;
-    const rotations = React.useRef(
+    const rotations = useRef(
       new Array(5).fill(0).map(() => new Animated.Value(0))
     ).current;
 
-    // Funktion für die Rotation der Karten
-    const getRotation = (index: number) => {
-      // -3° -> 0° -> -3° über 5 Karten
-      if (index < 2) return -3 + index * 1.5; // Von -3° bis 0°
-      if (index === 2) return 0; // Mittlere Karte
-      return -1.5 * (index - 2); // Von 0° zurück zu -3°
-    };
-
-    React.useEffect(() => {
+    // Initialisierung beim ersten Render
+    useEffect(() => {
       if (sessionStarted) {
-        const initializeCards = async () => {
-          try {
-            // Hole die vorbestimmten Karten für alle 3 Runden
-            const predeterminedCards = await getRandomDrawnCards();
-
-            // Erstelle 5er Stapel mit der Karte der aktuellen Runde
-            const currentCard = predeterminedCards[currentRound];
-            const stackCards = Array(5)
-              .fill(null)
-              .map(() => ({
-                ...currentCard,
-                showFront: false,
-                isSelected: false,
-                onNextCard: () => {
-                  setCurrentRound((prev) => prev + 1);
-                },
-              }));
-
-            setCards(stackCards);
-
-            // Berechne Layout
-            const { width: screenWidth, height: screenHeight } =
-              Dimensions.get("window");
-            const overlap = cardDimensions.width * 0.66;
-
-            // Korrigierte Berechnung der Gesamtbreite für 5 Karten
-            const totalWidth =
-              cardDimensions.width + 4 * (cardDimensions.width - overlap);
-
-            // Zentriere horizontal
-            const startX = (screenWidth - totalWidth) / 2;
-
-            // Positioniere vertikal im oberen Drittel, mit Berücksichtigung der Kartenhöhe
-            const centerY = screenHeight * 0.33 - cardDimensions.height / 2;
-
-            // Animiere Karten
-            stackCards.forEach((_, index) => {
-              Animated.parallel([
-                Animated.spring(translateY[index], {
-                  toValue: centerY,
-                  friction: 6,
-                  tension: 40,
-                  useNativeDriver: true,
-                }),
-                Animated.spring(translateX[index], {
-                  toValue: startX + index * (cardDimensions.width - overlap),
-                  friction: 6,
-                  tension: 40,
-                  useNativeDriver: true,
-                }),
-                Animated.spring(rotations[index], {
-                  toValue: getRotation(index),
-                  friction: 6,
-                  tension: 40,
-                  useNativeDriver: true,
-                }),
-              ]).start();
-            });
-
-            if (currentRound === 0) {
-              onAnimationComplete();
-            }
-          } catch (error) {
-            console.error("Fehler beim Laden der Karten:", error);
-          }
+        const loadCards = async () => {
+          const loadedCards = await getRandomDrawnCards();
+          setPredeterminedCards(loadedCards);
         };
-        initializeCards();
+        loadCards();
       }
-    }, [sessionStarted, currentRound]); // Abhängigkeit von currentRound hinzugefügt
+    }, [sessionStarted]);
+
+    // Neuer Kartenstapel bei Rundenwechsel
+    useEffect(() => {
+      if (
+        predeterminedCards.length > 0 &&
+        currentRound < predeterminedCards.length
+      ) {
+        // Erstelle 5 identische Karten für den Stapel
+        const newStack = Array(5)
+          .fill(null)
+          .map(() => ({
+            ...predeterminedCards[currentRound],
+            showFront: false,
+            isSelected: false,
+          }));
+
+        setCards(newStack);
+
+        // Reset und starte Animationen
+        const { width: screenWidth, height: screenHeight } =
+          Dimensions.get("window");
+        const overlap = cardDimensions.width * 0.66;
+        const totalWidth =
+          cardDimensions.width + 4 * (cardDimensions.width - overlap);
+        const startX = (screenWidth - totalWidth) / 2;
+        const centerY = screenHeight * 0.33 - cardDimensions.height / 2;
+
+        newStack.forEach((_, index) => {
+          translateY[index].setValue(1000);
+          translateX[index].setValue(0);
+          rotations[index].setValue(0);
+
+          Animated.parallel([
+            Animated.spring(translateY[index], {
+              toValue: centerY,
+              friction: 6,
+              tension: 40,
+              useNativeDriver: true,
+            }),
+            Animated.spring(translateX[index], {
+              toValue: startX + index * (cardDimensions.width - overlap),
+              friction: 6,
+              tension: 40,
+              useNativeDriver: true,
+            }),
+            Animated.spring(rotations[index], {
+              toValue:
+                index < 2
+                  ? -3 + index * 1.5
+                  : index === 2
+                  ? 0
+                  : -1.5 * (index - 2),
+              friction: 6,
+              tension: 40,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        });
+      }
+    }, [currentRound, predeterminedCards]);
 
     const handleCardSelect = (card: ISelectedAndShownCard) => {
-      onCardSelect(card);
+      if (cards.some((c) => c.isSelected)) return;
+
+      setCards((prevCards) =>
+        prevCards.map((c) => ({
+          ...c,
+          showFront: c === card,
+          isSelected: c === card,
+        }))
+      );
+
+      onCardSelect({
+        ...card,
+        showFront: true,
+        isSelected: true,
+      });
     };
 
     return (
       <View className="flex-1 items-center justify-center bg-gray-900">
         {cards.map((card, index) => (
           <Animated.View
-            key={index}
+            key={`${currentRound}-${index}`}
             style={{
               position: "absolute",
               zIndex: cards.length - index, // Wichtig für die Überlappung
@@ -144,7 +153,7 @@ const CardStackView = memo(
             >
               <CardImage
                 name={card.name}
-                showFront={false}
+                showFront={card.showFront || false} // Zeige Vorderseite wenn showFront true ist
                 width={cardDimensions.width}
                 height={cardDimensions.height}
                 image={card.image}
