@@ -72,7 +72,9 @@ export default function DrawnCardsDisplay({
         >
           <Text className="text-white text-base font-semibold">
             {currentIndex === selectedCards.length - 1
-              ? "Nächste Runde"
+              ? currentRound === 2
+                ? "Deutung anzeigen"
+                : "Nächste Runde"
               : "Nächste Karte"}
           </Text>
         </TouchableOpacity>

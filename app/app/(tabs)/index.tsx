@@ -63,10 +63,7 @@ export default function Index() {
     setSelectedCard(null); // Entfernt die Kartenansicht
     setCurrentRound((prev) => {
       const nextRound = prev + 1;
-      // Wenn wir bei Runde 3 sind, zeige Zusammenfassung
-      if (nextRound === 3) {
-        setShowSummary(true);
-      }
+      // Remove the setShowSummary call since we're using currentRound === 3
       return nextRound;
     });
   };
@@ -80,9 +77,14 @@ export default function Index() {
   };
 
   const handleDismissSummary = () => {
+    // Reset all states to initial values
     setShowSummary(false);
     setSelectedCards([]);
     setCardsDrawn(false);
+    setSessionStarted(false); // Reset to start screen
+    setCurrentRound(0); // Reset round counter
+    setSelectedCard(null); // Clear selected card
+    setPredeterminedCards([]); // Clear predetermined cards
   };
 
   const handleStartSession = () => {
@@ -110,18 +112,7 @@ export default function Index() {
               drawnSlotPositions={drawnSlotPositions}
               currentRound={currentRound}
             />
-          ) : (
-            <View className="flex-1 items-center justify-center">
-              <Pressable
-                className="bg-orange-600/90 px-6 py-4 rounded-lg"
-                onPress={() => setShowSummary(true)}
-              >
-                <Text className="text-white text-lg font-bold">
-                  Zusammenfassung anzeigen
-                </Text>
-              </Pressable>
-            </View>
-          )}
+          ) : null}
 
           {selectedCard ? (
             <View className="absolute inset-0 z-50">
@@ -133,7 +124,7 @@ export default function Index() {
             </View>
           ) : null}
 
-          {showSummary ? (
+          {currentRound === 3 ? (
             <View className="absolute inset-0 z-50">
               <SummaryView
                 cards={selectedCards}

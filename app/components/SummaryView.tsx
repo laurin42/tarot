@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 import { ISelectedAndShownCard } from "@/constants/tarotcards";
 import CardImage from "@/components/CardImage";
@@ -19,6 +20,9 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
   const [summary, setSummary] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCardIndex, setSelectedCardIndex] = useState<number | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchSummary = async () => {
@@ -52,6 +56,10 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
     fetchSummary();
   }, [cards]);
 
+  const handleCardPress = (index: number) => {
+    setSelectedCardIndex(index);
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Deine Kartenlegung</Text>
@@ -59,7 +67,11 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.cardsContainer}>
           {cards.map((card, index) => (
-            <View key={index} style={styles.card}>
+            <TouchableOpacity
+              key={index}
+              style={styles.card}
+              onPress={() => handleCardPress(index)}
+            >
               <CardImage
                 name={card.name}
                 showFront={true}
@@ -73,13 +85,12 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
                   ? "Aktuelle Situation"
                   : index === 1
                   ? "Herausforderung"
-                  : index === 2
-                  ? "Ratschlag"
-                  : ""}
+                  : "Ratschlag"}
               </Text>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
+
         {loading ? (
           <ActivityIndicator size="large" color="#fff" />
         ) : error ? (
@@ -88,8 +99,37 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
           <Text style={styles.summaryText}>{summary}</Text>
         )}
       </ScrollView>
+
+      <Modal
+        visible={selectedCardIndex !== null}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setSelectedCardIndex(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            {selectedCardIndex !== null && (
+              <>
+                <Text style={styles.modalTitle}>
+                  {cards[selectedCardIndex].name}
+                </Text>
+                <Text style={styles.modalExplanation}>
+                  {cards[selectedCardIndex].explanation}
+                </Text>
+                <TouchableOpacity
+                  style={styles.modalCloseButton}
+                  onPress={() => setSelectedCardIndex(null)}
+                >
+                  <Text style={styles.modalCloseButtonText}>Schließen</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
+
       <TouchableOpacity onPress={onDismiss} style={styles.dismissButton}>
-        <Text style={styles.dismissButtonText}>Schließen</Text>
+        <Text style={styles.dismissButtonText}>Neue Legung beginnen</Text>
       </TouchableOpacity>
     </View>
   );
@@ -148,6 +188,45 @@ const styles = StyleSheet.create({
   dismissButtonText: {
     color: "white",
     fontWeight: "bold",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: "#1f2937",
+    borderRadius: 12,
+    padding: 20,
+    width: "90%",
+    maxHeight: "80%",
+  },
+  modalTitle: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  modalExplanation: {
+    color: "white",
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  modalCloseButton: {
+    backgroundColor: "rgba(249, 115, 22, 0.9)",
+    padding: 12,
+    borderRadius: 8,
+    alignSelf: "center",
+  },
+  modalCloseButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
 
