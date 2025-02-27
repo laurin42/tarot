@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
   Modal,
+  StyleSheet,
 } from "react-native";
 import { ISelectedAndShownCard } from "@/constants/tarotcards";
 import CardImage from "@/components/CardImage";
@@ -64,12 +64,12 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Deine Kartenlegung</Text>
 
-      <ScrollView style={styles.scrollContainer}>
+      <ScrollView>
         <View style={styles.cardsContainer}>
           {cards.map((card, index) => (
             <TouchableOpacity
               key={index}
-              style={styles.card}
+              style={styles.cardWrapper}
               onPress={() => handleCardPress(index)}
             >
               <CardImage
@@ -79,8 +79,8 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
                 height={160}
                 image={card.image}
               />
-              <Text style={styles.cardName}>{card.name}</Text>
-              <Text style={styles.cardPosition}>
+              <Text className="text-white mt-2.5 text-center">{card.name}</Text>
+              <Text style={styles.cardText}>
                 {index === 0
                   ? "Aktuelle Situation"
                   : index === 1
@@ -94,9 +94,11 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
         {loading ? (
           <ActivityIndicator size="large" color="#fff" />
         ) : error ? (
-          <Text style={styles.errorText}>{error}</Text>
+          <Text className="text-red-500 mt-5 text-center">{error}</Text>
         ) : (
-          <Text style={styles.summaryText}>{summary}</Text>
+          <View style={styles.summaryContainer}>
+            <Text className="text-white text-base text-center">{summary}</Text>
+          </View>
         )}
       </ScrollView>
 
@@ -113,14 +115,14 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
                 <Text style={styles.modalTitle}>
                   {cards[selectedCardIndex].name}
                 </Text>
-                <Text style={styles.modalExplanation}>
+                <Text style={styles.modalText}>
                   {cards[selectedCardIndex].explanation}
                 </Text>
                 <TouchableOpacity
-                  style={styles.modalCloseButton}
+                  style={styles.modalButton}
                   onPress={() => setSelectedCardIndex(null)}
                 >
-                  <Text style={styles.modalCloseButtonText}>Schließen</Text>
+                  <Text style={styles.buttonText}>Schließen</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -128,8 +130,8 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
         </View>
       </Modal>
 
-      <TouchableOpacity onPress={onDismiss} style={styles.dismissButton}>
-        <Text style={styles.dismissButtonText}>Neue Legung beginnen</Text>
+      <TouchableOpacity style={styles.button} onPress={onDismiss}>
+        <Text style={styles.buttonText}>Neue Legung beginnen</Text>
       </TouchableOpacity>
     </View>
   );
@@ -138,56 +140,37 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: "#000",
     padding: 16,
+    alignItems: "center",
   },
   title: {
-    color: "white",
+    color: "#fff",
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
-  },
-  scrollContainer: {
-    width: "100%",
+    textAlign: "center",
+    marginVertical: 20,
+    paddingHorizontal: 48,
   },
   cardsContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
+    alignItems: "flex-start",
     width: "100%",
+    paddingHorizontal: 16,
+    marginBottom: 20,
   },
-  card: {
+  cardWrapper: {
     alignItems: "center",
+    width: "30%",
+    maxWidth: 120,
   },
-  cardName: {
-    color: "white",
-    marginTop: 10,
-  },
-  cardPosition: {
-    color: "white",
-    marginTop: 5,
-  },
-  summaryText: {
-    color: "white",
+  summaryContainer: {
+    backgroundColor: "rgba(31, 41, 55, 0.8)",
+    borderRadius: 12,
+    padding: 20,
     marginTop: 20,
-    textAlign: "center",
-  },
-  errorText: {
-    color: "red",
-    marginTop: 20,
-    textAlign: "center",
-  },
-  dismissButton: {
-    backgroundColor: "gray",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    marginTop: 20,
-  },
-  dismissButtonText: {
-    color: "white",
-    fontWeight: "bold",
+    marginHorizontal: 16,
   },
   modalOverlay: {
     flex: 1,
@@ -202,29 +185,38 @@ const styles = StyleSheet.create({
     padding: 20,
     width: "90%",
     maxHeight: "80%",
+    alignItems: "center",
   },
   modalTitle: {
-    color: "white",
+    color: "#fff",
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 16,
     textAlign: "center",
   },
-  modalExplanation: {
-    color: "white",
+  modalText: {
+    color: "#fff",
     fontSize: 16,
     lineHeight: 24,
     textAlign: "center",
     marginBottom: 20,
   },
-  modalCloseButton: {
+  button: {
+    backgroundColor: "rgba(249, 115, 22, 0.9)",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignSelf: "center",
+    marginTop: 20,
+  },
+  modalButton: {
     backgroundColor: "rgba(249, 115, 22, 0.9)",
     padding: 12,
     borderRadius: 8,
     alignSelf: "center",
   },
-  modalCloseButtonText: {
-    color: "white",
+  buttonText: {
+    color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
   },
