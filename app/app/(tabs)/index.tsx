@@ -3,14 +3,12 @@ import { View, Pressable, Text, Dimensions } from "react-native";
 import CardStackView from "@/components/CardStackView";
 import DrawnCardsDisplay from "@/components/DrawnCardsDisplay";
 import { getRandomDrawnCards } from "@/components/DrawnCardsPool";
-import { ISelectedAndShownCard, tarotCards } from "@/constants/tarotcards";
-import FetchCardExplanation from "@/components/FetchCardExplanation";
+import { ISelectedAndShownCard } from "@/constants/tarotcards";
 import SummaryView from "@/components/SummaryView";
 
 export default function Index() {
   const { width, height } = Dimensions.get("window");
 
-  // Responsive Dimensionen
   const baseCardWidth = width > 400 ? 150 : 100;
   const cardDimensions = {
     width: baseCardWidth,
@@ -18,7 +16,6 @@ export default function Index() {
     spacing: baseCardWidth * 0.52,
   };
 
-  // Positionen für die gezogenen Karten
   const drawnSlotPositions = [
     { x: 20, y: height * 0.5 },
     { x: (width - cardDimensions.width) / 2, y: height * 0.5 },
@@ -37,54 +34,34 @@ export default function Index() {
     ISelectedAndShownCard[]
   >([]);
 
-  // Laden der vorbestimmten Karten beim Start
   useEffect(() => {
-    sessionStarted
-      ? (async () => {
-          const cards = await getRandomDrawnCards();
-          setPredeterminedCards(cards);
-        })()
-      : null;
+    if (sessionStarted) {
+      (async () => {
+        const cards = await getRandomDrawnCards();
+        setPredeterminedCards(cards);
+      })();
+    }
   }, [sessionStarted]);
 
   const handleAnimationComplete = () => {
     setCardsDrawn(true);
-    console.log("Die Animation wurde abgeschlossen!");
   };
 
   const handleCardSelect = (selectedCard: ISelectedAndShownCard) => {
-    if (selectedCard.explanation) {
-      setSelectedCard(selectedCard.name);
-      setSelectedCards((prev) => [...prev, selectedCard]);
-    }
+    setSelectedCard(selectedCard.name);
+    setSelectedCards((prev) => [...prev, selectedCard]);
   };
 
   const handleDismissExplanation = () => {
-    setSelectedCard(null); // Entfernt die Kartenansicht
-    setCurrentRound((prev) => {
-      const nextRound = prev + 1;
-      // Remove the setShowSummary call since we're using currentRound === 3
-      return nextRound;
-    });
-  };
-
-  const handleSwipeLeft = () => {
     setSelectedCard(null);
-  };
-
-  const handleSwipeRight = () => {
-    setSelectedCard(null);
+    setCurrentRound((prev) => prev + 1);
   };
 
   const handleDismissSummary = () => {
-    // Reset all states to initial values
     setShowSummary(false);
+    setSessionStarted(false);
     setSelectedCards([]);
-    setCardsDrawn(false);
-    setSessionStarted(false); // Reset to start screen
-    setCurrentRound(0); // Reset round counter
-    setSelectedCard(null); // Clear selected card
-    setPredeterminedCards([]); // Clear predetermined cards
+    setCurrentRound(0);
   };
 
   const handleStartSession = () => {
@@ -92,7 +69,7 @@ export default function Index() {
   };
 
   return (
-    <View className="flex-1 bg-gray-900 relative">
+    <View className="flex-1 relative bg-gray-900">
       {!sessionStarted ? (
         <Pressable
           className="absolute self-center bg-orange-600/90 px-4 py-4 rounded-lg z-50"
@@ -104,14 +81,16 @@ export default function Index() {
       ) : (
         <>
           {currentRound < 3 ? (
-            <CardStackView
-              onAnimationComplete={handleAnimationComplete}
-              onCardSelect={handleCardSelect}
-              sessionStarted={sessionStarted}
-              cardDimensions={cardDimensions}
-              drawnSlotPositions={drawnSlotPositions}
-              currentRound={currentRound}
-            />
+            <View className="flex-1 items-center justify-center">
+              <CardStackView
+                onAnimationComplete={handleAnimationComplete}
+                onCardSelect={handleCardSelect}
+                sessionStarted={sessionStarted}
+                cardDimensions={cardDimensions}
+                drawnSlotPositions={drawnSlotPositions}
+                currentRound={currentRound}
+              />
+            </View>
           ) : null}
 
           {selectedCard ? (
@@ -136,7 +115,4 @@ export default function Index() {
       )}
     </View>
   );
-}
-function setExplanation(explanation: string) {
-  throw new Error("Function not implemented.");
 }

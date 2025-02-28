@@ -3,10 +3,9 @@ import { Text, View, Image, ViewStyle } from "react-native";
 
 interface TarotCardProps {
   image: any;
-  name: string;
   isShown: boolean;
-  className?: string;
-  style?: ViewStyle;
+  style?: any;
+  name?: string; // Make name optional with ?
 }
 
 export interface ITarotCard {
@@ -22,7 +21,6 @@ export default function TarotCard({
   image,
   name,
   isShown,
-  className,
   style,
 }: TarotCardProps) {
   return (
