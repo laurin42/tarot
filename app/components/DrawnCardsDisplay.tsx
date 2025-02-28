@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Platform,
+  ScrollView,
 } from "react-native";
 import TarotCard from "./TarotCard";
 import { ISelectedAndShownCard } from "@/constants/tarotcards";
@@ -43,21 +44,27 @@ export default function DrawnCardsDisplay({
           />
         </View>
 
-        <View style={styles.explanationBox}>
-          <Text style={styles.explanationText}>
-            {selectedCards[currentIndex].explanation}
-          </Text>
-        </View>
+        <View style={styles.explanationContainer}>
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollViewContent}
+            showsVerticalScrollIndicator={true}
+          >
+            <Text style={styles.explanationText}>
+              {selectedCards[currentIndex].explanation}
+            </Text>
+          </ScrollView>
 
-        <TouchableOpacity onPress={handleNextCard} style={styles.button}>
-          <Text style={styles.buttonText}>
-            {currentIndex === selectedCards.length - 1
-              ? currentRound === 2
-                ? "Deutung anzeigen"
-                : "Nächste Runde"
-              : "Nächste Karte"}
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity onPress={handleNextCard} style={styles.button}>
+            <Text style={styles.buttonText}>
+              {currentIndex === selectedCards.length - 1
+                ? currentRound === 2
+                  ? "Deutung anzeigen"
+                  : "Nächste Karte"
+                : "Nächste Karte"}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -114,19 +121,33 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(139, 92, 246, 0.2)",
   },
-  explanationBox: {
+  explanationContainer: {
     width: "100%",
     marginTop: 32,
-    padding: 24,
+    maxHeight: "40%", // Limit height to ensure visibility of all elements
     backgroundColor: "rgba(17, 24, 39, 0.95)",
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "rgba(139, 92, 246, 0.3)",
-    shadowColor: "#8B5CF6",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#8B5CF6",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+  scrollView: {
+    maxHeight: "80%",
+    padding: 24,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
   },
   explanationText: {
     color: "#F3F4F6",
@@ -135,23 +156,30 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   button: {
-    marginTop: 32,
+    width: "100%",
     paddingVertical: 16,
     paddingHorizontal: 32,
     backgroundColor: "rgba(124, 58, 237, 0.9)",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "rgba(139, 92, 246, 0.5)",
-    shadowColor: "#8B5CF6",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    borderTopWidth: 1,
+    borderColor: "rgba(139, 92, 246, 0.3)",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#8B5CF6",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
   },
   buttonText: {
     color: "#FFFFFF",
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "bold",
     textAlign: "center",
   },
 });

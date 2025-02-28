@@ -10,7 +10,7 @@ import {
   Platform,
 } from "react-native";
 import { ISelectedAndShownCard } from "@/constants/tarotcards";
-import CardImage from "@/components/CardImage";
+import TarotCard from "@/components/TarotCard";
 
 interface SummaryViewProps {
   cards: ISelectedAndShownCard[];
@@ -74,19 +74,17 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
               onPress={() => handleCardPress(index)}
             >
               <Text style={styles.cardName}>{card.name}</Text>
-              <CardImage
-                name={card.name}
-                showFront={true}
-                width={100}
-                height={160}
+              <TarotCard
                 image={card.image}
+                isShown={true}
+                style={{
+                  width: 100,
+                  height: 160,
+                }}
+                name={card.name}
               />
               <Text style={styles.cardText}>
-                {index === 0
-                  ? "Aktuelle Situation"
-                  : index === 1
-                  ? "Herausforderung"
-                  : "Ratschlag"}
+                {index === 0 ? "Lage" : index === 1 ? "Problem" : "Ratschlag"}
               </Text>
             </TouchableOpacity>
           ))}

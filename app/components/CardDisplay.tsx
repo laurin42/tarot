@@ -1,7 +1,7 @@
 import React from "react";
 import { Animated, View, Pressable } from "react-native";
 import { ISelectedAndShownCard } from "@/constants/tarotcards";
-import CardImage from "@/components/ui/CardImage";
+import TarotCard from "./TarotCard";
 
 interface CardDisplayProps {
   deckInitialized: boolean;
@@ -70,12 +70,14 @@ export const CardDisplay = ({
             className="active:opacity-80 rounded-xl shadow-lg"
             onPress={() => onCardSelect(index)}
           >
-            <CardImage
-              name={card.name}
-              showFront={card.showFront ?? false}
-              width={cardWidth}
-              height={cardHeight}
+            <TarotCard
               image={card.image}
+              isShown={card.showFront ?? false}
+              style={{
+                width: cardWidth,
+                height: cardHeight,
+              }}
+              name={card.name}
             />
           </Pressable>
         </Animated.View>
