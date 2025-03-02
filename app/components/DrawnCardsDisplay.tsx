@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "rgba(17, 24, 39, 0.98)",
     borderRadius: 16,
-    padding: 24,
+    padding: 20, // Reduced from 24
     borderWidth: 1,
     borderColor: "rgba(139, 92, 246, 0.3)",
     ...Platform.select({
@@ -102,9 +102,9 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     color: "#A78BFA",
-    fontSize: 28,
+    fontSize: 24, // Reduced from 28
     fontWeight: "bold",
-    marginBottom: 32,
+    marginBottom: 24, // Reduced from 32
     textAlign: "center",
   },
   cardWrapper: {
@@ -115,20 +115,22 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   card: {
-    width: 200,
-    height: 320,
+    width: 160, // Reduced from 200
+    height: 256, // Reduced from 320
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "rgba(139, 92, 246, 0.2)",
   },
   explanationContainer: {
     width: "100%",
-    marginTop: 32,
-    maxHeight: "40%", // Limit height to ensure visibility of all elements
+    marginTop: 24, // Reduced from 32
+    flex: 1.5, // Increased from 1 to give more space to text
     backgroundColor: "rgba(17, 24, 39, 0.95)",
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "rgba(139, 92, 246, 0.3)",
+    overflow: "hidden", // Ensures content doesn't overflow
+    display: "flex", // Ensures proper flex layout
     ...Platform.select({
       ios: {
         shadowColor: "#8B5CF6",
@@ -142,8 +144,8 @@ const styles = StyleSheet.create({
     }),
   },
   scrollView: {
-    maxHeight: "80%",
-    padding: 24,
+    flex: 1, // Takes remaining space
+    padding: 20, // Adjusted padding
   },
   scrollViewContent: {
     flexGrow: 1,
@@ -151,8 +153,8 @@ const styles = StyleSheet.create({
   },
   explanationText: {
     color: "#F3F4F6",
-    fontSize: 18,
-    lineHeight: 28,
+    fontSize: 17, // Slightly reduced from 18
+    lineHeight: 26, // Adjusted for better readability
     textAlign: "center",
   },
   button: {
@@ -164,6 +166,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 16,
     borderTopWidth: 1,
     borderColor: "rgba(139, 92, 246, 0.3)",
+    marginTop: "auto", // Pushes button to bottom
     ...Platform.select({
       ios: {
         shadowColor: "#8B5CF6",

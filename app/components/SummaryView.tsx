@@ -81,7 +81,6 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
                   width: 100,
                   height: 160,
                 }}
-                name={card.name}
               />
               <Text style={styles.cardText}>
                 {index === 0 ? "Lage" : index === 1 ? "Problem" : "Ratschlag"}
@@ -160,7 +159,7 @@ const styles = StyleSheet.create({
   },
   cardsContainer: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-between",
     alignItems: "flex-start",
     width: "100%",
     paddingHorizontal: 16,
@@ -189,8 +188,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 4,
-    height: 40,
+    marginBottom: 8,
     flexWrap: "wrap",
   },
   cardText: {

@@ -4,7 +4,9 @@ import dotenv from "dotenv";
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import { usersTable, drawnCardsTable } from "./db/schema"; // tarotCardsTable entfernt
+import { usersTable, drawnCardsTable, type NewUser } from "./db/schema"; // tarotCardsTable entfernt
+import { eq } from "drizzle-orm";
+import { authMiddleware, generateToken } from './middleware/auth';
 
 // Umgebungsvariablen laden
 dotenv.config();
@@ -29,15 +31,28 @@ app.post("/tarot/cards", async (req: Request, res: Response) => {
   res.status(404).json({ error: "Nicht verfügbar" });
 });
 
-// Endpoint, um eine gezogene Karte zu speichern (mit Beschreibung)
-app.post("/tarot/drawn-card", async (req: Request, res: Response) => {
-  const { card } = req.body;  // card enthält z. B. { id, name, image, ... }
-  try {
-    console.log("Received drawn card:", card);
+// Add interfaces for request types
+interface CardRequest {
+  cards: Array<{ name: string }>;
+  userGoals?: string;
+}
 
-    // Erstelle eine Kopie und entferne evtl. vorhandene id
-    const { id, ...rest } = { ...card };
-    const prompt = `Du legst Tarot Karten für Menschen. Erkläre kurz und prägnant die soeben gelegte Karte "${card.name}" ohne Sonderzeichen.`;
+interface GoalsUpdateRequest {
+  goals: string;
+}
+
+// Update the card reading endpoint
+app.post("/tarot/card", async (req: Request<{}, {}, CardRequest>, res: Response) => {
+  try {
+    const { cards, userGoals = "" } = req.body;
+    const card = cards[0];
+
+    const cardReadingPrompt = "Deute die Karte im Kontext der aktuellen Situation.";
+    
+    const prompt = `Du legst Tarot Karten für Menschen. Erkläre und deute prägnant die soeben gelegte Karte "${card.name}" ohne Sonderzeichen. ${
+      userGoals ? `Berücksichtige bei der Deutung folgende Ziele des Users: ${userGoals}.` : ""
+    } ${cardReadingPrompt}`;
+
     const response = await model.generateContent(prompt);
     const description = response.response.candidates[0].content.parts[0].text;
 
@@ -48,7 +63,7 @@ app.post("/tarot/drawn-card", async (req: Request, res: Response) => {
     // Speichere die Karte in der Tabelle drawn_cards inklusive Beschreibung
     const newCard = await db
       .insert(drawnCardsTable)
-      .values({ ...rest, description })
+      .values({ ...card, description })
       .returning();
     console.log("newCard:", newCard);
     res.status(201).json(newCard[0]);
@@ -61,11 +76,15 @@ app.post("/tarot/drawn-card", async (req: Request, res: Response) => {
 // Falls du mehrere Karten gleichzeitig speichern möchtest, kannst du diesen Endpoint anpassen oder entfernen
 // Hier aber nutzen wir ausschließlich den Einzelkarten-Endpoint
 
-// Endpoint, um eine Karte zu erklären (optional)
+// Fix the card explanation endpoint
 app.get("/tarot/cards/:cardName", async (req: Request, res: Response) => {
   try {
     const cardName = decodeURIComponent(req.params.cardName);
-    const prompt = `Du legst Tarot Karten für Menschen. Erkläre kurz und prägnant die Karte "${cardName}" ohne Sonderzeichen.`;
+    const userGoals = req.body.userGoals || "";
+    const cardReadingPrompt = "Deute die Karte im Kontext der aktuellen Situation.";
+    
+    const prompt = `Du legst Tarot Karten für Menschen. Erkläre und deute prägnant die Karte "${cardName}" ohne Sonderzeichen. Berücksichtige bei der Deutung folgende Ziele des Users: ${userGoals}. ${cardReadingPrompt}`;
+    
     const response = await model.generateContent(prompt);
     const geminiResponse = response.response.candidates[0].content.parts[0].text;
     res.json({ explanation: geminiResponse });
@@ -75,10 +94,9 @@ app.get("/tarot/cards/:cardName", async (req: Request, res: Response) => {
   }
 });
 
-// Füge diesen neuen Endpoint hinzu
-app.post("/tarot/summary", async (req: Request, res: Response) => {
+app.post("/tarot/summary", async (req: Request<{}, {}, CardRequest>, res: Response) => {
   try {
-    const { cards } = req.body;
+    const { cards, userGoals = "" } = req.body;
     console.log('Received cards for summary:', cards); // Debug log
 
     if (!cards || !Array.isArray(cards) || cards.length === 0) {
@@ -89,7 +107,9 @@ app.post("/tarot/summary", async (req: Request, res: Response) => {
     console.log('Card names for prompt:', cardNames); // Debug log
 
     const prompt = `Du bist ein erfahrener Tarot-Kartenleser. 
-    Gib eine zusammenhängende, persönliche Interpretation der folgenden drei Tarotkarten: ${cardNames}. Die erste Karte repräsentiert die jetzige persönliche Lage, die zweite ein mögliches Problem und die dritte ein Lösungsansatz oder Weisung. 
+    Gib eine zusammenhängende, persönliche Interpretation der folgenden drei Tarotkarten: ${cardNames}. Die erste Karte repräsentiert die jetzige persönliche Lage, die zweite ein mögliches Problem und die dritte ein Lösungsansatz oder Weisung. ${
+      userGoals ? `Berücksichtige bei der Deutung folgende Ziele des Users: ${userGoals}.` : ""
+    }
     Die Interpretation soll motivierend und aufschlussreich sein, aber nicht länger als 5-6 Sätze.`;
 
     const response = await model.generateContent(prompt);
@@ -112,6 +132,98 @@ app.post("/tarot/summary", async (req: Request, res: Response) => {
       error: "Fehler bei der Erstellung der Zusammenfassung",
       details: (error as Error).message
     });
+  }
+});
+
+app.post("/users", async (req: Request, res: Response) => {
+  try {
+    const { username, authProvider, authId, goals } = req.body;
+    const newUser = await db
+      .insert(usersTable)
+      .values({
+        username,
+        authProvider,
+        authId,
+        goals,
+      })
+      .returning();
+    res.status(201).json(newUser[0]);
+  } catch (error) {
+    console.error("Error creating user:", error);
+    res.status(500).json({ error: "Failed to create user" });
+  }
+});
+
+// Fix the goals update endpoint type
+app.put("/users/:authId/goals", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { goals } = req.body;
+    const { authId } = req.params;
+    
+    const updatedUser = await db
+      .update(usersTable)
+      .set({ 
+        goals,
+        updatedAt: new Date()
+      })
+      .where(eq(usersTable.authId, authId))
+      .returning();
+      
+    if (!updatedUser.length) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    res.json(updatedUser[0]);
+  } catch (error) {
+    console.error("Error updating goals:", error);
+    res.status(500).json({ error: "Failed to update goals" });
+  }
+});
+
+// Fix the login endpoint type
+app.post("/auth/login", async (req: Request, res: Response) => {
+  try {
+    const { authProvider, authId, username, goals } = req.body;
+    
+    const existingUser = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.authId, authId))
+      .limit(1);
+
+    if (existingUser.length) {
+      const token = generateToken({ 
+        id: existingUser[0].id.toString(), 
+        authProvider 
+      });
+      return res.json({ token, user: existingUser[0] });
+    }
+
+    // Neuen User erstellen
+    const newUser: NewUser = {
+      authId,
+      username,
+      authProvider,
+      goals,
+    };
+
+    const insertedUser = await db
+      .insert(usersTable)
+      .values(newUser)
+      .returning();
+
+    const token = generateToken({ 
+      id: insertedUser[0].id.toString(), 
+      authProvider 
+    });
+    
+    res.status(201).json({
+      token,
+      user: insertedUser[0]
+    });
+  } catch (error) {
+    console.error("Auth error:", error);
+    res.status(500).json({ error: "Authentication failed" });
   }
 });
 

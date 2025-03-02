@@ -1,14 +1,20 @@
-import { integer, pgTable, varchar, text } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, text, timestamp } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  name: varchar({ length: 255 }).notNull(),
-  age: integer().notNull(),
-  email: varchar({ length: 255 }).notNull().unique(),
+  id: serial("id").primaryKey(),
+  authId: varchar("auth_id", { length: 255 }).notNull().unique(),
+  username: varchar("username", { length: 255 }).notNull(),
+  authProvider: varchar("auth_provider", { length: 20 }).notNull(),
+  goals: text("goals"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export type User = typeof usersTable.$inferSelect;
+export type NewUser = typeof usersTable.$inferInsert;
+
 export const drawnCardsTable = pgTable("drawn_cards", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  name: varchar({ length: 255 }).notNull(),
-  description: text().notNull(),
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description").notNull(),
 });

@@ -10,7 +10,6 @@ interface TarotCardProps {
 
 export interface ITarotCard {
   id: string;
-  name: string;
   image: any;
   description?: string;
   showFront?: boolean;
@@ -24,14 +23,28 @@ export default function TarotCard({
   style,
 }: TarotCardProps) {
   return (
-    <View style={[{ position: "relative" }, style]}>
+    <View
+      style={[
+        {
+          position: "relative",
+          borderWidth: 0.4,
+          borderColor: "rgba(224, 224, 224, 1)",
+          borderRadius: 16,
+        },
+        style,
+      ]}
+    >
       <Image
         source={
           isShown ? image : require("@/assets/images/tarot_cards/Card_back.png")
         }
-        style={{ width: "100%", height: "100%", borderRadius: 16 }}
+        style={{
+          width: "100%",
+          height: "100%",
+          borderRadius: 16,
+        }}
       />
-      {isShown && (
+      {isShown && name && (
         <Text
           style={{
             position: "absolute",

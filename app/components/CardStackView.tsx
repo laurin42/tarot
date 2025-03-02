@@ -107,50 +107,45 @@ const CardStackView = memo(({ ...props }: CardStackViewProps) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.glowContainer} /> {/* Single glow layer */}
-      {cards.map((card, index) => (
-        <Animated.View
-          key={`${currentRound}-${index}`}
-          style={[
-            styles.animatedCard,
-            {
-              zIndex: cards.length - index,
-              transform: [
-                { translateY: fanAnimation.translateY[index] },
-                { translateX: fanAnimation.translateX[index] },
-                {
-                  rotate: fanAnimation.rotations[index].interpolate({
-                    inputRange: [-30, 30],
-                    outputRange: ["-30deg", "30deg"],
-                  }),
-                },
-                { scale: fanAnimation.scales[index] },
-              ],
-            },
-          ]}
-        >
-          <Pressable
-            style={({ pressed }) => [
-              styles.cardPressable,
-              { opacity: pressed ? 0.8 : 1 },
+      <View style={styles.glowContainer} />
+      <View style={styles.cardsContainer}>
+        {cards.map((card, index) => (
+          <Animated.View
+            key={`${currentRound}-${index}`}
+            style={[
+              styles.animatedCard,
+              {
+                zIndex: cards.length - index,
+                transform: [
+                  { translateY: fanAnimation.translateY[index] },
+                  { translateX: fanAnimation.translateX[index] },
+                  {
+                    rotate: fanAnimation.rotations[index].interpolate({
+                      inputRange: [-30, 30],
+                      outputRange: ["-30deg", "30deg"],
+                    }),
+                  },
+                  { scale: fanAnimation.scales[index] },
+                ],
+              },
             ]}
-            onPress={() => handleCardSelect(card)}
           >
-            <TarotCard
-              image={card.image}
-              isShown={card.showFront || false}
-              style={[
-                styles.cardImage,
-                {
+            <Pressable
+              style={styles.cardPressable}
+              onPress={() => handleCardSelect(card)}
+            >
+              <TarotCard
+                image={card.image}
+                isShown={card.showFront || false}
+                style={{
                   width: cardDimensions.width,
                   height: cardDimensions.height,
-                },
-              ]}
-              name={card.name}
-            />
-          </Pressable>
-        </Animated.View>
-      ))}
+                }}
+              />
+            </Pressable>
+          </Animated.View>
+        ))}
+      </View>
     </View>
   );
 });
@@ -263,6 +258,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "rgba(139, 92, 246, 0.2)",
+  },
+  cardsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
   cardName: {
     position: "absolute",
