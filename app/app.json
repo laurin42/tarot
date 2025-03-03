@@ -1,16 +1,18 @@
 {
   "expo": {
-    "name": "app",
-    "slug": "app",
+    "name": "tarot",
+    "slug": "tarot",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "tarot",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.laurin.tarot"
+      "bundleIdentifier": "com.laurin.tarot",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -26,23 +28,23 @@
     },
     "plugins": [
       "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ]
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
     },
-    "jsEngine": "jsc"
-  },
-  "updates": {
-    "enabled": true,
-    "checkAutomatically": "ON_LOAD"
+    "jsEngine": "jsc",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "0a51456a-1e95-433d-a4f1-a8f9bc5a9c3c"
+      }
+    },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD"
+    }
   }
 }

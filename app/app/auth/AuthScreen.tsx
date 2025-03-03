@@ -5,24 +5,21 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Platform,
 } from "react-native";
+import * as Google from "expo-auth-session/providers/google";
 import * as AppleAuthentication from "expo-apple-authentication";
-import { useAuthRequest } from "expo-auth-session/providers/google";
-import { useAuthRequestResult } from "expo-auth-session";
-import { makeRedirectUri } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
+import { makeRedirectUri } from "expo-auth-session";
 import { useAuth } from "../../context/AuthContext";
+import { useGoogleAuth } from "../../providers/GoogleAuthProvider";
+
+// Initialize WebBrowser for auth session
+WebBrowser.maybeCompleteAuthSession();
 
 interface AuthResponse {
   token: string;
   error?: string;
-}
-interface GoogleAuthResponse extends ReturnType<typeof useAuthRequestResult> {
-  type?: string;
-  authentication?: {
-    accessToken: string;
-    idToken?: string;
-  };
 }
 
 const styles = StyleSheet.create({
@@ -76,14 +73,19 @@ export default function AuthScreen() {
   const [isAppleAuthAvailable, setIsAppleAuthAvailable] = useState(false);
   const [isAppleLoading, setIsAppleLoading] = useState(false);
 
-  WebBrowser.maybeCompleteAuthSession();
-
-  const [_, response, promptAsync] = useAuthRequest({
-    clientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
+    androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
     iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
-    scopes: ["profile", "email"],
-    redirectUri: makeRedirectUri(),
-  }) as [any, GoogleAuthResponse | null, () => Promise<GoogleAuthResponse>];
+    webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
+    responseType: "id_token",
+    redirectUri: makeRedirectUri({
+      scheme: "tarot",
+      path: "auth",
+      preferLocalhost: false,
+      useProxy: true,
+    }),
+  });
 
   const handleAuthError = useCallback((error: Error) => {
     console.error("Authentication failed:", error);
@@ -121,11 +123,35 @@ export default function AuthScreen() {
     [signIn, handleAuthError]
   );
 
-  const handleGoogleAuth = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    await promptAsync();
-  }, [promptAsync]);
+  const handleGoogleSignIn = useCallback(async () => {
+    try {
+      if (!request) {
+        setError("Authentication request is not ready");
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      const result = await promptAsync();
+      console.log("Auth result:", result); // Debug logging
+
+      if (result?.type === "success") {
+        const { id_token } = result.params;
+        if (!id_token) {
+          throw new Error("No ID token received");
+        }
+        await signIn(id_token);
+      } else {
+        setError("Anmeldung fehlgeschlagen");
+      }
+    } catch (err) {
+      console.error("Google Sign In Error:", err);
+      setError("Ein Fehler ist aufgetreten");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [request, promptAsync, signIn]);
 
   const handleAppleAuth = useCallback(async () => {
     try {
@@ -159,15 +185,12 @@ export default function AuthScreen() {
     checkAppleAuth();
   }, []);
 
-  React.useEffect(() => {
-    if (response?.type === "success" && response.authentication?.idToken) {
-      handleServerAuth({
-        authProvider: "google",
-        authId: response.authentication.idToken,
-        username: undefined, // Add username from Google profile if needed
-      });
+  useEffect(() => {
+    if (response?.type === "success") {
+      const { id_token } = response.params;
+      signIn(id_token);
     }
-  }, [response, handleServerAuth]);
+  }, [response, signIn]);
 
   return (
     <View style={styles.container}>
@@ -175,7 +198,7 @@ export default function AuthScreen() {
 
       <TouchableOpacity
         style={[styles.googleButton, isLoading && styles.buttonDisabled]}
-        onPress={handleGoogleAuth}
+        onPress={handleGoogleSignIn}
         disabled={isLoading}
       >
         {isLoading ? (
