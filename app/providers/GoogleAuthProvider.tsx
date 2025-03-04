@@ -1,6 +1,7 @@
 import { createContext, useContext, useCallback } from "react";
 import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
+import { makeRedirectUri } from "expo-auth-session";
 import { Platform } from "react-native";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -9,19 +10,25 @@ const GoogleAuthConfig = {
   androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
   iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
   webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
-  expoClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
+  responseType: "id_token" as const,
+  usePKCE: true,
+  webOptions: {
+    preferEphemeralSession: true,
+  },
 };
 
 export function useGoogleAuth() {
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     ...GoogleAuthConfig,
     selectAccount: true,
-    responseType: "id_token",
     shouldAutoExchangeCode: false,
-    redirectUri: Platform.select({
-      web: "https://auth.expo.io/@your-expo-username/tarot",
-      default: "tarot://oauth2redirect",
-    }),
+    redirectUri:
+      Platform.OS === "web"
+        ? "http://localhost:19006/auth/google"
+        : makeRedirectUri({
+            scheme: "tarot",
+            path: "oauth2redirect/google",
+          }),
   });
 
   return {
@@ -29,10 +36,7 @@ export function useGoogleAuth() {
     response,
     promptAsync: useCallback(async () => {
       try {
-        const result = await promptAsync({
-          showInRecents: true,
-          useProxy: true,
-        });
+        const result = await promptAsync();
 
         if (result?.type === "success") {
           const idToken = result.params?.id_token;

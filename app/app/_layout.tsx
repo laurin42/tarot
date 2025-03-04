@@ -9,6 +9,11 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import "react-native-reanimated";
+import { StyleSheet } from "react-native";
+
+if (typeof document !== "undefined") {
+  document.documentElement.classList.add("darkMode");
+}
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 
