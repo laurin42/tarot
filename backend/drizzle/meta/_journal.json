@@ -15,6 +15,13 @@
       "when": 1740930927885,
       "tag": "0001_fancy_rachel_grey",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1741106200691,
+      "tag": "0002_rich_scarlet_witch",
+      "breakpoints": true
     }
   ]
 }
