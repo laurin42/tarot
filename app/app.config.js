@@ -14,7 +14,10 @@ export default {
     },
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.laurin.tarot"
+      bundleIdentifier: "com.laurin.tarot",
+      config: {
+        usesNonExemptEncryption: false
+      }
     },
     android: {
       package: "com.laurin.tarot",

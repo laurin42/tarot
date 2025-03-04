@@ -74,18 +74,14 @@ export default function AuthScreen() {
   const [isAppleLoading, setIsAppleLoading] = useState(false);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
-    expoClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
     androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
     iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
     webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
     responseType: "id_token",
     redirectUri: makeRedirectUri({
-      scheme: "tarot",
-      path: "auth",
-      preferLocalhost: false,
-      useProxy: true,
+      native: "tarot://",
     }),
-  });
+  } as Google.GoogleAuthRequestConfig);
 
   const handleAuthError = useCallback((error: Error) => {
     console.error("Authentication failed:", error);
