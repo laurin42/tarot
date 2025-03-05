@@ -21,6 +21,13 @@ export default function ProfileScreen() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  // Add this useEffect to update local goals when user changes
+  useEffect(() => {
+    if (user?.goals !== undefined) {
+      setGoals(user.goals);
+    }
+  }, [user]);
+
   const handleUpdateGoals = async () => {
     try {
       setIsLoading(true);

@@ -4,11 +4,11 @@ import dotenv from "dotenv";
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import { usersTable, drawnCardsTable, type NewUser } from "./db/schema"; // tarotCardsTable entfernt
+import { usersTable, drawnCardsTable, type NewUser } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { authMiddleware, generateToken } from './middleware/auth';
 
-// Umgebungsvariablen laden
+// Load environment variables
 dotenv.config();
 
 const pool = new Pool({
@@ -20,23 +20,18 @@ const genAI = new GoogleGenerativeAI(process.env.API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const app: Application = express();
-const port = process.env.PORT || 8000;
+const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8000;
 
 app.use(cors());
 app.use(express.json());
 
-// Optional: Endpoint, um einen User oder andere Daten zu verwalten
-app.post("/tarot/cards", async (req: Request, res: Response) => {
-  // Dieser Endpoint wird jetzt nicht mehr für Karten genutzt
-  res.status(404).json({ error: "Nicht verfügbar" });
-});
-
-// Add interfaces for request types
+// Interface for card requests
 interface CardRequest {
   cards: Array<{ name: string }>;
   userGoals?: string;
 }
 
+// Add interfaces for request types
 interface GoalsUpdateRequest {
   goals: string;
 }
@@ -149,7 +144,7 @@ app.post("/users", async (req: Request, res: Response) => {
       .returning();
     res.status(201).json(newUser[0]);
   } catch (error) {
-    console.error("Error creating user:", error);
+    console.error("Error user:", error);
     res.status(500).json({ error: "Failed to create user" });
   }
 });
@@ -180,10 +175,17 @@ app.put("/users/:authId/goals", authMiddleware, async (req: Request, res: Respon
   }
 });
 
-// Fix the login endpoint type
+// Fix your auth/login endpoint to handle missing fields and add better error logging
 app.post("/auth/login", async (req: Request, res: Response) => {
   try {
-    const { authProvider, authId, username, goals } = req.body;
+    console.log("📝 Auth login request received:", req.body);
+    const { authProvider, authId, username, email, picture, profile } = req.body;
+    
+    // Validate required fields
+    if (!authProvider || !authId) {
+      console.error("❌ Missing required auth fields:", { authProvider, authIdExists: !!authId });
+      return res.status(400).json({ error: "Missing required authentication data" });
+    }
     
     const existingUser = await db
       .select()
@@ -192,6 +194,7 @@ app.post("/auth/login", async (req: Request, res: Response) => {
       .limit(1);
 
     if (existingUser.length) {
+      console.log("✅ Existing user found:", existingUser[0].id);
       const token = generateToken({ 
         id: existingUser[0].id.toString(), 
         authProvider 
@@ -199,19 +202,27 @@ app.post("/auth/login", async (req: Request, res: Response) => {
       return res.json({ token, user: existingUser[0] });
     }
 
-    // Neuen User erstellen
-    const newUser: NewUser = {
+    // Create new user with safer handling of optional fields
+    console.log("🆕 Creating new user with:", { authProvider, username: username || "New User" });
+    const newUser = {
       authId,
-      username,
+      username: username || "New User",
       authProvider,
-      goals,
+      email: email || null,
+      picture: picture || null,
+      profile: profile ? JSON.stringify(profile) : null,
+      goals: "",
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
+    // Insert user with explicit fields to avoid schema mismatch errors
     const insertedUser = await db
       .insert(usersTable)
       .values(newUser)
       .returning();
 
+    console.log("✅ New user created:", insertedUser[0].id);
     const token = generateToken({ 
       id: insertedUser[0].id.toString(), 
       authProvider 
@@ -222,11 +233,87 @@ app.post("/auth/login", async (req: Request, res: Response) => {
       user: insertedUser[0]
     });
   } catch (error) {
-    console.error("Auth error:", error);
-    res.status(500).json({ error: "Authentication failed" });
+    console.error("❌ Auth error details:", error);
+    res.status(500).json({ 
+      error: "Authentication failed", 
+      details: error instanceof Error ? error.message : "Unknown error" 
+    });
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server ist aktiv auf http://192.168.178.67:${port}`);
+// Add this endpoint to get user profile
+app.get("/auth/me", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    // Add more debug info
+    console.log("👤 /auth/me - Headers:", req.headers);
+    console.log("👤 /auth/me - Auth token present:", !!req.headers.authorization);
+    console.log("👤 /auth/me - User ID from token:", req.user?.id);
+    
+    if (!req.user?.id) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    const userId = parseInt(req.user.id);
+    console.log(`🔍 Looking up user with ID: ${userId}`);
+    
+    const user = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, userId))
+      .limit(1);
+    
+    console.log(`🔍 User found: ${user.length > 0 ? "Yes" : "No"}`);
+      
+    if (!user.length) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    // Send user data including authId
+    res.json(user[0]);
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    res.status(500).json({ error: "Failed to fetch user profile" });
+  }
+});
+
+// Add this simple endpoint to verify token formatting
+app.get("/auth/verify-token", (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    console.log("🔍 Auth header received:", {
+      exists: !!authHeader,
+      value: authHeader ? authHeader.substring(0, 20) + "..." : "missing"
+    });
+    
+    if (!authHeader) {
+      return res.status(401).json({ 
+        error: "No authorization header", 
+        headers: Object.keys(req.headers)
+      });
+    }
+    
+    if (!authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ 
+        error: "Invalid authorization format", 
+        format: authHeader.substring(0, 20)
+      });
+    }
+    
+    const token = authHeader.split(' ')[1];
+    res.json({ 
+      status: "success",
+      tokenReceived: !!token,
+      tokenLength: token.length
+    });
+  } catch (error) {
+    console.error("Token verification error:", error);
+    res.status(500).json({ error: "Token verification failed" });
+  }
+});
+
+// Change this line at the bottom
+app.listen(port, "0.0.0.0", () => {
+  // Use 0.0.0.0 to listen on all network interfaces
+  console.log(`Server ist aktiv auf http://${process.env.SERVER_HOST || '0.0.0.0'}:${port}`);
+  console.log(`API URL in .env: ${process.env.EXPO_PUBLIC_API_URL}`);
 });

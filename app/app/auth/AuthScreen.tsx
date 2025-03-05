@@ -121,33 +121,62 @@ export default function AuthScreen() {
 
   const handleGoogleSignIn = useCallback(async () => {
     try {
-      if (!request) {
-        setError("Authentication request is not ready");
-        return;
-      }
-
       setIsLoading(true);
       setError(null);
 
       const result = await promptAsync();
-      console.log("Auth result:", result); // Debug logging
+      console.log("Auth result type:", result?.type);
 
       if (result?.type === "success") {
         const { id_token } = result.params;
         if (!id_token) {
           throw new Error("No ID token received");
         }
-        await signIn(id_token);
+
+        console.log("🔄 Exchanging Google token for server token...");
+
+        // Send minimum required data
+        const response = await fetch(
+          `${process.env.EXPO_PUBLIC_API_URL}/auth/login`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              authProvider: "google",
+              authId: id_token,
+              username: "Google User", // Provide a safe default
+            }),
+          }
+        );
+
+        // Handle HTTP errors better
+        if (!response.ok) {
+          const errorData = await response
+            .json()
+            .catch(() => ({ error: "Unknown error" }));
+          console.error("Server login failed:", response.status, errorData);
+          throw new Error(
+            errorData.error || `Server error: ${response.status}`
+          );
+        }
+
+        const authData = await response.json();
+        console.log("✅ Got server token");
+        await signIn(authData.token);
       } else {
         setError("Anmeldung fehlgeschlagen");
       }
     } catch (err) {
       console.error("Google Sign In Error:", err);
-      setError("Ein Fehler ist aufgetreten");
+      setError(
+        err instanceof Error ? err.message : "Ein Fehler ist aufgetreten"
+      );
     } finally {
       setIsLoading(false);
     }
-  }, [request, promptAsync, signIn]);
+  }, [promptAsync, signIn]);
 
   const handleAppleAuth = useCallback(async () => {
     try {
@@ -180,13 +209,6 @@ export default function AuthScreen() {
     };
     checkAppleAuth();
   }, []);
-
-  useEffect(() => {
-    if (response?.type === "success") {
-      const { id_token } = response.params;
-      signIn(id_token);
-    }
-  }, [response, signIn]);
 
   return (
     <View style={styles.container}>

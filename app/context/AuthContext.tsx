@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { router } from "expo-router";
 import { storage } from "../utils/storage";
+import { useUser } from "./UserContext"; // Import useUser to access user context
 
 interface AuthState {
   token: string | null;
@@ -22,6 +23,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading: true,
   });
 
+  // Use UserContext to manage user data
+  const { setUser } = useUser();
+
   useEffect(() => {
     loadToken();
   }, []);
@@ -34,34 +38,99 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!token,
         isLoading: false,
       });
+
+      // If we have a token, also try to load user data
+      if (token) {
+        try {
+          const userData = await storage.getItem("userData");
+          if (userData) {
+            setUser(JSON.parse(userData));
+          }
+        } catch (error) {
+          console.error("Failed to load user data:", error);
+        }
+      }
     } catch (error) {
       console.error("Failed to load token:", error);
       setState((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
+  // Update the signIn function to properly navigate after setting auth state
   const signIn = async (token: string) => {
     try {
+      console.log("🔑 Signing in with token:", token.substring(0, 10) + "...");
+      // Save token
       await storage.setItem("userToken", token);
+
+      // Update auth state FIRST so navigation works properly
       setState({
         token,
         isAuthenticated: true,
         isLoading: false,
       });
-      router.replace("/(tabs)");
-    } catch (error) {
-      console.error("Sign in failed:", error);
-    }
-  };
 
-  const signOut = async () => {
-    try {
+      // Navigate to the main app IMMEDIATELY after updating state
+      console.log("📱 Navigating to main app...");
+      router.replace("/(tabs)");
+
+      // Try to fetch profile in the background after navigation
+      try {
+        console.log("🔍 Fetching user profile...");
+        const response = await fetch(
+          `${process.env.EXPO_PUBLIC_API_URL}/auth/me`,
+          {
+            headers: {
+              // Make sure header format is exactly: Bearer <token>
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        console.log("Profile fetch status:", response.status);
+
+        if (!response.ok) {
+          console.error("Profile fetch failed with status:", response.status);
+          return; // Continue anyway
+        }
+
+        const userData = await response.json();
+        // Update user data in the background
+        if (userData) {
+          setUser(userData);
+          await storage.setItem("userData", JSON.stringify(userData));
+        }
+      } catch (profileError) {
+        console.error("Profile fetch error:", profileError);
+        // Don't block auth flow on profile fetch errors
+      }
+    } catch (error) {
+      console.error("Auth critical error:", error);
+      // Only reset on critical errors
       await storage.removeItem("userToken");
       setState({
         token: null,
         isAuthenticated: false,
         isLoading: false,
       });
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      await storage.removeItem("userToken");
+      await storage.removeItem("userData"); // Also remove user data
+
+      setState({
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
+
+      // Clear user data in context
+      setUser(null);
+
       router.replace("/(auth)");
     } catch (error) {
       console.error("Sign out failed:", error);
