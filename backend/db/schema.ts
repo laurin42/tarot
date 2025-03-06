@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, timestamp } from "drizzle-orm/pg-core";
+import { integer, pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -19,5 +19,9 @@ export type NewUser = typeof usersTable.$inferInsert;
 export const drawnCardsTable = pgTable("drawn_cards", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
-  description: text("description").notNull(),
+  description: text("description"),
+  userId: integer("user_id").references(() => usersTable.id),
+  position: integer("position"),
+  sessionId: varchar("session_id", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow().notNull()
 });

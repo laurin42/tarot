@@ -5,7 +5,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import { usersTable, drawnCardsTable, type NewUser } from "./db/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { authMiddleware, generateToken } from './middleware/auth';
 
 // Load environment variables
@@ -71,36 +71,77 @@ app.post("/tarot/card", async (req: Request<{}, {}, CardRequest>, res: Response)
 // Falls du mehrere Karten gleichzeitig speichern möchtest, kannst du diesen Endpoint anpassen oder entfernen
 // Hier aber nutzen wir ausschließlich den Einzelkarten-Endpoint
 
-// Fix the card explanation endpoint
-app.get("/tarot/cards/:cardName", async (req: Request, res: Response) => {
+app.get("/tarot/cards/:cardName", authMiddleware, async (req: Request, res: Response) => {
   try {
     const cardName = decodeURIComponent(req.params.cardName);
-    const userGoals = req.body.userGoals || "";
+    
+    // Get user ID from token to fetch their goals
+    const userId = req.user?.id;
+    let userGoals = "";
+    
+    if (userId) {
+      // Try to get user's goals from database
+      const user = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.id, parseInt(userId)))
+        .limit(1);
+        
+      if (user.length > 0) {
+        userGoals = user[0].goals || "";
+      }
+    }
+    
     const cardReadingPrompt = "Deute die Karte im Kontext der aktuellen Situation.";
     
+    // Include user goals in the prompt
     const prompt = `Du legst Tarot Karten für Menschen. Erkläre und deute prägnant die Karte "${cardName}" ohne Sonderzeichen. Berücksichtige bei der Deutung folgende Ziele des Users: ${userGoals}. ${cardReadingPrompt}`;
     
     const response = await model.generateContent(prompt);
     const geminiResponse = response.response.candidates[0].content.parts[0].text;
-    res.json({ explanation: geminiResponse });
+    
+    res.json({ 
+      explanation: geminiResponse,
+      goalsIncluded: userGoals ? true : false // Debug info
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Fehler bei der Erklärungserstellung" });
   }
 });
 
-app.post("/tarot/summary", async (req: Request<{}, {}, CardRequest>, res: Response) => {
+app.post("/tarot/summary", authMiddleware, async (req: Request<{}, {}, CardRequest>, res: Response) => {
   try {
-    const { cards, userGoals = "" } = req.body;
-    console.log('Received cards for summary:', cards); // Debug log
-
+    const { cards } = req.body;
+    let userGoals = "";
+    
+    // Get user ID from token to fetch their goals
+    const userId = req.user?.id;
+    
+    if (userId) {
+      // Try to get user's goals from database
+      const user = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.id, parseInt(userId)))
+        .limit(1);
+        
+      if (user.length > 0) {
+        userGoals = user[0].goals || "";
+      }
+    }
+    
+    // Otherwise, use goals from request if provided as fallback
+    if (!userGoals && req.body.userGoals) {
+      userGoals = req.body.userGoals;
+    }
+    
     if (!cards || !Array.isArray(cards) || cards.length === 0) {
       throw new Error('Invalid or empty cards array received');
     }
 
     const cardNames = cards.map((card: any) => card.name).join(", ");
-    console.log('Card names for prompt:', cardNames); // Debug log
-
+    
     const prompt = `Du bist ein erfahrener Tarot-Kartenleser. 
     Gib eine zusammenhängende, persönliche Interpretation der folgenden drei Tarotkarten: ${cardNames}. Die erste Karte repräsentiert die jetzige persönliche Lage, die zweite ein mögliches Problem und die dritte ein Lösungsansatz oder Weisung. ${
       userGoals ? `Berücksichtige bei der Deutung folgende Ziele des Users: ${userGoals}.` : ""
@@ -109,7 +150,6 @@ app.post("/tarot/summary", async (req: Request<{}, {}, CardRequest>, res: Respon
 
     const response = await model.generateContent(prompt);
     const summary = response.response.candidates[0].content.parts[0].text;
-    console.log('Generated summary:', summary); // Debug log
 
     if (!summary) {
       throw new Error("Es wurde keine Zusammenfassung generiert.");
@@ -118,11 +158,11 @@ app.post("/tarot/summary", async (req: Request<{}, {}, CardRequest>, res: Respon
     res.json({ 
       success: true,
       summary,
-      cards: cardNames // Include cards for verification
+      cards: cardNames,
+      goalsIncluded: userGoals ? true : false // Debug info
     });
-
   } catch (error) {
-    console.error("Detailed error in /tarot/summary:", error);
+    console.error("Error in /tarot/summary:", error);
     res.status(500).json({ 
       error: "Fehler bei der Erstellung der Zusammenfassung",
       details: (error as Error).message
@@ -149,6 +189,107 @@ app.post("/users", async (req: Request, res: Response) => {
   }
 });
 
+// Add this endpoint for saving drawn cards with proper user association
+app.post("/tarot/drawn-card", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { name, description, position = null, sessionId = null } = req.body;
+    const userId = req.user?.id ? parseInt(req.user.id) : null;
+    
+    console.log("📝 Saving card:", { name, userId, position });
+    
+    if (!userId) {
+      console.log("⚠️ No user ID found, not saving card");
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    // Insert card with user association and timestamp
+    const result = await db.insert(drawnCardsTable).values({
+      name,
+      description,
+      userId,
+      position,
+      sessionId: sessionId || `session_${Date.now()}`, // Generate session ID if not provided
+      createdAt: new Date() // Current timestamp
+    }).returning();
+    
+    console.log("✅ Card saved:", result[0]);
+    res.status(201).json(result[0]);
+  } catch (error) {
+    console.error("Error saving card:", error);
+    res.status(500).json({ 
+      error: "Failed to save card",
+      details: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
+// Add endpoint to get user's card history
+app.get("/users/me/cards", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id ? parseInt(req.user.id) : null;
+    
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    // Get user's card history, ordered by most recent first
+    const userCards = await db
+      .select()
+      .from(drawnCardsTable)
+      .where(eq(drawnCardsTable.userId, userId))
+      .orderBy(desc(drawnCardsTable.createdAt));
+      
+    // Group cards by session for readings
+    const readings = userCards.reduce((acc: any, card: any) => {
+      if (!acc[card.sessionId]) {
+        acc[card.sessionId] = {
+          date: card.createdAt,
+          cards: []
+        };
+      }
+      
+      acc[card.sessionId].cards.push(card);
+      return acc;
+    }, {});
+    
+    res.json({
+      cards: userCards,
+      readings: Object.values(readings)
+    });
+  } catch (error) {
+    console.error("Error fetching user cards:", error);
+    res.status(500).json({ error: "Failed to fetch card history" });
+  }
+});
+
+// Add endpoint for saving reading summaries
+app.post("/tarot/reading-summary", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { sessionId, summary, cardNames } = req.body;
+    const userId = req.user?.id ? parseInt(req.user.id) : null;
+    
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    
+    // Insert summary as a special card record
+    const result = await db.insert(drawnCardsTable).values({
+      name: "Reading Summary",
+      description: summary,
+      userId,
+      sessionId,
+      position: 999, // Special position to indicate it's a summary
+      createdAt: new Date()
+    }).returning();
+    
+    console.log("✅ Reading summary saved:", result[0]);
+    res.status(201).json(result[0]);
+  } catch (error) {
+    console.error("Error saving reading summary:", error);
+    res.status(500).json({ error: "Failed to save reading summary" });
+  }
+});
+
 // Fix the goals update endpoint type
 app.put("/users/:authId/goals", authMiddleware, async (req: Request, res: Response) => {
   try {
@@ -172,6 +313,29 @@ app.put("/users/:authId/goals", authMiddleware, async (req: Request, res: Respon
   } catch (error) {
     console.error("Error updating goals:", error);
     res.status(500).json({ error: "Failed to update goals" });
+  }
+});
+
+// Add this endpoint to directly access goals
+app.get("/users/:authId/goals", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { authId } = req.params;
+    
+    const user = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.authId, authId))
+      .limit(1);
+      
+    if (!user.length) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    // Return just the goals or the whole user object
+    res.json({ goals: user[0].goals });
+  } catch (error) {
+    console.error("Error retrieving goals:", error);
+    res.status(500).json({ error: "Failed to retrieve goals" });
   }
 });
 

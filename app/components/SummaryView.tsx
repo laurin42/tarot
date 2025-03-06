@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { ISelectedAndShownCard } from "@/constants/tarotcards";
 import TarotCard from "@/components/TarotCard";
+import { storage } from "../utils/storage"; // Import storage utility
 
 interface SummaryViewProps {
   cards: ISelectedAndShownCard[];
@@ -25,27 +26,112 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
     null
   );
 
+  const saveSummaryReading = async (
+    cards: ISelectedAndShownCard[],
+    summary: string
+  ) => {
+    try {
+      const token = await storage.getItem("userToken");
+      if (!token) return;
+
+      const sessionId = `reading_${Date.now()}`;
+
+      // Save each card with the same sessionId to group them
+      await Promise.all(
+        cards.map(async (card, index) => {
+          const headers: HeadersInit = {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          };
+
+          await fetch(
+            `${
+              process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.187:8000"
+            }/tarot/drawn-card`,
+            {
+              method: "POST",
+              headers,
+              body: JSON.stringify({
+                name: card.name,
+                description: card.explanation || "No explanation available",
+                position: index,
+                sessionId,
+              }),
+            }
+          );
+        })
+      );
+
+      // Save the summary as an additional record
+      const summaryHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
+      await fetch(
+        `${
+          process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.187:8000"
+        }/tarot/reading-summary`,
+        {
+          method: "POST",
+          headers: summaryHeaders,
+          body: JSON.stringify({
+            sessionId,
+            summary,
+            cardNames: cards.map((card) => card.name),
+          }),
+        }
+      );
+
+      console.log("✅ Complete reading saved with summary");
+    } catch (error) {
+      console.error("Failed to save reading:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchSummary = async () => {
       try {
+        // Get authentication token if available
+        const token = await storage.getItem("userToken");
+
+        // Prepare headers
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        // Add authorization header if token exists
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
         const response = await fetch(
-          "http://192.168.2.187:8000/tarot/summary",
+          `${
+            process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.187:8000"
+          }/tarot/summary`,
           {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers,
             body: JSON.stringify({ cards }),
           }
         );
 
         if (!response.ok) {
-          throw new Error("Fehler beim Laden der Zusammenfassung");
+          console.error("Summary API error:", response.status);
+          throw new Error(
+            `Fehler beim Laden der Zusammenfassung (${response.status})`
+          );
         }
 
         const data = await response.json();
         setSummary(data.summary);
+
+        // Save the complete reading with summary
+        if (data.summary) {
+          saveSummaryReading(cards, data.summary);
+        }
       } catch (err) {
+        console.error("Summary fetch error:", err);
         setError(
           err instanceof Error ? err.message : "Ein Fehler ist aufgetreten"
         );
