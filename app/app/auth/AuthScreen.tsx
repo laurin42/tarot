@@ -74,15 +74,22 @@ export default function AuthScreen() {
   const [isAppleAuthAvailable, setIsAppleAuthAvailable] = useState(false);
   const [isAppleLoading, setIsAppleLoading] = useState(false);
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
-    iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
-    webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
-    responseType: "id_token",
-    redirectUri: makeRedirectUri({
-      native: "tarot://",
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    iosClientId: Platform.OS === "ios" ? "YOUR_IOS_CLIENT_ID" : undefined,
+    androidClientId:
+      Platform.OS === "android" ? "YOUR_ANDROID_CLIENT_ID" : undefined,
+    webClientId:
+      "907301808555-9uf3r74fku27cpe62r2sln2fu0hl6ks6.apps.googleusercontent.com",
+    clientId:
+      "907301808555-9uf3r74fku27cpe62r2sln2fu0hl6ks6.apps.googleusercontent.com",
+    redirectUri: Platform.select({
+      web: "http://localhost:19006", // Or your actual web redirect
+      default: makeRedirectUri({
+        // @ts-ignore - Ignore TypeScript error about useProxy
+        useProxy: true,
+      }),
     }),
-  } as Google.GoogleAuthRequestConfig);
+  });
 
   const handleAuthError = useCallback((error: Error) => {
     console.error("Authentication failed:", error);
