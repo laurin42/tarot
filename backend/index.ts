@@ -7,6 +7,7 @@ import { Pool } from "pg";
 import { usersTable, drawnCardsTable, type NewUser } from "./db/schema";
 import { eq, desc } from "drizzle-orm";
 import { authMiddleware, generateToken } from './middleware/auth';
+import { jwtDecode } from "jwt-decode";
 
 // Load environment variables
 dotenv.config();
@@ -312,7 +313,7 @@ app.put("/users/:authId/goals", authMiddleware, async (req: Request, res: Respon
     res.json(updatedUser[0]);
   } catch (error) {
     console.error("Error updating goals:", error);
-    res.status(500).json({ error: "Failed to update goals" });
+    res.status (500).json({ error: "Failed to update goals" });
   }
 });
 
@@ -339,26 +340,92 @@ app.get("/users/:authId/goals", authMiddleware, async (req: Request, res: Respon
   }
 });
 
-// Fix your auth/login endpoint to handle missing fields and add better error logging
+// Fix the login endpoint to extract stable user ID
 app.post("/auth/login", async (req: Request, res: Response) => {
   try {
-    console.log("📝 Auth login request received:", req.body);
-    const { authProvider, authId, username, email, picture, profile } = req.body;
+    console.log("📝 Auth login request received");
+    let { authProvider, authId, username, email, picture, profile } = req.body;
+    console.log("✅ Received username:", username); // Debug log
     
     // Validate required fields
     if (!authProvider || !authId) {
-      console.error("❌ Missing required auth fields:", { authProvider, authIdExists: !!authId });
+      console.error("❌ Missing required auth fields");
       return res.status(400).json({ error: "Missing required authentication data" });
     }
     
+    // Handle Google authentication specially - extract stable user ID
+    let stableAuthId = authId;
+    
+    if (authProvider === "google") {
+      try {
+        // Decode the token to get the stable user ID
+        const decoded: any = jwtDecode(authId);
+        
+        // The 'sub' field is the stable Google user ID
+        if (decoded.sub) {
+          stableAuthId = `google|${decoded.sub}`;
+          console.log("✅ Extracted stable Google user ID:", stableAuthId);
+        } else {
+          console.warn("⚠️ No 'sub' field found in Google token");
+        }
+        
+        // IMPORTANT: Only use these as fallbacks if no values were provided
+        // This ensures the frontend-provided values take precedence
+        if (!username && decoded.given_name) {
+          console.log("Using decoded name:", decoded.given_name);
+          username = decoded.given_name;
+        }
+        if (!email && decoded.email) {
+          email = decoded.email;
+        }
+        if (!picture && decoded.picture) {
+          picture = decoded.picture;
+        }
+      } catch (decodeError) {
+        console.error("❌ Failed to decode Google token:", decodeError);
+      }
+    }
+    
+    // Look for existing user with the stable ID
     const existingUser = await db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.authId, authId))
+      .where(eq(usersTable.authId, stableAuthId))
       .limit(1);
 
     if (existingUser.length) {
       console.log("✅ Existing user found:", existingUser[0].id);
+      
+      // Update user profile data if new information is provided
+      if (username || email || picture) {
+        console.log("🔄 Updating existing user profile with new data");
+        
+        await db.update(usersTable)
+          .set({
+            username: username || existingUser[0].username,
+            name: username || existingUser[0].name,
+            email: email || existingUser[0].email,
+            picture: picture || existingUser[0].picture,
+            updatedAt: new Date()
+          })
+          .where(eq(usersTable.id, existingUser[0].id));
+          
+        // Get updated user data
+        const updatedUser = await db
+          .select()
+          .from(usersTable)
+          .where(eq(usersTable.id, existingUser[0].id))
+          .limit(1);
+        
+        const token = generateToken({ 
+          id: updatedUser[0].id.toString(), 
+          authProvider 
+        });
+        
+        return res.json({ token, user: updatedUser[0] });
+      }
+      
+      // If no update needed, return existing user data
       const token = generateToken({ 
         id: existingUser[0].id.toString(), 
         authProvider 
@@ -366,21 +433,21 @@ app.post("/auth/login", async (req: Request, res: Response) => {
       return res.json({ token, user: existingUser[0] });
     }
 
-    // Create new user with safer handling of optional fields
+    // Create new user
     console.log("🆕 Creating new user with:", { authProvider, username: username || "New User" });
     const newUser = {
-      authId,
+      authId: stableAuthId,
       username: username || "New User",
       authProvider,
       email: email || null,
       picture: picture || null,
-      profile: profile ? JSON.stringify(profile) : null,
+      name: username || null,
       goals: "",
       createdAt: new Date(),
       updatedAt: new Date()
     };
 
-    // Insert user with explicit fields to avoid schema mismatch errors
+    // Insert user
     const insertedUser = await db
       .insert(usersTable)
       .values(newUser)

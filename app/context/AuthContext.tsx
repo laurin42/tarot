@@ -119,21 +119,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      await storage.removeItem("userToken");
-      await storage.removeItem("userData"); // Also remove user data
+      console.log("🚪 Signing out...");
 
+      // Clear ALL storage items related to authentication
+      await storage.removeItem("userToken");
+      await storage.removeItem("userData");
+
+      // Clear any other auth-related items you might have
+      try {
+        await storage.removeItem("authSession");
+        await storage.removeItem("userProfile");
+      } catch (e) {
+        console.log("Some items couldn't be removed", e);
+      }
+
+      // Reset auth state
       setState({
         token: null,
         isAuthenticated: false,
         isLoading: false,
       });
 
-      // Clear user data in context
-      setUser(null);
+      // Clear user data in context if you're using that
+      if (typeof setUser === "function") {
+        setUser(null);
+      }
 
+      console.log("✅ Sign out complete");
+
+      // Navigate back to auth screen
       router.replace("/(auth)");
     } catch (error) {
-      console.error("Sign out failed:", error);
+      console.error("❌ Sign out failed:", error);
     }
   };
 

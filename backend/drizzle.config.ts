@@ -1,4 +1,5 @@
 import "dotenv/config";
+import type { Config } from "drizzle-kit";
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
@@ -13,4 +14,6 @@ export default defineConfig({
     port: parseInt(process.env.DB_PORT || "5432"),
     ssl: false
   },
-});
+  verbose: true,
+  strict: true
+} satisfies Config);

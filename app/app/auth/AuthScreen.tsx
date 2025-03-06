@@ -13,6 +13,7 @@ import * as WebBrowser from "expo-web-browser";
 import { makeRedirectUri } from "expo-auth-session";
 import { useAuth } from "../../context/AuthContext";
 import { useGoogleAuth } from "../../providers/GoogleAuthProvider";
+import { jwtDecode } from "jwt-decode";
 
 // Initialize WebBrowser for auth session
 WebBrowser.maybeCompleteAuthSession();
@@ -133,38 +134,58 @@ export default function AuthScreen() {
           throw new Error("No ID token received");
         }
 
-        console.log("🔄 Exchanging Google token for server token...");
+        // Decode the token to extract user info
+        try {
+          const decoded: any = jwtDecode(id_token);
+          console.log("Decoded token:", decoded);
 
-        // Send minimum required data
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_API_URL}/auth/login`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              authProvider: "google",
-              authId: id_token,
-              username: "Google User", // Provide a safe default
-            }),
-          }
-        );
+          // Extract user information
+          const firstName = decoded.given_name || decoded.name || "Google User";
+          const email = decoded.email || "";
+          const picture = decoded.picture || "";
 
-        // Handle HTTP errors better
-        if (!response.ok) {
-          const errorData = await response
-            .json()
-            .catch(() => ({ error: "Unknown error" }));
-          console.error("Server login failed:", response.status, errorData);
-          throw new Error(
-            errorData.error || `Server error: ${response.status}`
+          console.log("🔄 Exchanging Google token for server token...");
+
+          // Send user data with the token
+          const response = await fetch(
+            `${process.env.EXPO_PUBLIC_API_URL}/auth/login`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                authProvider: "google",
+                authId: id_token,
+                username: firstName,
+                email: email,
+                picture: picture,
+              }),
+            }
           );
-        }
 
-        const authData = await response.json();
-        console.log("✅ Got server token");
-        await signIn(authData.token);
+          // Handle HTTP errors better
+          if (!response.ok) {
+            const errorData = await response
+              .json()
+              .catch(() => ({ error: "Unknown error" }));
+            console.error("Server login failed:", response.status, errorData);
+            throw new Error(
+              errorData.error || `Server error: ${response.status}`
+            );
+          }
+
+          const authData = await response.json();
+          console.log("✅ Got server token");
+          await signIn(authData.token);
+        } catch (err) {
+          console.error("Google Sign In Error:", err);
+          setError(
+            err instanceof Error ? err.message : "Ein Fehler ist aufgetreten"
+          );
+        } finally {
+          setIsLoading(false);
+        }
       } else {
         setError("Anmeldung fehlgeschlagen");
       }
