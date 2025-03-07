@@ -7,20 +7,26 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
-import * as Google from "expo-auth-session/providers/google";
 import * as AppleAuthentication from "expo-apple-authentication";
-import * as WebBrowser from "expo-web-browser";
-import { makeRedirectUri } from "expo-auth-session";
 import { useAuth } from "../../context/AuthContext";
-import { useGoogleAuth } from "../../providers/GoogleAuthProvider";
 import { jwtDecode } from "jwt-decode";
-
-// Initialize WebBrowser for auth session
-WebBrowser.maybeCompleteAuthSession();
+import {
+  GoogleSignin,
+  statusCodes,
+  type User,
+} from "@react-native-google-signin/google-signin";
 
 interface AuthResponse {
   token: string;
   error?: string;
+}
+
+interface ServerAuthData {
+  authProvider: string;
+  authId: string;
+  username?: string;
+  email?: string;
+  picture?: string;
 }
 
 const styles = StyleSheet.create({
@@ -74,23 +80,6 @@ export default function AuthScreen() {
   const [isAppleAuthAvailable, setIsAppleAuthAvailable] = useState(false);
   const [isAppleLoading, setIsAppleLoading] = useState(false);
 
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    iosClientId: Platform.OS === "ios" ? "YOUR_IOS_CLIENT_ID" : undefined,
-    androidClientId:
-      Platform.OS === "android" ? "YOUR_ANDROID_CLIENT_ID" : undefined,
-    webClientId:
-      "907301808555-9uf3r74fku27cpe62r2sln2fu0hl6ks6.apps.googleusercontent.com",
-    clientId:
-      "907301808555-9uf3r74fku27cpe62r2sln2fu0hl6ks6.apps.googleusercontent.com",
-    redirectUri: Platform.select({
-      web: "http://localhost:19006", // Or your actual web redirect
-      default: makeRedirectUri({
-        // @ts-ignore - Ignore TypeScript error about useProxy
-        useProxy: true,
-      }),
-    }),
-  });
-
   const handleAuthError = useCallback((error: Error) => {
     console.error("Authentication failed:", error);
     setError("Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.");
@@ -98,11 +87,7 @@ export default function AuthScreen() {
   }, []);
 
   const handleServerAuth = useCallback(
-    async (authData: {
-      authProvider: string;
-      authId: string;
-      username?: string;
-    }) => {
+    async (authData: ServerAuthData) => {
       try {
         const response = await fetch(
           `${process.env.EXPO_PUBLIC_API_URL}/auth/login`,
@@ -127,84 +112,42 @@ export default function AuthScreen() {
     [signIn, handleAuthError]
   );
 
-  const handleGoogleSignIn = useCallback(async () => {
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
+      scopes: ["profile", "email"],
+      offlineAccess: true,
+    });
+  }, []);
+
+  const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const result = await promptAsync();
-      console.log("Auth result type:", result?.type);
+      await GoogleSignin.hasPlayServices();
+      const signInResult = await GoogleSignin.signIn();
+      const tokens = await GoogleSignin.getTokens();
 
-      if (result?.type === "success") {
-        const { id_token } = result.params;
-        if (!id_token) {
-          throw new Error("No ID token received");
-        }
-
-        // Decode the token to extract user info
-        try {
-          const decoded: any = jwtDecode(id_token);
-          console.log("Decoded token:", decoded);
-
-          // Extract user information
-          const firstName = decoded.given_name || decoded.name || "Google User";
-          const email = decoded.email || "";
-          const picture = decoded.picture || "";
-
-          console.log("🔄 Exchanging Google token for server token...");
-
-          // Send user data with the token
-          const response = await fetch(
-            `${process.env.EXPO_PUBLIC_API_URL}/auth/login`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                authProvider: "google",
-                authId: id_token,
-                username: firstName,
-                email: email,
-                picture: picture,
-              }),
-            }
-          );
-
-          // Handle HTTP errors better
-          if (!response.ok) {
-            const errorData = await response
-              .json()
-              .catch(() => ({ error: "Unknown error" }));
-            console.error("Server login failed:", response.status, errorData);
-            throw new Error(
-              errorData.error || `Server error: ${response.status}`
-            );
-          }
-
-          const authData = await response.json();
-          console.log("✅ Got server token");
-          await signIn(authData.token);
-        } catch (err) {
-          console.error("Google Sign In Error:", err);
-          setError(
-            err instanceof Error ? err.message : "Ein Fehler ist aufgetreten"
-          );
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        setError("Anmeldung fehlgeschlagen");
+      if (tokens.accessToken) {
+        await handleServerAuth({
+          authProvider: "google",
+          authId: tokens.accessToken,
+          username: signInResult.user.name || "Google User", // Geändert von givenName
+          email: signInResult.user.email, // Geändert: muss über user property gehen
+          picture: signInResult.user.photo, // Geändert: muss über user property gehen
+        });
       }
-    } catch (err) {
-      console.error("Google Sign In Error:", err);
-      setError(
-        err instanceof Error ? err.message : "Ein Fehler ist aufgetreten"
-      );
+    } catch (error: any) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        setError("Anmeldung abgebrochen");
+      } else {
+        handleAuthError(error);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [promptAsync, signIn]);
+  };
 
   const handleAppleAuth = useCallback(async () => {
     try {

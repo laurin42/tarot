@@ -542,8 +542,7 @@ app.get("/auth/verify-token", (req: Request, res: Response) => {
 });
 
 const host = process.env.HOST || '127.0.0.1';
-const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8000;
-
-app.listen(port, host, () => {
-  console.log(`Server running at http://${host}:${port}`);
+const port = parseInt(process.env.PORT as string) || 8000;
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server running at http://0.0.0.0:${port}`);
 });

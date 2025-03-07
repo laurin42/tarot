@@ -8,27 +8,28 @@ WebBrowser.maybeCompleteAuthSession();
 
 const GoogleAuthConfig = {
   androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
-  iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
   webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
-  responseType: "id_token" as const,
-  usePKCE: true,
-  webOptions: {
-    preferEphemeralSession: true,
-  },
+  responseType: "id_token",
+  selectAccount: true,
+  redirectUri: Platform.select({
+    web: "http://localhost:19006",
+    android: makeRedirectUri({
+      scheme: "com.laurin.tarot",
+      path: "oauth2redirect/google",
+    }),
+  }),
 };
+
+// Add console.log for debugging
+console.log("Auth Config:", {
+  androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
+  redirectUri: GoogleAuthConfig.redirectUri,
+});
 
 export function useGoogleAuth() {
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     ...GoogleAuthConfig,
-    selectAccount: true,
     shouldAutoExchangeCode: false,
-    redirectUri:
-      Platform.OS === "web"
-        ? "http://localhost:19006/auth/google"
-        : makeRedirectUri({
-            scheme: "tarot",
-            path: "oauth2redirect/google",
-          }),
   });
 
   return {
