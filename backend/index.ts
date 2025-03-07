@@ -21,7 +21,6 @@ const genAI = new GoogleGenerativeAI(process.env.API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const app: Application = express();
-const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8000;
 
 app.use(cors());
 app.use(express.json());
@@ -542,9 +541,9 @@ app.get("/auth/verify-token", (req: Request, res: Response) => {
   }
 });
 
-// Change this line at the bottom
-app.listen(port, "0.0.0.0", () => {
-  // Use 0.0.0.0 to listen on all network interfaces
-  console.log(`Server ist aktiv auf http://${process.env.SERVER_HOST || '0.0.0.0'}:${port}`);
-  console.log(`API URL in .env: ${process.env.EXPO_PUBLIC_API_URL}`);
+const host = process.env.HOST || '127.0.0.1';
+const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8000;
+
+app.listen(port, host, () => {
+  console.log(`Server running at http://${host}:${port}`);
 });
