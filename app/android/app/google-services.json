@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1074228272683",
+    "project_id": "tarot42-1f023",
+    "storage_bucket": "tarot42-1f023.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074228272683:android:dd6035ab3fb97c04a0146e",
+        "android_client_info": {
+          "package_name": "com.laurin.tarot"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApPwN-SJA9gb3vybpTXjHKU2fM-b-1VlA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
