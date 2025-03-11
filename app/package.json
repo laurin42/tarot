@@ -11,8 +11,7 @@
     "test": "jest --watchAll",
     "lint": "expo lint",
     "server": "cd ../backend && npm run dev",
-    "concurrent": "concurrently \"npm run server\" \"npm run start\"",
-    "postinstall": "node scripts/remove-duplicate-icons.js"
+    "concurrent": "concurrently \"npm run server\" \"npm run start\""
   },
   "jest": {
     "preset": "jest-expo"
