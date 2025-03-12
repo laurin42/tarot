@@ -23,7 +23,10 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 const app: Application = express();
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8000;
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:19006', 
+  credentials: true,
+}));
 app.use(express.json());
 
 // Interface for card requests
