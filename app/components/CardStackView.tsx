@@ -34,6 +34,10 @@ const CardStackView = memo(
     predeterminedCards, // Destructure the passed prop
   }: CardStackViewProps) => {
     const [cards, setCards] = useState<ISelectedAndShownCard[]>([]);
+    // Für die Anleitung und Animation
+    const [showInstruction, setShowInstruction] = useState(false);
+    const instructionOpacity = useRef(new Animated.Value(0)).current;
+    const [isCardSelected, setIsCardSelected] = useState(false);
 
     const fanAnimation = useCardFanAnimation({
       cardCount: 5,
@@ -74,27 +78,75 @@ const CardStackView = memo(
       }
     }, [currentRound, predeterminedCards, sessionStarted, onAnimationComplete]); // Add onAnimationComplete to dependencies
 
-    // Update card selection logic
+    // Nach Karteninitalisierung die Anleitung einblenden
+    useEffect(() => {
+      if (cards.length > 0 && !cards.some((c) => c.isSelected)) {
+        const timer = setTimeout(() => {
+          setShowInstruction(true);
+          Animated.timing(instructionOpacity, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+          }).start();
+        }, 1000); // Verzögerung nach Kartenanimation
+
+        return () => clearTimeout(timer);
+      }
+    }, [cards]);
+
+    // Update card selection logic mit Animation und Verzögerung
     const handleCardSelect = (card: ISelectedAndShownCard) => {
-      cards.some((c) => c.isSelected)
-        ? null
-        : (setCards((prevCards) =>
-            prevCards.map((c) => ({
-              ...c,
-              showFront: c === card ? true : false,
-              isSelected: c === card ? true : false,
-            }))
-          ),
+      if (cards.some((c) => c.isSelected) || isCardSelected) return;
+
+      // Karte als selektiert markieren
+      setIsCardSelected(true);
+
+      // Anleitung ausblenden
+      Animated.timing(instructionOpacity, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }).start(() => {
+        setShowInstruction(false);
+
+        // Karten aktualisieren
+        setCards((prevCards) =>
+          prevCards.map((c) => ({
+            ...c,
+            showFront: c === card ? true : false,
+            isSelected: c === card ? true : false,
+          }))
+        );
+
+        // Nach Animation die Auswahl an Parent weitergeben
+        setTimeout(() => {
           onCardSelect({
             ...card,
             showFront: true,
             isSelected: true,
-          }));
+          });
+        }, 100);
+      });
     };
 
     return (
       <View style={styles.container}>
         <View style={styles.glowContainer} />
+
+        {/* Instruction Container über den Karten */}
+        {showInstruction && (
+          <Animated.View
+            style={[
+              styles.instructionContainer,
+              { opacity: instructionOpacity },
+            ]}
+          >
+            <Text style={styles.instructionText}>
+              Tippe auf den Stapel, um die nächste Karte zu ziehen
+            </Text>
+          </Animated.View>
+        )}
+
         <View style={styles.cardsContainer}>
           {cards.map((card, index) => (
             <Animated.View
@@ -264,6 +316,37 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0, 0, 0, 0.75)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
+  },
+  instructionText: {
+    // Bestehender Style, aber ohne Positionierungsangaben
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "600",
+    textAlign: "center",
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    // Entferne die position, left, right, etc. hier
+  },
+  instructionContainer: {
+    position: "absolute",
+    top: 80, // oder wo du es haben möchtest
+    left: 20,
+    right: 20,
+    zIndex: 100,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    borderRadius: 20,
+    padding: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#8B5CF6",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
   },
 });
 
