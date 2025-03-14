@@ -38,7 +38,7 @@ export default function Index() {
   useEffect(() => {
     if (sessionStarted) {
       (async () => {
-        const cards = await getRandomDrawnCards();
+        const cards = await getRandomDrawnCards(); // 3 cards
         setPredeterminedCards(cards);
         await saveDrawnCards(cards); // Hier aufrufen
       })();
@@ -91,6 +91,7 @@ export default function Index() {
                 cardDimensions={cardDimensions}
                 drawnSlotPositions={drawnSlotPositions}
                 currentRound={currentRound}
+                predeterminedCards={predeterminedCards} // Pass drawn cards here
               />
             </View>
           ) : null}

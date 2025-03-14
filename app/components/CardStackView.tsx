@@ -21,134 +21,122 @@ interface CardStackViewProps {
   cardDimensions: { width: number; height: number };
   drawnSlotPositions: { x: number; y: number }[];
   currentRound: number; // Neue Prop
+  predeterminedCards: ISelectedAndShownCard[]; // Add it here
 }
 
-const CardStackView = memo(({ ...props }: CardStackViewProps) => {
-  const {
+const CardStackView = memo(
+  ({
+    onAnimationComplete,
     onCardSelect,
     sessionStarted,
     cardDimensions,
     currentRound,
-    onAnimationComplete, // Add this to destructuring
-  } = props;
+    predeterminedCards, // Destructure the passed prop
+  }: CardStackViewProps) => {
+    const [cards, setCards] = useState<ISelectedAndShownCard[]>([]);
 
-  const [cards, setCards] = useState<ISelectedAndShownCard[]>([]);
-  const [predeterminedCards, setPredeterminedCards] = useState<
-    ISelectedAndShownCard[]
-  >([]);
+    const fanAnimation = useCardFanAnimation({
+      cardCount: 5,
+      spreadAngle: 60,
+      cardDimensions,
+      currentRound,
+      sessionStarted, // Pass sessionStarted to the hook
+    });
 
-  // Initialisiere predeterminedCards wenn Session startet
-  useEffect(() => {
-    if (sessionStarted && predeterminedCards.length === 0) {
-      const fetchDrawnCards = async () => {
-        const drawnCards = await getRandomDrawnCards(); // Ziehe 3 zufällige Karten
-        setPredeterminedCards(drawnCards);
-      };
-      fetchDrawnCards();
-    }
-  }, [sessionStarted]);
+    // Initialisiere Karten und starte Animation
+    useEffect(() => {
+      if (
+        sessionStarted &&
+        predeterminedCards.length > 0 &&
+        currentRound < predeterminedCards.length
+      ) {
+        const newStack = Array(5)
+          .fill(null)
+          .map(() => ({
+            ...predeterminedCards[currentRound],
+            showFront: false,
+            isSelected: false,
+          }));
 
-  const fanAnimation = useCardFanAnimation({
-    cardCount: 5,
-    spreadAngle: 60,
-    cardDimensions,
-    currentRound,
-    sessionStarted, // Pass sessionStarted to the hook
-  });
+        setCards(newStack);
 
-  // Initialisiere Karten und starte Animation
-  useEffect(() => {
-    if (
-      sessionStarted &&
-      predeterminedCards.length > 0 &&
-      currentRound < predeterminedCards.length
-    ) {
-      const newStack = Array(5)
-        .fill(null)
-        .map(() => ({
-          ...predeterminedCards[currentRound],
-          showFront: false,
-          isSelected: false,
-        }));
+        // Starte Fan-Animation mit Verzögerung
+        const timer = setTimeout(() => {
+          fanAnimation.animateToFan().start(() => {
+            // Safely call onAnimationComplete if it exists
+            if (typeof onAnimationComplete === "function") {
+              onAnimationComplete();
+            }
+          });
+        }, 300);
 
-      setCards(newStack);
+        return () => clearTimeout(timer);
+      }
+    }, [currentRound, predeterminedCards, sessionStarted, onAnimationComplete]); // Add onAnimationComplete to dependencies
 
-      // Starte Fan-Animation mit Verzögerung
-      const timer = setTimeout(() => {
-        fanAnimation.animateToFan().start(() => {
-          // Safely call onAnimationComplete if it exists
-          if (typeof onAnimationComplete === "function") {
-            onAnimationComplete();
-          }
-        });
-      }, 300);
+    // Update card selection logic
+    const handleCardSelect = (card: ISelectedAndShownCard) => {
+      cards.some((c) => c.isSelected)
+        ? null
+        : (setCards((prevCards) =>
+            prevCards.map((c) => ({
+              ...c,
+              showFront: c === card ? true : false,
+              isSelected: c === card ? true : false,
+            }))
+          ),
+          onCardSelect({
+            ...card,
+            showFront: true,
+            isSelected: true,
+          }));
+    };
 
-      return () => clearTimeout(timer);
-    }
-  }, [currentRound, predeterminedCards, sessionStarted, onAnimationComplete]); // Add onAnimationComplete to dependencies
-
-  // Update card selection logic
-  const handleCardSelect = (card: ISelectedAndShownCard) => {
-    cards.some((c) => c.isSelected)
-      ? null
-      : (setCards((prevCards) =>
-          prevCards.map((c) => ({
-            ...c,
-            showFront: c === card ? true : false,
-            isSelected: c === card ? true : false,
-          }))
-        ),
-        onCardSelect({
-          ...card,
-          showFront: true,
-          isSelected: true,
-        }));
-  };
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.glowContainer} />
-      <View style={styles.cardsContainer}>
-        {cards.map((card, index) => (
-          <Animated.View
-            key={`${currentRound}-${index}`}
-            style={[
-              styles.animatedCard,
-              {
-                zIndex: cards.length - index,
-                transform: [
-                  { translateY: fanAnimation.translateY[index] },
-                  { translateX: fanAnimation.translateX[index] },
-                  {
-                    rotate: fanAnimation.rotations[index].interpolate({
-                      inputRange: [-30, 30],
-                      outputRange: ["-30deg", "30deg"],
-                    }),
-                  },
-                  { scale: fanAnimation.scales[index] },
-                ],
-              },
-            ]}
-          >
-            <Pressable
-              style={styles.cardPressable}
-              onPress={() => handleCardSelect(card)}
+    return (
+      <View style={styles.container}>
+        <View style={styles.glowContainer} />
+        <View style={styles.cardsContainer}>
+          {cards.map((card, index) => (
+            <Animated.View
+              key={`${currentRound}-${index}`}
+              style={[
+                styles.animatedCard,
+                {
+                  zIndex: cards.length - index,
+                  transform: [
+                    { translateY: fanAnimation.translateY[index] },
+                    { translateX: fanAnimation.translateX[index] },
+                    {
+                      rotate: fanAnimation.rotations[index].interpolate({
+                        inputRange: [-30, 30],
+                        outputRange: ["-30deg", "30deg"],
+                      }),
+                    },
+                    { scale: fanAnimation.scales[index] },
+                  ],
+                },
+              ]}
             >
-              <TarotCard
-                image={card.image}
-                isShown={card.showFront || false}
-                style={{
-                  width: cardDimensions.width,
-                  height: cardDimensions.height,
-                }}
-              />
-            </Pressable>
-          </Animated.View>
-        ))}
+              <Pressable
+                style={styles.cardPressable}
+                onPress={() => handleCardSelect(card)}
+              >
+                <TarotCard
+                  image={card.image}
+                  isShown={card.showFront || false}
+                  style={{
+                    width: cardDimensions.width,
+                    height: cardDimensions.height,
+                  }}
+                />
+              </Pressable>
+            </Animated.View>
+          ))}
+        </View>
       </View>
-    </View>
-  );
-});
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   container: {

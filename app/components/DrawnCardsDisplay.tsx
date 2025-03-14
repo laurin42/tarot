@@ -21,50 +21,35 @@ export default function DrawnCardsDisplay({
   onDismiss,
   currentRound,
 }: DrawnCardsDisplayProps) {
-  const [currentIndex, setCurrentIndex] = useState(currentRound);
-
-  const handleNextCard = () => {
-    if (currentIndex === selectedCards.length - 1) {
-      onDismiss();
-    } else {
-      setCurrentIndex((prev) => prev + 1);
-    }
-  };
+  const currentCard = selectedCards[currentRound];
 
   return (
     <View style={styles.overlay}>
       <View style={styles.container}>
-        <Text style={styles.cardTitle}>{selectedCards[currentIndex].name}</Text>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollViewContent}
+        >
+          {currentCard && (
+            <View style={{ marginBottom: 24 }}>
+              <Text style={styles.cardTitle}>{currentCard.name}</Text>
+              <View style={styles.cardWrapper}>
+                <TarotCard
+                  image={currentCard.image}
+                  isShown={true}
+                  style={styles.card}
+                />
+              </View>
+              <Text style={styles.explanationText}>
+                {currentCard.explanation}
+              </Text>
+            </View>
+          )}
+        </ScrollView>
 
-        <View style={styles.cardWrapper}>
-          <TarotCard
-            image={selectedCards[currentIndex].image}
-            isShown={true}
-            style={styles.card}
-          />
-        </View>
-
-        <View style={styles.explanationContainer}>
-          <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={styles.scrollViewContent}
-            showsVerticalScrollIndicator={true}
-          >
-            <Text style={styles.explanationText}>
-              {selectedCards[currentIndex].explanation}
-            </Text>
-          </ScrollView>
-
-          <TouchableOpacity onPress={handleNextCard} style={styles.button}>
-            <Text style={styles.buttonText}>
-              {currentIndex === selectedCards.length - 1
-                ? currentRound === 2
-                  ? "Deutung anzeigen"
-                  : "Nächste Karte"
-                : "Nächste Karte"}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity onPress={onDismiss} style={styles.button}>
+          <Text style={styles.buttonText}>Weiter</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
