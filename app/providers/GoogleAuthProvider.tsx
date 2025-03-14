@@ -24,7 +24,7 @@ export function useGoogleAuth() {
     shouldAutoExchangeCode: false,
     redirectUri:
       Platform.OS === "web"
-        ? "http://localhost:19006/auth/google"
+        ? "http://localhost:8081/auth/google/--/expo-auth-session"
         : makeRedirectUri({
             scheme: "tarot",
             path: "oauth2redirect/google",

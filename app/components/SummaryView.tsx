@@ -36,32 +36,6 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
 
       const sessionId = `reading_${Date.now()}`;
 
-      // Save each card with the same sessionId to group them
-      await Promise.all(
-        cards.map(async (card, index) => {
-          const headers: HeadersInit = {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          };
-
-          await fetch(
-            `${
-              process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.187:8000"
-            }/tarot/drawn-card`,
-            {
-              method: "POST",
-              headers,
-              body: JSON.stringify({
-                name: card.name,
-                description: card.explanation || "No explanation available",
-                position: index,
-                sessionId,
-              }),
-            }
-          );
-        })
-      );
-
       // Save the summary as an additional record
       const summaryHeaders: HeadersInit = {
         "Content-Type": "application/json",

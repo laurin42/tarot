@@ -10,22 +10,22 @@ export async function getRandomDrawnCards(): Promise<ISelectedAndShownCard[]> {
   // Get authentication token if available
   const token = await storage.getItem("userToken");
 
+  // Fetch explanations for each card
   await Promise.all(
-    drawnCards.map(async (card, index) => {
+    drawnCards.map(async (card) => {
       try {
-        // Add authentication header if token exists
-        const headers: HeadersInit = {
-          "Content-Type": "application/json",
-        };
+        const headers: HeadersInit = {};
         if (token) {
           headers["Authorization"] = `Bearer ${token}`;
         }
 
-        // Fetch explanation for card
+        // Format the card name to match the expected format on the backend
+        const formattedCardName = card.name.toLowerCase().replace(/ /g, "_");
+
         const response = await fetch(
           `${
             process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.187:8000"
-          }/tarot/cards/${encodeURIComponent(card.name)}`,
+          }/tarot/cards/${formattedCardName}`,
           { headers }
         );
 
@@ -36,39 +36,8 @@ export async function getRandomDrawnCards(): Promise<ISelectedAndShownCard[]> {
         const data = await response.json();
         explanations[card.name] =
           data.explanation || "Keine Erklärung verfügbar";
-
-        // Save the drawn card to the user's history
-        if (token) {
-          try {
-            const saveResponse = await fetch(
-              `${
-                process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.187:8000"
-              }/tarot/drawn-card`,
-              {
-                method: "POST",
-                headers,
-                body: JSON.stringify({
-                  name: card.name,
-                  description: data.explanation,
-                  position: index, // Store card position (0=situation, 1=problem, 2=advice)
-                }),
-              }
-            );
-
-            if (saveResponse.ok) {
-              console.log(`✅ Card saved to user history: ${card.name}`);
-            } else {
-              console.error(
-                `❌ Failed to save card: ${card.name}`,
-                await saveResponse.text()
-              );
-            }
-          } catch (saveError) {
-            console.error(`❌ Error saving card ${card.name}:`, saveError);
-          }
-        }
       } catch (error) {
-        console.error(`Error processing ${card.name}:`, error);
+        console.error(`Failed to get explanation for ${card.name}:`, error);
         explanations[card.name] = "Erklärung konnte nicht geladen werden";
       }
     })
@@ -118,4 +87,46 @@ export async function getRandomDrawnCard(): Promise<ISelectedAndShownCard> {
     console.error("Error fetching random card:", error);
     throw error;
   }
+}
+
+async function saveDrawnCards(drawnCards: ISelectedAndShownCard[]) {
+  const token = await storage.getItem("userToken");
+  if (!token) return;
+
+  await Promise.all(
+    drawnCards.map(async (card, index) => {
+      try {
+        const headers = {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        };
+
+        const saveResponse = await fetch(
+          `${
+            process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.187:8000"
+          }/tarot/drawn-card`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              name: card.name,
+              description: card.explanation,
+              position: index, // Store card position (0=situation, 1=problem, 2=advice)
+            }),
+          }
+        );
+
+        if (saveResponse.ok) {
+          console.log(`✅ Card saved to user history: ${card.name}`);
+        } else {
+          console.error(
+            `❌ Failed to save card: ${card.name}`,
+            await saveResponse.text()
+          );
+        }
+      } catch (saveError) {
+        console.error("Failed to save card:", saveError);
+      }
+    })
+  );
 }

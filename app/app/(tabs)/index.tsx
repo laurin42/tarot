@@ -5,6 +5,7 @@ import DrawnCardsDisplay from "@/components/DrawnCardsDisplay";
 import { getRandomDrawnCards } from "@/components/DrawnCardsPool";
 import { ISelectedAndShownCard } from "@/constants/tarotcards";
 import SummaryView from "@/components/SummaryView";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Importiere AsyncStorage
 
 export default function Index() {
   const { width, height } = Dimensions.get("window");
@@ -39,6 +40,7 @@ export default function Index() {
       (async () => {
         const cards = await getRandomDrawnCards();
         setPredeterminedCards(cards);
+        await saveDrawnCards(cards); // Hier aufrufen
       })();
     }
   }, [sessionStarted]);
@@ -115,4 +117,60 @@ export default function Index() {
       )}
     </View>
   );
+}
+
+function saveDrawnCards(cards: ISelectedAndShownCard[]) {
+  return new Promise<void>(async (resolve, reject) => {
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        console.warn("No user token found, skipping save to database");
+        resolve();
+        return;
+      }
+
+      await Promise.all(
+        cards.map(async (card, index) => {
+          try {
+            const headers = {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            };
+
+            const saveResponse = await fetch(
+              `${
+                process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.187:8000"
+              }/tarot/drawn-card`,
+              {
+                method: "POST",
+                headers,
+                body: JSON.stringify({
+                  name: card.name,
+                  description: card.explanation,
+                  position: index, // Store card position (0=situation, 1=problem, 2=advice)
+                }),
+              }
+            );
+
+            if (saveResponse.ok) {
+              console.log(`✅ Card saved to user history: ${card.name}`);
+            } else {
+              console.error(
+                `❌ Failed to save card: ${card.name}`,
+                await saveResponse.text()
+              );
+            }
+          } catch (saveError) {
+            console.error("Failed to save card:", saveError);
+          }
+        })
+      );
+
+      console.log("✅ All drawn cards saved to database");
+      resolve();
+    } catch (error) {
+      console.error("Failed to save drawn cards:", error);
+      reject(error);
+    }
+  });
 }
