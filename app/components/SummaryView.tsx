@@ -133,7 +133,15 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
               style={styles.cardWrapper}
               onPress={() => handleCardPress(index)}
             >
-              <Text style={styles.cardName}>{card.name}</Text>
+              <View style={styles.cardNameWrapper}>
+                <Text
+                  style={styles.cardName}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {card.name}
+                </Text>
+              </View>
               <TarotCard
                 image={card.image}
                 isShown={true}
@@ -142,8 +150,12 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
                   height: 160,
                 }}
               />
-              <Text style={styles.cardText}>
-                {index === 0 ? "Lage" : index === 1 ? "Problem" : "Ratschlag"}
+              <Text style={styles.labelText}>
+                {index === 0
+                  ? "Gegenwart"
+                  : index === 1
+                  ? "Konflikt"
+                  : "Perspektive"}
               </Text>
             </TouchableOpacity>
           ))}
@@ -223,13 +235,13 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     width: "100%",
     paddingHorizontal: 16,
-    marginBottom: 4,
+    marginBottom: 4, // ggf. reduzieren
   },
   cardWrapper: {
     alignItems: "center",
     width: "31%",
     maxWidth: 120,
-    minHeight: 280,
+    // minHeight: 280, // entfernen oder verkleinern
     justifyContent: "flex-start",
     ...Platform.select({
       ios: {
@@ -243,13 +255,18 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  cardNameWrapper: {
+    height: 36,
+    justifyContent: "center",
+    marginBottom: 8,
+  },
   cardName: {
     color: "#A78BFA",
     fontSize: 14,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 8,
-    flexWrap: "wrap",
+    lineHeight: 18,
+    overflow: "hidden",
   },
   cardText: {
     color: "#F3F4F6",
@@ -262,7 +279,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(31, 41, 55, 0.95)",
     borderRadius: 16,
     padding: 24,
-    marginTop: 16,
+    marginTop: 24,
     marginHorizontal: 16,
     borderWidth: 1,
     borderColor: "rgba(139, 92, 246, 0.3)",
@@ -338,6 +355,13 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  labelText: {
+    color: "rgba(249, 115, 22, 0.4)",
+    fontWeight: "bold",
+    fontSize: 16,
+    marginTop: 8,
+    textAlign: "center",
   },
 });
 

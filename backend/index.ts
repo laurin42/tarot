@@ -144,13 +144,18 @@ app.post("/tarot/summary", authMiddleware, async (req: Request<{}, {}, CardReque
       throw new Error('Invalid or empty cards array received');
     }
 
-    const cardNames = cards.map((card: any) => card.name).join(", ");
+    const cardNames = cards.map((card: any) => card.name);
+    const [firstCard, secondCard, thirdCard] = cardNames;
     
     const prompt = `Du bist ein erfahrener Tarot-Kartenleser. 
-    Gib eine zusammenhängende, persönliche Interpretation der folgenden drei Tarotkarten: ${cardNames}. Die erste Karte repräsentiert die jetzige persönliche Lage, die zweite ein mögliches Problem und die dritte ein Lösungsansatz oder Weisung. ${
+    Gib eine zusammenhängende, persönliche Interpretation der folgenden drei Tarotkarten:
+    ${firstCard} repräsentiert die jetzige persönliche Lage (Gegenwart),
+    ${secondCard} ein mögliches Problem (Konflikt) und
+    ${thirdCard} ein Lösungsansatz oder Weisung (Perspektive).
+    ${
       userGoals ? `Berücksichtige bei der Deutung folgende Ziele des Users: ${userGoals}.` : ""
     }
-    Die Interpretation soll motivierend und aufschlussreich sein, aber nicht länger als 5-6 Sätze.`;
+    Die Interpretation soll motivierend und aufschlussreich sein.`;
 
     const response = await model.generateContent(prompt);
     const summary = response.response.candidates[0].content.parts[0].text;
