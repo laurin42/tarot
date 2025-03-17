@@ -26,10 +26,10 @@ export default function TabLayout() {
           default: {},
         }),
       }}
-      initialRouteName="index" // Setze explizit die Starttab
+      initialRouteName="threecards" // Setze explizit die Starttab
     >
       <Tabs.Screen
-        name="index"
+        name="threecards"
         options={{
           title: "Dreikartenziehung",
           tabBarIcon: ({ color }) => (

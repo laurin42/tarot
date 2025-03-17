@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   Modal,
   StyleSheet,
   Platform,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from "react-native";
 import { ISelectedAndShownCard } from "@/constants/tarotcards";
 import TarotCard from "@/components/TarotCard";
@@ -25,6 +27,23 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
   const [selectedCardIndex, setSelectedCardIndex] = useState<number | null>(
     null
   );
+  const [hasScrolledToEnd, setHasScrolledToEnd] = useState(false);
+
+  // Füge einen Ref für den ScrollView hinzu
+  const summaryScrollViewRef = useRef<ScrollView>(null);
+
+  // Scroll-Handler um zu erkennen, wann der Benutzer das Ende erreicht hat
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+    const paddingToBottom = 20; // Einen kleinen Puffer hinzufügen
+    const isCloseToBottom =
+      layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - paddingToBottom;
+
+    if (isCloseToBottom) {
+      setHasScrolledToEnd(true);
+    }
+  };
 
   const saveSummaryReading = async (
     cards: ISelectedAndShownCard[],
@@ -123,9 +142,14 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Deine Kartenlegung</Text>
+      <ScrollView
+        ref={summaryScrollViewRef}
+        style={styles.mainScrollView}
+        onScroll={handleScroll}
+        scrollEventThrottle={400}
+      >
+        <Text style={styles.title}>Deine Kartenlegung</Text>
 
-      <ScrollView>
         <View style={styles.cardsContainer}>
           {cards.map((card, index) => (
             <TouchableOpacity
@@ -133,6 +157,28 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
               style={styles.cardWrapper}
               onPress={() => handleCardPress(index)}
             >
+              {/* 1. Label Text (oben) */}
+              <Text style={styles.labelText}>
+                (
+                {index === 0
+                  ? "Gegenwart"
+                  : index === 1
+                  ? "Konflikt"
+                  : "Perspektive"}
+                )
+              </Text>
+
+              {/* 2. Tarot Card (Mitte) */}
+              <TarotCard
+                image={card.image}
+                isShown={true}
+                style={{
+                  width: 100,
+                  height: 160,
+                }}
+              />
+
+              {/* 3. Card Name (unten) */}
               <View style={styles.cardNameWrapper}>
                 <Text
                   style={styles.cardName}
@@ -142,21 +188,6 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
                   {card.name}
                 </Text>
               </View>
-              <TarotCard
-                image={card.image}
-                isShown={true}
-                style={{
-                  width: 100,
-                  height: 160,
-                }}
-              />
-              <Text style={styles.labelText}>
-                {index === 0
-                  ? "Gegenwart"
-                  : index === 1
-                  ? "Konflikt"
-                  : "Perspektive"}
-              </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -167,9 +198,21 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
           <Text className="text-red-500 mt-5 text-center">{error}</Text>
         ) : (
           <View style={styles.summaryContainer}>
-            <Text className="text-white text-base text-center">{summary}</Text>
+            <Text style={styles.summaryText}>{summary}</Text>
+
+            {hasScrolledToEnd && (
+              <TouchableOpacity
+                style={styles.summaryButtonFullWidth}
+                onPress={onDismiss}
+              >
+                <Text style={styles.buttonText}>Neue Legung beginnen</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
+
+        {/* Ein leerer Abstandshalter, um sicherzustellen, dass der Benutzer scrollen kann */}
+        <View style={{ height: 40 }} />
       </ScrollView>
 
       <Modal
@@ -185,11 +228,19 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
                 <Text style={styles.modalTitle}>
                   {cards[selectedCardIndex].name}
                 </Text>
-                <Text style={styles.modalText}>
-                  {cards[selectedCardIndex].explanation}
-                </Text>
+
+                <ScrollView
+                  style={styles.modalScrollView}
+                  contentContainerStyle={styles.modalScrollContent}
+                  showsVerticalScrollIndicator={true}
+                >
+                  <Text style={styles.modalText}>
+                    {cards[selectedCardIndex].explanation}
+                  </Text>
+                </ScrollView>
+
                 <TouchableOpacity
-                  style={styles.modalButton}
+                  style={styles.modalButtonFullWidth}
                   onPress={() => setSelectedCardIndex(null)}
                 >
                   <Text style={styles.buttonText}>Schließen</Text>
@@ -199,10 +250,6 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
           </View>
         </View>
       </Modal>
-
-      <TouchableOpacity style={styles.button} onPress={onDismiss}>
-        <Text style={styles.buttonText}>Neue Legung beginnen</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -259,6 +306,7 @@ const styles = StyleSheet.create({
     height: 36,
     justifyContent: "center",
     marginBottom: 8,
+    marginTop: 8, // Abstand zwischen Karte und Name
   },
   cardName: {
     color: "#A78BFA",
@@ -279,10 +327,14 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(31, 41, 55, 0.95)",
     borderRadius: 16,
     padding: 24,
+    paddingBottom: 24, // Jetzt Padding unten für Abstand
     marginTop: 24,
     marginHorizontal: 16,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: "rgba(139, 92, 246, 0.3)",
+    overflow: "hidden", // Um den Button am unteren Rand zu halten
+    position: "relative", // Hinzufügen für bessere absolute Positionierung
     ...Platform.select({
       ios: {
         shadowColor: "#8B5CF6",
@@ -306,11 +358,13 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(31, 41, 55, 0.98)",
     borderRadius: 16,
     padding: 24,
+    paddingBottom: 0, // Kein Padding am Boden
     width: "90%",
-    maxHeight: "80%",
+    maxHeight: "85%", // Etwas mehr Höhe für den Inhalt
     alignItems: "center",
     borderWidth: 1,
     borderColor: "rgba(139, 92, 246, 0.3)",
+    overflow: "hidden",
     ...Platform.select({
       ios: {
         shadowColor: "#8B5CF6",
@@ -334,7 +388,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     lineHeight: 24,
-    textAlign: "center",
+    textAlign: "left", // Von "center" zu "left" ändern
     marginBottom: 20,
   },
   button: {
@@ -351,6 +405,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignSelf: "center",
   },
+  modalButtonFullWidth: {
+    width: "100%",
+    paddingVertical: 12, // Reduziert von 16px auf 12px
+    backgroundColor: "rgba(249, 115, 22, 0.9)",
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    borderTopWidth: 1,
+    borderColor: "rgba(139, 92, 246, 0.3)",
+    marginTop: 4, // Reduziert von 8px auf 4px
+    alignItems: "center",
+  },
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
@@ -360,8 +425,39 @@ const styles = StyleSheet.create({
     color: "rgba(249, 115, 22, 0.4)",
     fontWeight: "bold",
     fontSize: 16,
-    marginTop: 8,
+    marginBottom: 8, // Abstand zwischen Label und Karte
     textAlign: "center",
+  },
+  modalScrollView: {
+    width: "100%",
+    maxHeight: "80%", // Erhöht von 70% auf 80%
+    marginBottom: 0, // Entferne den großen Abstand unten
+  },
+  modalScrollContent: {
+    paddingBottom: 8, // Reduziert von 16px auf 8px
+  },
+  mainScrollView: {
+    flex: 1,
+    width: "100%",
+  },
+  summaryText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: "left", // Von "center" zu "left" ändern
+  },
+  summaryButtonFullWidth: {
+    width: "100%", // Bleibt bei voller Breite innerhalb des verfügbaren Bereichs
+    paddingTop: 12,
+    paddingBottom: 18,
+    backgroundColor: "rgba(249, 115, 22, 0.9)",
+    borderRadius: 8, // Normale abgerundete Ecken
+    borderWidth: 1,
+    borderColor: "rgba(139, 92, 246, 0.3)",
+    marginTop: 24,
+    // marginLeft und marginRight entfernen
+    alignItems: "center",
+    alignSelf: "center",
   },
 });
 

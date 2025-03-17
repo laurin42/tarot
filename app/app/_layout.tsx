@@ -40,7 +40,7 @@ function RootLayoutNav() {
 
     if (isAuthenticated && inAuthGroup) {
       // Angemeldeter Nutzer sollte zur App weitergeleitet werden
-      router.replace("/(tabs)");
+      router.replace("/(tabs)/threecards");
     } else if (!isAuthenticated && !inAuthGroup) {
       // Nicht angemeldeter Nutzer sollte zum Login weitergeleitet werden
       router.replace("/(auth)");

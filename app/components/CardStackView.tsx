@@ -78,6 +78,12 @@ const CardStackView = memo(
       }
     }, [currentRound, predeterminedCards, sessionStarted, onAnimationComplete]); // Add onAnimationComplete to dependencies
 
+    // Reset card selected state when round changes
+    useEffect(() => {
+      // Reset selection state when the round changes
+      setIsCardSelected(false);
+    }, [currentRound]);
+
     // Nach Karteninitalisierung die Anleitung einblenden
     useEffect(() => {
       if (cards.length > 0 && !cards.some((c) => c.isSelected)) {
@@ -317,36 +323,32 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
-  instructionText: {
-    // Bestehender Style, aber ohne Positionierungsangaben
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "600",
-    textAlign: "center",
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    // Entferne die position, left, right, etc. hier
-  },
   instructionContainer: {
     position: "absolute",
-    top: 80, // oder wo du es haben möchtest
+    top: -100,
     left: 20,
     right: 20,
     zIndex: 100,
     backgroundColor: "rgba(0,0,0,0.6)",
     borderRadius: 20,
     padding: 8,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#8B5CF6",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.5,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 5,
-      },
-    }),
+    // Stelle sicher, dass keine Rotation stattfindet
+    transform: [{ rotate: "0deg" }], // Explizit horizontal ausrichten
+    // Bessere Positionierung und Breite
+    width: "90%",
+    alignSelf: "center",
+  },
+
+  instructionText: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "600",
+    textAlign: "center",
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    // Ausdrücklich horizontale Textrichtung festlegen
+    writingDirection: "ltr",
+    textTransform: "none",
   },
 });
 
