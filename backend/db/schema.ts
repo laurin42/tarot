@@ -1,4 +1,5 @@
-import { integer, pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { InferModel } from 'drizzle-orm';
+import { integer, pgTable, serial, text, timestamp, varchar, boolean } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -9,8 +10,12 @@ export const usersTable = pgTable("users", {
   picture: varchar("picture", { length: 255 }),
   authProvider: varchar("auth_provider", { length: 20 }).notNull(),
   goals: text("goals"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  gender: varchar('gender', { length: 1 }),
+  zodiacSign: varchar('zodiac_sign', { length: 20 }),
+  birthday: timestamp('birthday'),
+  emailVerified: boolean('email_verified').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 export type User = typeof usersTable.$inferSelect;

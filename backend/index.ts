@@ -38,6 +38,9 @@ interface CardRequest {
 // Add interfaces for request types
 interface GoalsUpdateRequest {
   goals: string;
+  gender?: string;
+  zodiacSign?: string;
+  birthday?: string;
 }
 
 // Update the card reading endpoint
@@ -118,12 +121,15 @@ app.post("/tarot/summary", authMiddleware, async (req: Request<{}, {}, CardReque
   try {
     const { cards } = req.body;
     let userGoals = "";
+    let userGender = "";
+    let userZodiacSign = "";
+    let userAge = null;
     
-    // Get user ID from token to fetch their goals
+    // Get user ID from token to fetch their profile data
     const userId = req.user?.id;
     
     if (userId) {
-      // Try to get user's goals from database
+      // Try to get user's profile from database
       const user = await db
         .select()
         .from(usersTable)
@@ -131,11 +137,26 @@ app.post("/tarot/summary", authMiddleware, async (req: Request<{}, {}, CardReque
         .limit(1);
         
       if (user.length > 0) {
+        // Extract all profile information
         userGoals = user[0].goals || "";
+        userGender = user[0].gender || "";
+        userZodiacSign = user[0].zodiacSign || "";
+        
+        // Calculate age if birthday is available
+        if (user[0].birthday) {
+          const birthDate = new Date(user[0].birthday);
+          const today = new Date();
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const m = today.getMonth() - birthDate.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+          }
+          userAge = age;
+        }
       }
     }
     
-    // Otherwise, use goals from request if provided as fallback
+    // Fallback to request body goals if no DB goals found
     if (!userGoals && req.body.userGoals) {
       userGoals = req.body.userGoals;
     }
@@ -147,14 +168,23 @@ app.post("/tarot/summary", authMiddleware, async (req: Request<{}, {}, CardReque
     const cardNames = cards.map((card: any) => card.name);
     const [firstCard, secondCard, thirdCard] = cardNames;
     
+    // Build personal context with all profile information
+    let personalContext = "";
+    if (userGoals) personalContext += `Ziele der Person: ${userGoals}. `;
+    if (userGender) {
+      const genderText = userGender === 'm' ? 'männlich' : 
+                         userGender === 'w' ? 'weiblich' : 'divers';
+      personalContext += `Geschlecht: ${genderText}. `;
+    }
+    if (userZodiacSign) personalContext += `Sternzeichen: ${userZodiacSign}. `;
+    if (userAge) personalContext += `Alter: ${userAge} Jahre. `;
+    
     const prompt = `Du bist ein erfahrener Tarot-Kartenleser. 
+    ${personalContext ? `Hier sind Informationen über die Person, für die du liest: ${personalContext}` : ''}
     Gib eine zusammenhängende, persönliche Interpretation der folgenden drei Tarotkarten:
     ${firstCard} repräsentiert die jetzige persönliche Lage (Gegenwart),
     ${secondCard} ein mögliches Problem (Konflikt) und
     ${thirdCard} ein Lösungsansatz oder Weisung (Perspektive).
-    ${
-      userGoals ? `Berücksichtige bei der Deutung folgende Ziele des Users: ${userGoals}.` : ""
-    }
     Die Interpretation soll motivierend und aufschlussreich sein.`;
 
     const response = await model.generateContent(prompt);
@@ -168,7 +198,12 @@ app.post("/tarot/summary", authMiddleware, async (req: Request<{}, {}, CardReque
       success: true,
       summary,
       cards: cardNames,
-      goalsIncluded: userGoals ? true : false // Debug info
+      profileInfoIncluded: {
+        goals: !!userGoals,
+        gender: !!userGender,
+        zodiac: !!userZodiacSign,
+        age: userAge !== null
+      }
     });
   } catch (error) {
     console.error("Error in /tarot/summary:", error);
@@ -178,7 +213,6 @@ app.post("/tarot/summary", authMiddleware, async (req: Request<{}, {}, CardReque
     });
   }
 });
-
 app.post("/users", async (req: Request, res: Response) => {
   try {
     const { username, authProvider, authId, goals } = req.body;
@@ -302,13 +336,16 @@ app.post("/tarot/reading-summary", authMiddleware, async (req: Request, res: Res
 // Fix the goals update endpoint type
 app.put("/users/:authId/goals", authMiddleware, async (req: Request, res: Response) => {
   try {
-    const { goals } = req.body;
+    const { goals, gender, zodiacSign, birthday } = req.body as GoalsUpdateRequest;
     const { authId } = req.params;
     
     const updatedUser = await db
       .update(usersTable)
       .set({ 
         goals,
+        gender: gender || undefined,
+        zodiacSign: zodiacSign || undefined,
+        birthday: birthday ? new Date(birthday) : undefined,
         updatedAt: new Date()
       })
       .where(eq(usersTable.authId, authId))
@@ -320,8 +357,8 @@ app.put("/users/:authId/goals", authMiddleware, async (req: Request, res: Respon
     
     res.json(updatedUser[0]);
   } catch (error) {
-    console.error("Error updating goals:", error);
-    res.status (500).json({ error: "Failed to update goals" });
+    console.error("Error updating user profile:", error);
+    res.status(500).json({ error: "Failed to update profile" });
   }
 });
 

@@ -3,26 +3,40 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { storage } from "../utils/storage"; // Use your storage utility instead
 
 // Update your UserProfile interface to include all needed fields
-interface UserProfile {
-  id: string;
-  authId?: string; // Add authId as optional property
+interface User {
+  id: number;
+  authId: string;
+  email: string;
   name?: string;
-  email?: string;
-  goals?: string;
   picture?: string;
+  goals?: string;
+  // Neue Felder hinzufügen
+  gender?: string;
+  zodiacSign?: string;
+  birthday?: string;
+  emailVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface UserContextType {
-  user: UserProfile | null;
-  setUser: (user: UserProfile | null) => void;
-  updateGoals: (goals: string) => Promise<any>;
+  user: User | null;
+  setUser: (user: User | null) => void;
   loading: boolean;
+  updateGoals: (
+    goals: string,
+    additionalFields?: {
+      gender?: string;
+      zodiacSign?: string;
+      birthday?: string;
+    }
+  ) => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Load user data from storage on mount
@@ -52,7 +66,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  const updateGoals = async (goals: string) => {
+  const updateGoals = async (
+    goals: string,
+    additionalFields?: {
+      gender?: string;
+      zodiacSign?: string;
+      birthday?: string;
+    }
+  ) => {
     if (!user) {
       console.error("Cannot update goals: No user is logged in");
       throw new Error("User not authenticated");
@@ -65,7 +86,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         throw new Error("No authentication token available");
       }
 
-      console.log(`🔄 Updating goals for user:`, user);
+      console.log(`🔄 Updating profile for user:`, user);
 
       // IMPORTANT: You're using authId in backend but sending id in frontend
       // We need to use authId since that's what your endpoint expects
@@ -82,13 +103,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`, // Add token for auth
           },
-          body: JSON.stringify({ goals }),
+          body: JSON.stringify({
+            goals,
+            ...additionalFields,
+          }),
         }
       );
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Server rejected goals update:", errorText);
+        console.error("Server rejected profile update:", errorText);
         throw new Error(`Server error: ${response.status}`);
       }
 
@@ -97,12 +121,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       // Update the local user state
       setUser({
         ...user,
-        goals: goals,
+        goals,
+        ...additionalFields,
+        updatedAt: updatedUser.updatedAt,
       });
 
-      return updatedUser;
+      console.log("✅ Profile updated successfully");
     } catch (error) {
-      console.error("Goals update error:", error);
+      console.error("Failed to update profile:", error);
       throw error;
     }
   };
