@@ -5,9 +5,9 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import DailyCardIcon from "../../assets/icons/DailyCardIcon.svg";
+import DailyCardIcon from "../../components/icons/DailyCardIcon";
 import ThreeCardsIcon from "../../components/icons/ThreeCardsIcon";
-import ProfileIcon from "../../components/icons/ProfileIcon"; // Neuer Import
+import ProfileIcon from "../../components/icons/ProfileIcon";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
