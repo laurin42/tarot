@@ -43,15 +43,18 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleSignOut = () => {
-    Alert.alert("Abmelden", "Möchtest du dich wirklich abmelden?", [
-      { text: "Abbrechen", style: "cancel" },
-      {
-        text: "Ja, abmelden",
-        onPress: signOut,
-        style: "destructive",
-      },
-    ]);
+  const handleSignOut = async () => {
+    console.log("Sign out button pressed");
+    try {
+      await signOut();
+      console.log("Sign out completed successfully");
+    } catch (error) {
+      console.error("Sign out error:", error);
+      Alert.alert(
+        "Fehler",
+        "Abmelden fehlgeschlagen. Bitte versuche es erneut."
+      );
+    }
   };
 
   return (
@@ -90,7 +93,11 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+      <TouchableOpacity
+        style={styles.signOutButton}
+        onPress={handleSignOut}
+        activeOpacity={0.7} // Besseres Feedback für den Benutzer
+      >
         <Text style={styles.signOutText}>Abmelden</Text>
       </TouchableOpacity>
     </ScrollView>
