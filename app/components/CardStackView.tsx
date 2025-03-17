@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Platform,
   Text, // Add Text import
+  Easing, // Add Easing import
 } from "react-native";
 import { Shadow } from "react-native-shadow-2";
 import TarotCard from "./TarotCard"; // Ändern von CardImage zu TarotCard
@@ -23,6 +24,7 @@ interface CardStackViewProps {
   drawnSlotPositions: { x: number; y: number }[];
   currentRound: number; // Neue Prop
   predeterminedCards: ISelectedAndShownCard[]; // Add it here
+  onCardPositioned?: () => void; // Callback wenn Karte positioniert ist
 }
 
 const CardStackView = memo(
@@ -33,6 +35,8 @@ const CardStackView = memo(
     cardDimensions,
     currentRound,
     predeterminedCards, // Destructure the passed prop
+    drawnSlotPositions,
+    onCardPositioned, // Neue Prop
   }: CardStackViewProps) => {
     const [cards, setCards] = useState<ISelectedAndShownCard[]>([]);
     // Für die Anleitung und Animation
@@ -48,6 +52,13 @@ const CardStackView = memo(
       currentRound,
       sessionStarted, // Pass sessionStarted to the hook
     });
+
+    // Neue Animated Values für den Kartenübergang
+    const selectedCardPosition = useRef(
+      new Animated.ValueXY({ x: 0, y: 0 })
+    ).current;
+    const selectedCardScale = useRef(new Animated.Value(1)).current;
+    const [animatingToPosition, setAnimatingToPosition] = useState(false);
 
     // Initialisiere Karten und starte Animation
     useEffect(() => {
@@ -111,6 +122,7 @@ const CardStackView = memo(
 
       // Karte sofort als selektiert markieren
       setIsCardSelected(true);
+      setAnimatingToPosition(true);
 
       // Sofort die Kartenauswahl aktualisieren, bevor die Animationen starten
       setCards((prevCards) =>
@@ -139,12 +151,54 @@ const CardStackView = memo(
       ]).start(() => {
         setShowInstruction(false);
 
-        // Kurze Verzögerung entfernen - dies verursacht möglicherweise unerwünschte Bewegungen
-        // Direkt die Auswahl an den Parent weitergeben
-        onCardSelect({
-          ...card,
-          showFront: true,
-          isSelected: true,
+        // *** NEUE ANIMATION: Karte zur Zielposition bewegen ***
+        const screenWidth = Dimensions.get("window").width;
+        const screenHeight = Dimensions.get("window").height;
+
+        // Position berechnen, wo die Karte hinbewegt werden soll
+        const targetSlot = drawnSlotPositions[currentRound] || {
+          x: screenWidth / 2,
+          y: 120,
+        };
+
+        // Differenz zwischen aktueller und Zielposition
+        const targetX = targetSlot.x - screenWidth / 2; // Relative Position zur Mitte
+        const targetY = targetSlot.y - 100; // Angepasst für Positionierung
+
+        // Sanfte Animation zur Zielposition
+        Animated.sequence([
+          Animated.delay(100), // Kurze Pause
+          Animated.parallel([
+            // Position animieren
+            Animated.timing(selectedCardPosition, {
+              toValue: { x: targetX, y: targetY },
+              duration: 700,
+              useNativeDriver: true,
+              easing: Easing.out(Easing.cubic),
+            }),
+            // Leicht verkleinern für DrawnCardsDisplay-Größe
+            Animated.timing(selectedCardScale, {
+              toValue: 0.9,
+              duration: 700,
+              useNativeDriver: true,
+              easing: Easing.out(Easing.cubic),
+            }),
+          ]),
+        ]).start(() => {
+          // Animation beendet
+          setAnimatingToPosition(false);
+
+          // Benachrichtigen, dass die Karte positioniert ist
+          if (onCardPositioned) {
+            onCardPositioned();
+          }
+
+          // Nach Animation die selektierte Karte an Parent weitergeben
+          onCardSelect({
+            ...card,
+            showFront: true,
+            isSelected: true,
+          });
         });
       });
     };
@@ -166,9 +220,7 @@ const CardStackView = memo(
               {/* Shadow-Komponente entfernen */}
               <View style={styles.instructionInner}>
                 <Text style={styles.instructionText}>
-                  {currentRound === 2
-                    ? "Tippe auf den Stapel, um die Zusammenfassung anzuzeigen"
-                    : "Tippe auf den Stapel, um die nächste Karte zu ziehen"}
+                  {"Tippe auf den Stapel, um eine Karte zu ziehen"}
                 </Text>
               </View>
             </Animated.View>
@@ -182,17 +234,30 @@ const CardStackView = memo(
                   styles.animatedCard,
                   {
                     zIndex: cards.length - index,
-                    transform: [
-                      { translateY: fanAnimation.translateY[index] },
-                      { translateX: fanAnimation.translateX[index] },
-                      {
-                        rotate: fanAnimation.rotations[index].interpolate({
-                          inputRange: [-30, 30],
-                          outputRange: ["-30deg", "30deg"],
-                        }),
-                      },
-                      { scale: fanAnimation.scales[index] },
-                    ],
+                    // Transform basierend auf Kartenauswahl
+                    transform:
+                      card.isSelected && animatingToPosition
+                        ? [
+                            // Für die ausgewählte Karte: Bewegen zur Zielposition
+                            { translateX: selectedCardPosition.x },
+                            { translateY: selectedCardPosition.y },
+                            { scale: selectedCardScale },
+                            { rotate: "0deg" }, // Keine Rotation
+                          ]
+                        : [
+                            // Normale Fächer-Animation für nicht ausgewählte Karten
+                            { translateY: fanAnimation.translateY[index] },
+                            { translateX: fanAnimation.translateX[index] },
+                            {
+                              rotate: fanAnimation.rotations[index].interpolate(
+                                {
+                                  inputRange: [-30, 30],
+                                  outputRange: ["-30deg", "30deg"],
+                                }
+                              ),
+                            },
+                            { scale: fanAnimation.scales[index] },
+                          ],
                     opacity: card.isSelected ? 1 : stackOpacity, // Apply opacity
                   },
                 ]}

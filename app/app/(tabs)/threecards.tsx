@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Pressable, Text, Dimensions } from "react-native";
+import { View, Pressable, Text, Dimensions, Animated } from "react-native";
 import CardStackView from "@/components/CardStackView";
 import DrawnCardsDisplay from "@/components/DrawnCardsDisplay";
 import { getRandomDrawnCards } from "@/components/DrawnCardsPool";
@@ -18,9 +18,9 @@ export default function Index() {
   };
 
   const drawnSlotPositions = [
-    { x: 20, y: height * 0.5 },
-    { x: (width - cardDimensions.width) / 2, y: height * 0.5 },
-    { x: width - cardDimensions.width - 20, y: height * 0.5 },
+    { x: width / 2, y: 120 }, // Position für erste Karte
+    { x: width / 2, y: 120 }, // Position für zweite Karte
+    { x: width / 2, y: 120 }, // Position für dritte Karte
   ];
 
   const [cardsDrawn, setCardsDrawn] = useState(false);
@@ -34,6 +34,8 @@ export default function Index() {
   const [predeterminedCards, setPredeterminedCards] = useState<
     ISelectedAndShownCard[]
   >([]);
+  const [showDrawnCard, setShowDrawnCard] = useState(false);
+  const [drawnCardOpacity] = useState(new Animated.Value(0));
 
   useEffect(() => {
     if (sessionStarted) {
@@ -54,9 +56,19 @@ export default function Index() {
     setSelectedCards((prev) => [...prev, selectedCard]);
   };
 
+  // Korrigiere die handleDismissExplanation-Funktion
   const handleDismissExplanation = () => {
-    setSelectedCard(null);
-    setCurrentRound((prev) => prev + 1);
+    // Setze showDrawnCard zurück, damit der DrawnCardsDisplay ausgeblendet wird
+    setShowDrawnCard(false);
+
+    // Kurze Verzögerung für weichen Übergang
+    setTimeout(() => {
+      setSelectedCard(null);
+      setCurrentRound((prev) => prev + 1);
+
+      // Zurücksetzen der drawnCardOpacity für den nächsten Fade-In
+      drawnCardOpacity.setValue(0);
+    }, 300);
   };
 
   const handleDismissSummary = () => {
@@ -68,6 +80,16 @@ export default function Index() {
 
   const handleStartSession = () => {
     setSessionStarted(true);
+  };
+
+  const handleCardPositioned = () => {
+    // DrawnCardsDisplay mit Fade-in einblenden
+    setShowDrawnCard(true);
+    Animated.timing(drawnCardOpacity, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   };
 
   return (
@@ -92,19 +114,27 @@ export default function Index() {
                 drawnSlotPositions={drawnSlotPositions}
                 currentRound={currentRound}
                 predeterminedCards={predeterminedCards} // Pass drawn cards here
+                onCardPositioned={handleCardPositioned}
               />
             </View>
           ) : null}
 
-          {selectedCard ? (
-            <View className="absolute inset-0 z-50">
+          {showDrawnCard && (
+            <Animated.View
+              style={{
+                position: "absolute",
+                width: "100%",
+                height: "100%",
+                opacity: drawnCardOpacity,
+              }}
+            >
               <DrawnCardsDisplay
                 selectedCards={selectedCards}
-                onDismiss={handleDismissExplanation}
+                onDismiss={handleDismissExplanation} // Nutze die korrigierte Funktion
                 currentRound={currentRound}
               />
-            </View>
-          ) : null}
+            </Animated.View>
+          )}
 
           {currentRound === 3 ? (
             <View className="absolute inset-0 z-50">
