@@ -87,7 +87,11 @@ export default function DrawnCardsDisplay({
             { backgroundColor: `rgba(124, 58, 237, ${buttonOpacity})` },
           ]}
         >
-          <Text style={styles.buttonText}>Zur nächsten Karte</Text>
+          <Text style={styles.buttonText}>
+            {currentRound === 2
+              ? "Zusammenfassung anzeigen"
+              : "Zur nächsten Karte"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -8,6 +8,7 @@ import {
   Platform,
   Text, // Add Text import
 } from "react-native";
+import { Shadow } from "react-native-shadow-2";
 import TarotCard from "./TarotCard"; // Ändern von CardImage zu TarotCard
 import { ISelectedAndShownCard, tarotCards } from "@/constants/tarotcards";
 import { getRandomDrawnCards } from "./DrawnCardsPool";
@@ -38,6 +39,7 @@ const CardStackView = memo(
     const [showInstruction, setShowInstruction] = useState(false);
     const instructionOpacity = useRef(new Animated.Value(0)).current;
     const [isCardSelected, setIsCardSelected] = useState(false);
+    const stackOpacity = useRef(new Animated.Value(1)).current;
 
     const fanAnimation = useCardFanAnimation({
       cardCount: 5,
@@ -82,6 +84,9 @@ const CardStackView = memo(
     useEffect(() => {
       // Reset selection state when the round changes
       setIsCardSelected(false);
+
+      // Wichtig: Reset der Opacity für den neuen Kartenstapel
+      stackOpacity.setValue(1);
     }, [currentRound]);
 
     // Nach Karteninitalisierung die Anleitung einblenden
@@ -104,92 +109,124 @@ const CardStackView = memo(
     const handleCardSelect = (card: ISelectedAndShownCard) => {
       if (cards.some((c) => c.isSelected) || isCardSelected) return;
 
-      // Karte als selektiert markieren
+      // Karte sofort als selektiert markieren
       setIsCardSelected(true);
 
-      // Anleitung ausblenden
-      Animated.timing(instructionOpacity, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }).start(() => {
+      // Sofort die Kartenauswahl aktualisieren, bevor die Animationen starten
+      setCards((prevCards) =>
+        prevCards.map((c) => ({
+          ...c,
+          showFront: c === card ? true : false, // Nur die ausgewählte Karte umdrehen
+          isSelected: c === card ? true : false, // Nur die ausgewählte Karte als ausgewählt markieren
+        }))
+      );
+
+      // Dann erst die Fade-Out Animationen starten
+      Animated.parallel([
+        // Anleitung ausblenden
+        Animated.timing(instructionOpacity, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+
+        // Kartenstapel ausblenden (außer der gewählten Karte)
+        Animated.timing(stackOpacity, {
+          toValue: 0,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
         setShowInstruction(false);
 
-        // Karten aktualisieren
-        setCards((prevCards) =>
-          prevCards.map((c) => ({
-            ...c,
-            showFront: c === card ? true : false,
-            isSelected: c === card ? true : false,
-          }))
-        );
-
-        // Nach Animation die Auswahl an Parent weitergeben
-        setTimeout(() => {
-          onCardSelect({
-            ...card,
-            showFront: true,
-            isSelected: true,
-          });
-        }, 100);
+        // Kurze Verzögerung entfernen - dies verursacht möglicherweise unerwünschte Bewegungen
+        // Direkt die Auswahl an den Parent weitergeben
+        onCardSelect({
+          ...card,
+          showFront: true,
+          isSelected: true,
+        });
       });
     };
 
+    // Ändere die JSX-Struktur zunächst für bessere Organisation
     return (
       <View style={styles.container}>
         <View style={styles.glowContainer} />
 
-        {/* Instruction Container über den Karten */}
-        {showInstruction && (
-          <Animated.View
-            style={[
-              styles.instructionContainer,
-              { opacity: instructionOpacity },
-            ]}
-          >
-            <Text style={styles.instructionText}>
-              Tippe auf den Stapel, um die nächste Karte zu ziehen
-            </Text>
-          </Animated.View>
-        )}
-
-        <View style={styles.cardsContainer}>
-          {cards.map((card, index) => (
+        <View style={styles.gamePlayArea}>
+          {/* Instruction Container über den Karten - mit verbessertem Stil */}
+          {showInstruction && (
             <Animated.View
-              key={`${currentRound}-${index}`}
               style={[
-                styles.animatedCard,
-                {
-                  zIndex: cards.length - index,
-                  transform: [
-                    { translateY: fanAnimation.translateY[index] },
-                    { translateX: fanAnimation.translateX[index] },
-                    {
-                      rotate: fanAnimation.rotations[index].interpolate({
-                        inputRange: [-30, 30],
-                        outputRange: ["-30deg", "30deg"],
-                      }),
-                    },
-                    { scale: fanAnimation.scales[index] },
-                  ],
-                },
+                styles.instructionContainer,
+                { opacity: instructionOpacity },
               ]}
             >
-              <Pressable
-                style={styles.cardPressable}
-                onPress={() => handleCardSelect(card)}
-              >
-                <TarotCard
-                  image={card.image}
-                  isShown={card.showFront || false}
-                  style={{
-                    width: cardDimensions.width,
-                    height: cardDimensions.height,
-                  }}
-                />
-              </Pressable>
+              {/* Shadow-Komponente entfernen */}
+              <View style={styles.instructionInner}>
+                <Text style={styles.instructionText}>
+                  {currentRound === 2
+                    ? "Tippe auf den Stapel, um die Zusammenfassung anzuzeigen"
+                    : "Tippe auf den Stapel, um die nächste Karte zu ziehen"}
+                </Text>
+              </View>
             </Animated.View>
-          ))}
+          )}
+
+          <View style={styles.cardsContainer}>
+            {cards.map((card, index) => (
+              <Animated.View
+                key={`${currentRound}-${index}`}
+                style={[
+                  styles.animatedCard,
+                  {
+                    zIndex: cards.length - index,
+                    transform: [
+                      { translateY: fanAnimation.translateY[index] },
+                      { translateX: fanAnimation.translateX[index] },
+                      {
+                        rotate: fanAnimation.rotations[index].interpolate({
+                          inputRange: [-30, 30],
+                          outputRange: ["-30deg", "30deg"],
+                        }),
+                      },
+                      { scale: fanAnimation.scales[index] },
+                    ],
+                    opacity: card.isSelected ? 1 : stackOpacity, // Apply opacity
+                  },
+                ]}
+              >
+                <Pressable
+                  style={styles.cardPressable}
+                  onPress={() => handleCardSelect(card)}
+                >
+                  <TarotCard
+                    image={card.image}
+                    isShown={card.showFront || false}
+                    style={{
+                      width: cardDimensions.width,
+                      height: cardDimensions.height,
+                    }}
+                  />
+                </Pressable>
+              </Animated.View>
+            ))}
+          </View>
+
+          {/* Kartenanzeiger unter dem Kartenstapel */}
+          {cards.length > 0 && !isCardSelected && (
+            <View style={styles.cardIndicatorContainer}>
+              {/* Shadow-Komponente entfernen, nur Text mit Schatten verwenden */}
+              <View style={styles.cardIndicatorInner}>
+                <Text style={styles.cardIndicatorText}>
+                  {currentRound === 2
+                    ? "Letzte Karte"
+                    : `Karte ${currentRound + 1}/3`}
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
       </View>
     );
@@ -325,30 +362,61 @@ const styles = StyleSheet.create({
   },
   instructionContainer: {
     position: "absolute",
-    top: -100,
-    left: 20,
-    right: 20,
     zIndex: 100,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    borderRadius: 20,
-    padding: 8,
-    // Stelle sicher, dass keine Rotation stattfindet
-    transform: [{ rotate: "0deg" }], // Explizit horizontal ausrichten
-    // Bessere Positionierung und Breite
-    width: "90%",
+    top: "10%",
     alignSelf: "center",
   },
-
+  instructionInner: {
+    backgroundColor: "rgba(17, 24, 39, 0.8)",
+    borderRadius: 20,
+    padding: 14,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    minWidth: 250,
+    maxWidth: "80%",
+    borderWidth: 0, // Border vollständig entfernen
+    borderColor: "transparent", // Transparent für Sicherheit
+  },
   instructionText: {
-    color: "#FFFFFF",
+    color: "#A78BFA",
     fontSize: 18,
     fontWeight: "600",
     textAlign: "center",
     paddingVertical: 6,
-    paddingHorizontal: 16,
-    // Ausdrücklich horizontale Textrichtung festlegen
-    writingDirection: "ltr",
-    textTransform: "none",
+    textShadowColor: "rgba(139, 92, 246, 0.8)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 12, // Etwas stärker für besseren Glow-Effekt
+  },
+  gamePlayArea: {
+    flex: 1,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative", // Wichtig für absolute Positionierung der Kinder
+  },
+  cardIndicatorContainer: {
+    position: "absolute",
+    bottom: "8%",
+    alignSelf: "center",
+  },
+  cardIndicatorInner: {
+    backgroundColor: "#111827",
+    borderRadius: 20,
+    padding: 10,
+    paddingHorizontal: 18,
+    borderWidth: 0,
+    borderColor: "transparent",
+  },
+  cardIndicatorText: {
+    color: "#A78BFA",
+    fontSize: 24,
+    fontWeight: "600",
+    textAlign: "center",
+    textShadowColor: "rgba(139, 92, 246, 0.9)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
   },
 });
 

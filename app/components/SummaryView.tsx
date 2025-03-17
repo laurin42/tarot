@@ -10,10 +10,12 @@ import {
   Platform,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Dimensions,
 } from "react-native";
 import { ISelectedAndShownCard } from "@/constants/tarotcards";
 import TarotCard from "@/components/TarotCard";
 import { storage } from "../utils/storage"; // Import storage utility
+import { Shadow } from "react-native-shadow-2";
 
 interface SummaryViewProps {
   cards: ISelectedAndShownCard[];
@@ -140,6 +142,15 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
     setSelectedCardIndex(index);
   };
 
+  // Geräteabmessungen erhalten
+  const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+
+  // Dynamische Größen berechnen
+  const cardWidth = screenWidth * 0.25; // ~31% mit etwas Abstand
+  const cardHeight = cardWidth * 1.6; // Typisches Kartenverhältnis
+  const labelHeight = screenHeight * 0.025;
+  const nameHeight = screenHeight * 0.045;
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -152,12 +163,8 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
 
         <View style={styles.cardsContainer}>
           {cards.map((card, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.cardWrapper}
-              onPress={() => handleCardPress(index)}
-            >
-              {/* 1. Label Text (oben) */}
+            <View key={index} style={styles.cardWrapper}>
+              {/* 1. Label Text mit fester Höhe */}
               <Text style={styles.labelText}>
                 (
                 {index === 0
@@ -168,17 +175,29 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
                 )
               </Text>
 
-              {/* 2. Tarot Card (Mitte) */}
-              <TarotCard
-                image={card.image}
-                isShown={true}
-                style={{
-                  width: 100,
-                  height: 160,
-                }}
-              />
+              {/* 2. Tarot Card in Container mit fester Höhe */}
+              <View style={styles.cardImageContainer}>
+                <TouchableOpacity onPress={() => handleCardPress(index)}>
+                  <Shadow
+                    distance={8}
+                    startColor="rgba(139, 92, 246, 0.4)"
+                    endColor="rgba(139, 92, 246, 0.0)"
+                    offset={[0, 0]}
+                  >
+                    <TarotCard
+                      image={card.image}
+                      isShown={true}
+                      style={{
+                        width: cardWidth,
+                        height: cardWidth * 1.6,
+                        borderRadius: 8,
+                      }}
+                    />
+                  </Shadow>
+                </TouchableOpacity>
+              </View>
 
-              {/* 3. Card Name (unten) */}
+              {/* 3. Card Name mit fester Höhe */}
               <View style={styles.cardNameWrapper}>
                 <Text
                   style={styles.cardName}
@@ -188,7 +207,7 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
                   {card.name}
                 </Text>
               </View>
-            </TouchableOpacity>
+            </View>
           ))}
         </View>
 
@@ -257,8 +276,7 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "rgba(17, 24, 39, 0.98)",
-    padding: 16,
+    backgroundColor: "transparent",
     alignItems: "center",
   },
   title: {
@@ -278,35 +296,29 @@ const styles = StyleSheet.create({
   },
   cardsContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-evenly", // Von space-between zu space-evenly ändern
     alignItems: "flex-start",
     width: "100%",
-    paddingHorizontal: 16,
-    marginBottom: 4, // ggf. reduzieren
+    paddingHorizontal: 8, // Von 16 auf 8 reduziert, um mehr Platz am Rand zu geben
+    marginBottom: 4,
   },
+  // Verbesserter cardWrapper mit stärkerem Glow-Effekt
   cardWrapper: {
     alignItems: "center",
-    width: "31%",
-    maxWidth: 120,
-    // minHeight: 280, // entfernen oder verkleinern
+    width: "29%", // Von 31% auf 29% reduziert
+    maxWidth: "30%", // Von 33% auf 30% reduziert
     justifyContent: "flex-start",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#8B5CF6",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 8,
-      },
-    }),
+    backgroundColor: "transparent",
+    flexDirection: "column", // Wichtig: Explizit vertikale Anordnung festlegen
+    height: "auto", // Höhe automatisch anpassen
+    // Füge expliziten Rand hinzu
+    marginHorizontal: 2,
   },
   cardNameWrapper: {
-    height: 36,
+    marginTop: 8,
+    width: "100%",
+    minHeight: 36, // Minimalhöhe statt fester Höhe
     justifyContent: "center",
-    marginBottom: 8,
-    marginTop: 8, // Abstand zwischen Karte und Name
   },
   cardName: {
     color: "#A78BFA",
@@ -323,6 +335,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     height: 20,
   },
+  // Verbesserter summaryContainer mit subtilerem Glow
   summaryContainer: {
     backgroundColor: "rgba(31, 41, 55, 0.95)",
     borderRadius: 16,
@@ -333,19 +346,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     borderColor: "rgba(139, 92, 246, 0.3)",
-    overflow: "hidden", // Um den Button am unteren Rand zu halten
     position: "relative", // Hinzufügen für bessere absolute Positionierung
-    ...Platform.select({
-      ios: {
-        shadowColor: "#8B5CF6",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 6,
-      },
-    }),
+    shadowColor: "#8B5CF6",
+    shadowOffset: { width: 0, height: 0 }, // Zentrierter Glow
+    shadowOpacity: 0.3, // Höhere Opazität
+    shadowRadius: 15, // Größerer Radius
+    elevation: 8, // Für Android
   },
   modalOverlay: {
     flex: 1,
@@ -354,28 +360,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
   },
+  // Verbessertes modalContent mit ähnlichem Glow wie DrawnCardsDisplay
   modalContent: {
     backgroundColor: "rgba(31, 41, 55, 0.98)",
     borderRadius: 16,
     padding: 24,
     paddingBottom: 0, // Kein Padding am Boden
-    width: "90%",
+    width: "100%",
     maxHeight: "85%", // Etwas mehr Höhe für den Inhalt
     alignItems: "center",
     borderWidth: 1,
     borderColor: "rgba(139, 92, 246, 0.3)",
-    overflow: "hidden",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#8B5CF6",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 6,
-      },
-    }),
+    shadowColor: "#8B5CF6",
+    shadowOffset: { width: 0, height: 0 }, // Zentrierter Glow
+    shadowOpacity: 0.5, // Leicht gedämpft
+    shadowRadius: 20, // Größerer Radius wie in DrawnCardsDisplay
+    elevation: 10, // Erhöht von 6 auf 10
   },
   modalTitle: {
     color: "#fff",
@@ -422,11 +422,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   labelText: {
-    color: "rgba(249, 115, 22, 0.4)",
+    color: "rgba(249, 115, 22, 0.7)", // Erhöhte Opazität für bessere Sichtbarkeit
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 14,
     marginBottom: 8, // Abstand zwischen Label und Karte
     textAlign: "center",
+    width: "100%", // Volle Breite für das Label
+    height: 20, // Feste Höhe für gleichmäßige Ausrichtung
   },
   modalScrollView: {
     width: "100%",
@@ -458,6 +460,12 @@ const styles = StyleSheet.create({
     // marginLeft und marginRight entfernen
     alignItems: "center",
     alignSelf: "center",
+  },
+  cardImageContainer: {
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 4, // Etwas Abstand oben und unten
   },
 });
 
