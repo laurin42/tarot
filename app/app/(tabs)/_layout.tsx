@@ -5,6 +5,9 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import DailyCardIcon from "../../assets/icons/DailyCardIcon.svg";
+import ThreeCardsIcon from "../../components/icons/ThreeCardsIcon";
+import ProfileIcon from "../../components/icons/ProfileIcon"; // Neuer Import
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -12,7 +15,8 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: "#A78BFA", // Heller lila Farbton
+        tabBarInactiveTintColor: "#9CA3AF", // Hellgrau für inaktive Tabs
         headerShown: false,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
@@ -22,22 +26,23 @@ export default function TabLayout() {
           default: {},
         }),
       }}
+      initialRouteName="index" // Setze explizit die Starttab
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "Dreikartenziehung",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+            <ThreeCardsIcon width={28} height={28} fill={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="dailycard"
         options={{
-          title: "Explore",
+          title: "Tageskarte",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+            <DailyCardIcon width={28} height={28} fill={color} />
           ),
         }}
       />
@@ -46,7 +51,7 @@ export default function TabLayout() {
         options={{
           title: "Profil",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
+            <ProfileIcon width={28} height={28} fill={color} />
           ),
         }}
       />
