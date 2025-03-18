@@ -1,8 +1,7 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { Platform } from "react-native";
+import { Platform, SafeAreaView } from "react-native";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import DailyCardIcon from "../../components/icons/DailyCardIcon";
@@ -10,51 +9,84 @@ import ThreeCardsIcon from "../../components/icons/ThreeCardsIcon";
 import ProfileIcon from "../../components/icons/ProfileIcon";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: "#A78BFA", // Heller lila Farbton
-        tabBarInactiveTintColor: "#9CA3AF", // Hellgrau für inaktive Tabs
-        headerShown: false,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: "absolute",
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#111827" }}>
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: "#A78BFA",
+          tabBarInactiveTintColor: "#9CA3AF",
+          headerShown: false,
+          tabBarStyle: {
+            height: 65,
+            paddingBottom: 0,
+            paddingTop: 0,
+            backgroundColor: "#111827",
+            borderTopWidth: 0,
+            elevation: 0,
+            shadowOpacity: 0,
+            ...Platform.select({
+              android: {
+                elevation: 0,
+              },
+              ios: {
+                shadowColor: "transparent",
+                shadowOpacity: 0,
+                shadowRadius: 0,
+                shadowOffset: {
+                  height: 0,
+                  width: 0,
+                },
+              },
+            }),
           },
-          default: {},
-        }),
-      }}
-      initialRouteName="threecards" // Setze explizit die Starttab
-    >
-      <Tabs.Screen
-        name="threecards"
-        options={{
-          title: "Dreikartenziehung",
-          tabBarIcon: ({ color }) => (
-            <ThreeCardsIcon width={28} height={28} fill={color} />
-          ),
+          // Stelle sicher, dass diese Einstellung aktiviert ist
+          tabBarLabelPosition: "below-icon",
+          tabBarShowLabel: true,
+          tabBarLabelStyle: {
+            fontSize: 12,
+            fontWeight: "500",
+            marginTop: 2,
+            paddingBottom: 4,
+            color: "#9CA3AF", // Standard-Textfarbe - wird für aktiven Tab überschrieben
+          },
+          tabBarIconStyle: {
+            marginTop: 6,
+          },
         }}
-      />
-      <Tabs.Screen
-        name="dailycard"
-        options={{
-          title: "Tageskarte",
-          tabBarIcon: ({ color }) => (
-            <DailyCardIcon width={28} height={28} fill={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profil",
-          tabBarIcon: ({ color }) => (
-            <ProfileIcon width={28} height={28} fill={color} />
-          ),
-        }}
-      />
-    </Tabs>
+        initialRouteName="threecards"
+        safeAreaInsets={{ bottom: 0, top: 0, left: 0, right: 0 }}
+      >
+        <Tabs.Screen
+          name="threecards"
+          options={{
+            title: "threecards",
+            tabBarIcon: ({ color }) => (
+              <ThreeCardsIcon width={28} height={28} fill={color} />
+            ),
+            tabBarLabel: "Drei Karten",
+          }}
+        />
+        <Tabs.Screen
+          name="dailycard"
+          options={{
+            title: "Tageskarte",
+            tabBarIcon: ({ color }) => (
+              <DailyCardIcon width={28} height={28} fill={color} />
+            ),
+            tabBarLabel: "Tageskarte", // Explizit das Label setzen
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: "Profil",
+            tabBarIcon: ({ color }) => (
+              <ProfileIcon width={28} height={28} fill={color} />
+            ),
+            tabBarLabel: "Profil", // Explizit das Label setzen
+          }}
+        />
+      </Tabs>
+    </SafeAreaView>
   );
 }

@@ -53,6 +53,16 @@ export const globalStyles = StyleSheet.create({
     textAlign: "center",
   },
 
+  glowingText: {
+    color: colors.primaryLight,
+    fontSize: 18,
+    fontWeight: "600",
+    textAlign: "center",
+    textShadowColor: "rgba(139, 92, 246, 0.9)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 14, // Stärkerer Glow für bessere Sichtbarkeit ohne Hintergrund
+  },
+
   // Button Styles
   primaryButton: {
     width: "100%",
@@ -73,11 +83,14 @@ export const globalStyles = StyleSheet.create({
   // Floating Elements
   floatingIndicator: {
     position: "absolute",
-    backgroundColor: colors.backgroundLight,
-    borderRadius: 20,
-    padding: 10,
-    paddingHorizontal: 18,
-    ...borderEffects.none,
+    backgroundColor: "transparent", // Kein Hintergrund
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    minWidth: 250,
+    maxWidth: "80%",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   // Glow Container
