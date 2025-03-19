@@ -28,7 +28,16 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "tarot42",
+          "organization": "bbq-mp",
+          "note": "Use SENTRY_AUTH_TOKEN env to authenticate with Sentry."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

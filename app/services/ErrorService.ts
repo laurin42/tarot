@@ -15,19 +15,19 @@ class ErrorService {
    * Initialize error reporting service
    */
   init() {
-    // In production, initialize Sentry
-    if (process.env.EXPO_PUBLIC_ENVIRONMENT === 'production') {
-      Sentry.init({
-        dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
-        environment: process.env.EXPO_PUBLIC_ENVIRONMENT || 'development',
-        // Add these for better debugging info
-        tracesSampleRate: 1.0,
-        enableAutoSessionTracking: true,
-        attachStacktrace: true,
-      });
-      console.log('✅ Sentry initialized in production mode');
-    } else {
-      console.log('⚠️ Sentry not initialized (development mode)');
+    console.log("ENV:", process.env.EXPO_PUBLIC_ENVIRONMENT);
+    console.log("DSN:", process.env.EXPO_PUBLIC_SENTRY_DSN ? "Vorhanden" : "Fehlt!");
+    
+    // Skip initialization since we're doing it in index.tsx
+    console.log("Sentry already initialized in index.tsx - skipping");
+    
+    // If you still want to run the direct test:
+    if (process.env.EXPO_PUBLIC_ENVIRONMENT === 'production' && process.env.EXPO_PUBLIC_SENTRY_DSN) {
+      try {
+        // Keep your API test here if needed
+      } catch (error) {
+        console.error("Fehler beim direkten API-Test:", error);
+      }
     }
   }
 
