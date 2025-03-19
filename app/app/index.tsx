@@ -1,7 +1,18 @@
-import { Redirect } from "expo-router";
-import threecards from "./(tabs)/threecards";
+import "react-native-gesture-handler";
+import { useEffect } from "react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { errorService } from "@/services/ErrorService";
+import { ExpoRoot } from "expo-router";
 
-export default function Index() {
-  // Leite einfach zu threecards um, wenn jemand zur Root-Route navigiert
-  return <Redirect href="/(tabs)/threecards" />;
+export default function App() {
+  // Initialize error service
+  useEffect(() => {
+    errorService.init();
+  }, []);
+
+  return (
+    <ErrorBoundary>
+      <ExpoRoot context={require.context(".", true, /^\.\/app(_|\/).*$/)} />
+    </ErrorBoundary>
+  );
 }

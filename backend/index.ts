@@ -1,6 +1,6 @@
 import express, { Request, Response, Application } from "express";
 import cors from "cors";
-import dotenv from "dotenv";
+import dotenvFlow from 'dotenv-flow';
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
@@ -8,9 +8,12 @@ import { usersTable, drawnCardsTable, type NewUser } from "./db/schema";
 import { eq, desc } from "drizzle-orm";
 import { authMiddleware, generateToken } from './middleware/auth';
 import { jwtDecode } from "jwt-decode";
+import { notFoundHandler, errorHandler } from './middleware/errorHandler';
+import * as Sentry from '@sentry/node';
+import { initSentry } from './utils/sentry';
 
 // Load environment variables
-dotenv.config();
+dotenvFlow.config();
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -22,6 +25,12 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const app: Application = express();
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8000;
+
+// Initialisiere Sentry HIER - nach App-Erstellung, vor Middleware
+initSentry(app);
+
+// Sentry request handler HIER - vor anderen Middleware
+app.use(Sentry.Handlers.requestHandler());
 
 app.use(cors({
   origin: 'http://localhost:8081', 
@@ -587,9 +596,24 @@ app.get("/auth/verify-token", (req: Request, res: Response) => {
   }
 });
 
-// Change this line at the bottom
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/tarot', tarotRoutes);
+// ...andere Routes...
+
+// Middleware zum Abfangen nicht gefundener Routen - immer NACH allen regulären Routes
+
+// NACHDEM alle Routen definiert wurden
+
+// Sentry error handler ZUERST
+app.use(Sentry.Handlers.errorHandler());
+
+// DANN deine eigenen Error-Handler
+app.use(notFoundHandler);
+app.use(errorHandler);
+
+// Der app.listen() Aufruf ganz am Ende
 app.listen(port, "0.0.0.0", () => {
-  // Use 0.0.0.0 to listen on all network interfaces
   console.log(`Server ist aktiv auf http://${process.env.SERVER_HOST || '0.0.0.0'}:${port}`);
   console.log(`API URL in .env: ${process.env.EXPO_PUBLIC_API_URL}`);
 });

@@ -16,11 +16,14 @@ class ErrorService {
    */
   init() {
     // In production, you would initialize Sentry here
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.EXPO_PUBLIC_ENVIRONMENT === 'production') {
       Sentry.init({
         dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
         environment: process.env.EXPO_PUBLIC_ENVIRONMENT || 'development',
       });
+      console.log('✅ Sentry initialized in production mode');
+    } else {
+      console.log('⚠️ Sentry not initialized (development mode)');
     }
   }
 
