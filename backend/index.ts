@@ -1,7 +1,7 @@
 import express, { Request, Response, Application } from "express";
 import cors from "cors";
 import dotenvFlow from 'dotenv-flow';
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import { usersTable, drawnCardsTable, type NewUser } from "./db/schema";
@@ -9,8 +9,9 @@ import { eq, desc } from "drizzle-orm";
 import { authMiddleware, generateToken } from './middleware/auth';
 import { jwtDecode } from "jwt-decode";
 import { notFoundHandler, errorHandler } from './middleware/errorHandler';
-import * as Sentry from '@sentry/node';
 import { initSentry } from './utils/sentry';
+import authRoutes from './routes/authRoutes';
+import tarotRoutes from './routes/tarotRoutes';
 
 // Load environment variables
 dotenvFlow.config();
@@ -20,17 +21,32 @@ const pool = new Pool({
 });
 
 const db = drizzle(pool);
-const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.API_KEY || (() => {
+  console.error("API_KEY not found in environment");
+  throw new Error("API_KEY is required");
+})());
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const app: Application = express();
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8000;
 
-// Initialisiere Sentry HIER - nach App-Erstellung, vor Middleware
-initSentry(app);
+// Initialisiere Sentry und erhalte die Instanz
+const SentryInstance = initSentry(app);
 
-// Sentry request handler HIER - vor anderen Middleware
-app.use(Sentry.Handlers.requestHandler());
+// Verwende eigene einfache Middleware statt der problematischen Handler
+if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+  // Einfache Request-Erfassung
+  app.use((req, res, next) => {
+    // Setze Kontext für die Anfrage
+    SentryInstance.configureScope((scope) => {
+      scope.setTag("url", req.url);
+      scope.setTag("method", req.method);
+      // Keine sensiblen Daten speichern
+      scope.setUser({ ip_address: req.ip });
+    });
+    next();
+  });
+}
 
 app.use(cors({
   origin: 'http://localhost:8081', 
@@ -64,9 +80,10 @@ app.post("/tarot/card", async (req: Request<{}, {}, CardRequest>, res: Response)
       userGoals ? `Berücksichtige bei der Deutung folgende Ziele des Users: ${userGoals}.` : ""
     } ${cardReadingPrompt}`;
 
+    // Example for one of the endpoints
     const response = await model.generateContent(prompt);
-    const description = response.response.candidates[0].content.parts[0].text;
-
+    const description = response.response?.candidates?.[0]?.content?.parts?.[0]?.text;
+    
     if (!description) {
       throw new Error("Es wurde keine Beschreibung generiert.");
     }
@@ -596,17 +613,23 @@ app.get("/auth/verify-token", (req: Request, res: Response) => {
   }
 });
 
+// Test-Route für Sentry
+app.get('/debug-sentry', function(req, res) {
+  throw new Error('Test-Fehler für Sentry!');
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tarot', tarotRoutes);
-// ...andere Routes...
 
-// Middleware zum Abfangen nicht gefundener Routen - immer NACH allen regulären Routes
-
-// NACHDEM alle Routen definiert wurden
-
-// Sentry error handler ZUERST
-app.use(Sentry.Handlers.errorHandler());
+// Eigene Sentry-Fehlererfassung nach allen Routen
+if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+  // Einfacher Fehler-Handler vor deinen eigenen Error-Handlern
+  app.use((err, req, res, next) => {
+    SentryInstance.captureException(err);
+    next(err);  // Weitergabe an den nächsten Error-Handler
+  });
+}
 
 // DANN deine eigenen Error-Handler
 app.use(notFoundHandler);

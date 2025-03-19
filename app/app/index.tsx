@@ -1,3 +1,4 @@
+// app/app/index.tsx
 import "react-native-gesture-handler";
 import { useEffect } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";

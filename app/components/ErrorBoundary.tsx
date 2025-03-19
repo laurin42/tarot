@@ -1,7 +1,8 @@
 // app/components/ErrorBoundary.tsx
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { errorService } from "../services/ErrorService";
+import * as Sentry from "@sentry/react-native";
+import { errorService } from "@/services/ErrorService";
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -27,10 +28,9 @@ export class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log the error to our service
+    // Report error to Sentry
     errorService.captureException(error, {
       context: { componentStack: errorInfo.componentStack },
-      level: "error",
     });
   }
 
@@ -40,22 +40,21 @@ export class ErrorBoundary extends React.Component<
 
   render() {
     if (this.state.hasError) {
-      // Fallback UI when an error occurs
       return (
         this.props.fallback || (
-          <View className="flex-1 justify-center items-center p-4 bg-white">
-            <Text className="text-xl font-bold mb-2 text-red-600">
+          <View className="flex-1 items-center justify-center p-4">
+            <Text className="text-lg font-bold mb-2">
               Etwas ist schiefgelaufen
             </Text>
-            <Text className="text-base text-gray-700 mb-4 text-center">
-              Ein unerwarteter Fehler ist aufgetreten. Wir arbeiten daran, das
-              Problem zu beheben.
+            <Text className="text-center mb-4">
+              Die App hat einen unerwarteten Fehler festgestellt. Wir haben das
+              Problem aufgezeichnet und arbeiten an einer Lösung.
             </Text>
             <TouchableOpacity
+              className="px-4 py-2 bg-blue-500 rounded"
               onPress={this.handleReload}
-              className="py-3 px-6 bg-blue-600 rounded-lg"
             >
-              <Text className="text-white font-semibold">Neu laden</Text>
+              <Text className="text-white font-medium">Neu laden</Text>
             </TouchableOpacity>
           </View>
         )
