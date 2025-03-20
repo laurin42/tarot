@@ -1,12 +1,12 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import SentryTest from "@/components/SentryTest";
+import CrashlyticsTest from "@/components/CrashlyticsTest";
 
-export default function SentryTestScreen() {
+export default function CrashlyticsTestScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Sentry Integration Test</Text>
-      <SentryTest />
+      <Text style={styles.header}>Firebase Crashlytics Test</Text>
+      <CrashlyticsTest />
     </View>
   );
 }

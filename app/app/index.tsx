@@ -1,42 +1,45 @@
 import "react-native-gesture-handler";
-import * as Sentry from "@sentry/react-native";
 import { useEffect } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { errorService } from "@/services/ErrorService";
+import { crashlyticsService } from "@/services/CrashlyticsService";
 import { ExpoRoot } from "expo-router";
 
-// Initialize Sentry ONCE, here at the top level
-if (process.env.EXPO_PUBLIC_ENVIRONMENT === "production") {
-  Sentry.init({
-    dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
-    debug: true,
-    environment: process.env.EXPO_PUBLIC_ENVIRONMENT || "development",
-    sendDefaultPii: true,
-    tracesSampleRate: 1.0,
-    profilesSampleRate: 1.0,
-  });
-  console.log("Sentry direkt in index.tsx initialisiert");
-}
+// Initialize Firebase
+import firebase from "@react-native-firebase/app";
+import "@react-native-firebase/crashlytics";
+import "@react-native-firebase/analytics";
 
 // This function was missing the "export default" statement
 function App() {
-  // Initialize error service BUT skip Sentry init
+  // Initialize error service
   useEffect(() => {
-    // Don't call errorService.init() since it does another Sentry init
-    // Instead, only run your direct tests:
+    // Initialize Firebase if needed
+    if (!firebase.apps.length) {
+      // Add your Firebase configuration object here
+      const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID",
+        measurementId: "YOUR_MEASUREMENT_ID",
+      };
+      firebase.initializeApp(firebaseConfig);
+    }
 
     if (process.env.EXPO_PUBLIC_ENVIRONMENT === "production") {
-      console.log("Sending direct test to Sentry...");
+      console.log("Initializing Firebase Crashlytics...");
 
-      // Direct test event
-      Sentry.captureMessage("App started in production mode", "info");
+      // Test logging
+      crashlyticsService.log("App started in production mode");
 
-      // Direct test error
+      // Test error
       try {
-        throw new Error("Direct test error");
+        throw new Error("Test error");
       } catch (error) {
-        Sentry.captureException(error);
-        console.log("Test error sent to Sentry");
+        crashlyticsService.recordError(error as Error);
+        console.log("Test error sent to Crashlytics");
       }
     }
   }, []);
@@ -48,5 +51,5 @@ function App() {
   );
 }
 
-// Export with Sentry.wrap
-export default Sentry.wrap(App);
+// Export without Sentry wrapping
+export default App;

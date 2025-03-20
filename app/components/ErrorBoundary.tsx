@@ -1,8 +1,7 @@
 // app/components/ErrorBoundary.tsx
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import * as Sentry from "@sentry/react-native";
-import { errorService } from "@/services/ErrorService";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { crashlyticsService } from "@/services/CrashlyticsService";
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -23,44 +22,79 @@ export class ErrorBoundary extends React.Component<
     this.state = { hasError: false, error: null };
   }
 
-  static getDerivedStateFromError(error: Error) {
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    // Update state so the next render shows the fallback UI
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Report error to Sentry
-    errorService.captureException(error, {
-      context: { componentStack: errorInfo.componentStack },
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    // Log the error to Crashlytics
+    crashlyticsService.recordError(error, {
+      context: {
+        componentStack: errorInfo.componentStack,
+      },
     });
   }
 
-  handleReload = () => {
+  handleRestart = (): void => {
     this.setState({ hasError: false, error: null });
   };
 
-  render() {
+  render(): React.ReactNode {
     if (this.state.hasError) {
+      // Render custom fallback UI if provided
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+
+      // Default fallback UI
       return (
-        this.props.fallback || (
-          <View className="flex-1 items-center justify-center p-4">
-            <Text className="text-lg font-bold mb-2">
-              Etwas ist schiefgelaufen
-            </Text>
-            <Text className="text-center mb-4">
-              Die App hat einen unerwarteten Fehler festgestellt. Wir haben das
-              Problem aufgezeichnet und arbeiten an einer Lösung.
-            </Text>
-            <TouchableOpacity
-              className="px-4 py-2 bg-blue-500 rounded"
-              onPress={this.handleReload}
-            >
-              <Text className="text-white font-medium">Neu laden</Text>
-            </TouchableOpacity>
-          </View>
-        )
+        <View style={styles.container}>
+          <Text style={styles.title}>Oops, etwas ist schiefgelaufen!</Text>
+          <Text style={styles.message}>
+            {this.state.error?.message ||
+              "Ein unerwarteter Fehler ist aufgetreten."}
+          </Text>
+          <TouchableOpacity style={styles.button} onPress={this.handleRestart}>
+            <Text style={styles.buttonText}>App neu starten</Text>
+          </TouchableOpacity>
+        </View>
       );
     }
 
     return this.props.children;
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: "#1F2937",
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    marginBottom: 12,
+  },
+  message: {
+    fontSize: 16,
+    color: "#E5E7EB",
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  button: {
+    backgroundColor: "#3B82F6",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+});

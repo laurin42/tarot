@@ -105,6 +105,10 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            firebaseCrashlytics {
+                nativeSymbolUploadEnabled true
+                unstrippedNativeLibsDir 'build/intermediates/merged_native_libs/debug/out/lib'
+            }
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -114,6 +118,10 @@ android {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             crunchPngs (findProperty('android.enablePngCrunchInReleaseBuilds')?.toBoolean() ?: true)
+            firebaseCrashlytics {
+                nativeSymbolUploadEnabled true
+                unstrippedNativeLibsDir 'build/intermediates/merged_native_libs/release/out/lib'
+            }
         }
     }
     packagingOptions {
@@ -173,4 +181,10 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+    // Add crashlytics dependency if not automatically added
+    implementation 'com.google.firebase:firebase-crashlytics'
+    implementation 'com.google.firebase:firebase-analytics'
 }
+
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
