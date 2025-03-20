@@ -36,3 +36,40 @@ useExpoModules()
 
 include ':app'
 includeBuild(new File(["node", "--print", "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })"].execute(null, rootDir).text.trim()).getParentFile())
+
+gradle.projectsLoaded { gradle ->
+    gradle.rootProject.allprojects.each { project ->
+        if (project.name == "expo-modules-core") {
+            project.configurations.all {
+                resolutionStrategy {
+                    // Verwende 1.7.10 statt 1.8.22
+                    force "org.jetbrains.kotlin:kotlin-stdlib:1.7.10"
+                    force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.10"
+                    force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.7.10"
+                    force "org.jetbrains.kotlin:kotlin-stdlib-common:1.7.10"
+                    force "org.jetbrains.kotlin:kotlin-reflect:1.7.10"
+                    force "org.jetbrains.kotlin:kotlin-annotations-jvm:1.3.72"  // Diese Version beibehalten
+                    
+                    eachDependency { details ->
+                        if (details.requested.group == "org.jetbrains.kotlin") {
+                            details.useVersion("1.7.10")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Am Ende der Datei hinzufügen:
+
+// Globale Konfiguration für alle Projekte
+allprojects {
+    configurations.all {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == "org.jetbrains.kotlin") {
+                details.useVersion("1.7.10")
+            }
+        }
+    }
+}
