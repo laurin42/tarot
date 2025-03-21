@@ -1,7 +1,7 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
-apply plugin: "com.google.firebase.crashlytics"  // Überprüfe, dass diese Zeile vorhanden ist
+apply plugin: "com.google.gms.google-services"  // Behalte Google Services für andere Firebase-Funktionen
 
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
 
@@ -106,10 +106,6 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
-            firebaseCrashlytics {
-                nativeSymbolUploadEnabled = true
-                unstrippedNativeLibsDir = 'build/intermediates/merged_native_libs/debug/out/lib'
-            }
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -119,10 +115,6 @@ android {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             crunchPngs (findProperty('android.enablePngCrunchInReleaseBuilds')?.toBoolean() ?: true)
-            firebaseCrashlytics {
-                nativeSymbolUploadEnabled = true
-                unstrippedNativeLibsDir = 'build/intermediates/merged_native_libs/release/out/lib'
-            }
         }
     }
     packagingOptions {
@@ -157,10 +149,8 @@ android {
 
 dependencies {
     // Firebase-Implementierungen ohne direkte Kotlin-Versionsangaben
-    implementation platform('com.google.firebase:firebase-bom:31.5.0')  // Ältere, stabilere Version
-    implementation 'com.google.firebase:firebase-crashlytics'
+    implementation platform('com.google.firebase:firebase-bom:31.5.0')
     implementation 'com.google.firebase:firebase-analytics'
-    // Andere Abhängigkeiten...
 
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
@@ -188,14 +178,4 @@ dependencies {
     } else {
         implementation jscFlavor
     }
-}
-
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'
-
-configurations.all {
-    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-stdlib:1.7.10")
-    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.10")
-    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.7.10")
-    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-stdlib-common:1.7.10")
 }

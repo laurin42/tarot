@@ -1,27 +1,10 @@
-// Am Anfang der Datei
-subprojects { subproject ->
-    afterEvaluate {
-        if (subproject.name == "expo-modules-core") {
-            subproject.configurations.all {
-                resolutionStrategy.eachDependency { details ->
-                    if (details.requested.group == 'org.jetbrains.kotlin') {
-                        details.useVersion("1.7.10")
-                    }
-                }
-            }
-        }
-    }
-}
-
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
     ext {
         buildToolsVersion = findProperty('android.buildToolsVersion') ?: '33.0.0'
         minSdkVersion = Integer.parseInt(findProperty('android.minSdkVersion') ?: '24')
         compileSdkVersion = Integer.parseInt(findProperty('android.compileSdkVersion') ?: '33')
         targetSdkVersion = Integer.parseInt(findProperty('android.targetSdkVersion') ?: '33')
-        kotlinVersion = '1.7.10'  // Ältere, stabilere Version
+        kotlinVersion = findProperty('android.kotlinVersion') ?: '1.9.25'
         ndkVersion = "25.1.8937393"
     }
     repositories {
@@ -29,11 +12,10 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath('com.android.tools.build:gradle:7.3.1')  // Ältere Gradle-Version
+        classpath('com.android.tools.build:gradle:8.6.0')  
         classpath('com.facebook.react:react-native-gradle-plugin')
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
         classpath('com.google.gms:google-services:4.3.15')
-        classpath('com.google.firebase:firebase-crashlytics-gradle:2.9.5')  // Konsistente Version
     }
 }
 
@@ -53,15 +35,6 @@ allprojects {
         google()
         mavenCentral()
         maven { url 'https://www.jitpack.io' }
-    }
-    
-    // Zwinge Kotlin-Version für alle Projekte
-    configurations.all {
-        resolutionStrategy.eachDependency { details ->
-            if (details.requested.group == 'org.jetbrains.kotlin') {
-                details.useVersion(kotlinVersion)
-            }
-        }
     }
 }
 
