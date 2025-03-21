@@ -1,5 +1,5 @@
 // app/app/components/TarotCard.tsx
-import { Text, View, Image, ViewStyle } from "react-native";
+import { Text, View, Image } from "react-native";
 
 interface TarotCardProps {
   image: any;

@@ -57,7 +57,7 @@ export default function DrawnCardsDisplay({
             // sichtbarer Bereich
             scrollContainerHeight.current = e.nativeEvent.layout.height;
           }}
-          onContentSizeChange={(w, h) => {
+          onContentSizeChange={(h) => {
             // gesamte Scroll-Höhe
             scrollContentHeight.current = h;
           }}
