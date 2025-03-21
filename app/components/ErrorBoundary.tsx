@@ -1,7 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import bugsnagService from "@/services/bugsnag";
-import getBugsnagErrorBoundary from "@/services/bugsnag";
+import { bugsnagService } from "@/services/bugsnag";
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -12,57 +11,51 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-// Versuche zuerst, die Bugsnag-ErrorBoundary zu verwenden
-const BugsnagErrorBoundary = getBugsnagErrorBoundary();
+export class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
 
-// Wenn Bugsnag-ErrorBoundary verfügbar ist, exportiere sie
-export const ErrorBoundary = BugsnagErrorBoundary
-  ? BugsnagErrorBoundary
-  : class ErrorBoundary extends React.Component<
-      ErrorBoundaryProps,
-      ErrorBoundaryState
-    > {
-      constructor(props: ErrorBoundaryProps) {
-        super(props);
-        this.state = { hasError: false, error: null };
-      }
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
 
-      static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-        return { hasError: true, error };
-      }
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    // Melde Fehler an Bugsnag
+    bugsnagService.notify(error, {
+      errorInfo: {
+        componentStack: errorInfo.componentStack,
+      },
+    });
+  }
 
-      componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-        // Melde Fehler an Bugsnag
-        bugsnagService.notify(error, {
-          errorInfo: {
-            componentStack: errorInfo.componentStack,
-          },
-        });
-      }
+  resetError = (): void => {
+    this.setState({ hasError: false, error: null });
+  };
 
-      resetError = (): void => {
-        this.setState({ hasError: false, error: null });
-      };
+  render(): React.ReactNode {
+    if (this.state.hasError) {
+      return (
+        <View style={styles.container}>
+          <Text style={styles.title}>Etwas ist schief gelaufen</Text>
+          <Text style={styles.message}>
+            {this.state.error?.message ||
+              "Ein unerwarteter Fehler ist aufgetreten"}
+          </Text>
+          <TouchableOpacity style={styles.button} onPress={this.resetError}>
+            <Text style={styles.buttonText}>Noch einmal versuchen</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
 
-      render(): React.ReactNode {
-        if (this.state.hasError) {
-          return (
-            <View style={styles.container}>
-              <Text style={styles.title}>Etwas ist schief gelaufen</Text>
-              <Text style={styles.message}>
-                {this.state.error?.message ||
-                  "Ein unerwarteter Fehler ist aufgetreten"}
-              </Text>
-              <TouchableOpacity style={styles.button} onPress={this.resetError}>
-                <Text style={styles.buttonText}>Noch einmal versuchen</Text>
-              </TouchableOpacity>
-            </View>
-          );
-        }
-
-        return this.props.children;
-      }
-    };
+    return this.props.children;
+  }
+}
 
 const styles = StyleSheet.create({
   container: {
