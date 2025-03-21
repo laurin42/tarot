@@ -4,7 +4,7 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Slot, useRouter, useSegments } from "expo-router";
+import { Slot, useRouter, useSegments, Router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import {
@@ -38,7 +38,21 @@ import {
 import { bugsnagService } from "../services/bugsnag";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+try {
+  SplashScreen.preventAutoHideAsync().catch((error: unknown) => {
+    bugsnagService.notify(
+      error instanceof Error
+        ? error
+        : new Error("Failed to prevent splash screen auto hiding")
+    );
+  });
+} catch (error: unknown) {
+  bugsnagService.notify(
+    error instanceof Error
+      ? error
+      : new Error("Error in SplashScreen.preventAutoHideAsync()")
+  );
+}
 
 // Kontext für dynamische Routen
 const DynamicRoutesContext = createContext<DynamicRoutesContextType>({
@@ -61,27 +75,46 @@ function DynamicRoutesProvider({
       path: string,
       component: React.ComponentType<Record<string, unknown>>
     ): void => {
-      console.log(`Registering route: ${path}`);
-      setRoutes((prevRoutes) => {
-        const existingRouteIndex = prevRoutes.findIndex(
-          (route) => route.path === path
+      try {
+        console.log(`Registering route: ${path}`);
+        setRoutes((prevRoutes) => {
+          const existingRouteIndex = prevRoutes.findIndex(
+            (route) => route.path === path
+          );
+          if (existingRouteIndex >= 0) {
+            const updatedRoutes = [...prevRoutes];
+            updatedRoutes[existingRouteIndex] = { path, component };
+            return updatedRoutes;
+          } else {
+            return [...prevRoutes, { path, component }];
+          }
+        });
+
+        bugsnagService.leaveBreadcrumb("Route registered", { path });
+      } catch (error: unknown) {
+        bugsnagService.notify(
+          error instanceof Error
+            ? error
+            : new Error(`Failed to register route: ${path}`)
         );
-        if (existingRouteIndex >= 0) {
-          const updatedRoutes = [...prevRoutes];
-          updatedRoutes[existingRouteIndex] = { path, component };
-          return updatedRoutes;
-        } else {
-          return [...prevRoutes, { path, component }];
-        }
-      });
+      }
     },
     []
   );
 
   const getRouteComponent = useCallback(
     (path: string): React.ComponentType<Record<string, unknown>> | null => {
-      const route = routes.find((r) => r.path === path);
-      return route ? route.component : null;
+      try {
+        const route = routes.find((r) => r.path === path);
+        return route ? route.component : null;
+      } catch (error: unknown) {
+        bugsnagService.notify(
+          error instanceof Error
+            ? error
+            : new Error(`Failed to get route component: ${path}`)
+        );
+        return null;
+      }
     },
     [routes]
   );
@@ -103,24 +136,44 @@ function useDynamicRoutes(): DynamicRoutesContextType {
 // Komponente für dynamische Routen-Anzeige
 function DynamicRouteRenderer({ path }: { path: string }): JSX.Element {
   const { getRouteComponent } = useDynamicRoutes();
-  const Component = getRouteComponent(path);
 
-  if (!Component) {
+  try {
+    const Component = getRouteComponent(path);
+
+    if (!Component) {
+      bugsnagService.leaveBreadcrumb("Route not found", { path });
+      return (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text>Route nicht gefunden: {path}</Text>
+        </View>
+      );
+    }
+
+    return <Component />;
+  } catch (error: unknown) {
+    bugsnagService.notify(
+      error instanceof Error
+        ? error
+        : new Error(`Error rendering dynamic route: ${path}`)
+    );
+
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Route nicht gefunden: {path}</Text>
+        <Text style={{ color: "red" }}>
+          Fehler beim Rendern der Route: {path}
+        </Text>
       </View>
     );
   }
-
-  return <Component />;
 }
 
 // Registriere Debug-Route im Dev-Modus
 if (__DEV__) {
   try {
     DynamicRouteService.registerRoute(
-      `/dev-tools`,
+      `/dev-tools` as CustomRoutePathString,
       (): React.ComponentType<Record<string, unknown>> => {
         try {
           const BugsnagTestComponent =
@@ -154,6 +207,8 @@ if (__DEV__) {
         }
       }
     );
+
+    bugsnagService.leaveBreadcrumb("Debug route registered");
   } catch (error: unknown) {
     bugsnagService.notify(
       error instanceof Error ? error : new Error(String(error))
@@ -167,7 +222,15 @@ if (__DEV__) {
 
 // Komponente für Webseiten-spezifischen Code
 if (typeof document !== "undefined") {
-  document.documentElement.classList.add("darkMode");
+  try {
+    document.documentElement.classList.add("darkMode");
+  } catch (error: unknown) {
+    bugsnagService.notify(
+      error instanceof Error
+        ? error
+        : new Error("Failed to add dark mode class")
+    );
+  }
 }
 
 // Navigationskomponente mit dynamischen Routen
@@ -179,33 +242,70 @@ function RootLayoutNav(): JSX.Element {
 
   // Registriere alle ausstehenden Routen
   useEffect(() => {
-    // Hole Routen aus dem Service mit explizitem Typ
-    const pendingRoutes: ReadonlyArray<DynamicRoute> =
-      DynamicRouteService.getPendingRoutes();
+    try {
+      // Hole Routen aus dem Service mit explizitem Typ
+      const pendingRoutes: ReadonlyArray<DynamicRoute> =
+        DynamicRouteService.getPendingRoutes();
 
-    if (pendingRoutes.length > 0) {
-      // ...
+      if (pendingRoutes.length > 0) {
+        pendingRoutes.forEach(({ path, component }) => {
+          registerRoute(path, component);
+        });
+        // Leere die Liste nach der Registrierung
+        DynamicRouteService.clearPendingRoutes();
+
+        bugsnagService.leaveBreadcrumb("Pending routes registered", {
+          count: pendingRoutes.length,
+        });
+      }
+    } catch (error: unknown) {
+      bugsnagService.notify(
+        error instanceof Error
+          ? error
+          : new Error("Failed to register pending routes")
+      );
     }
   }, [registerRoute]);
 
+  // Authentifizierungsbasierte Navigation
   useEffect(() => {
-    if (isLoading) return;
+    try {
+      if (isLoading) return;
 
-    const inAuthGroup = segments[0] === "(auth)";
+      const inAuthGroup = segments[0] === "(auth)";
 
-    // Typsichere Prüfung auf dynamische Routen
-    const isDynamicRoute =
-      typeof segments[0] === "string" && segments[0].startsWith("/");
+      // Typsichere Prüfung auf dynamische Routen
+      const isDynamicRoute =
+        typeof segments[0] === "string" && segments[0].startsWith("/");
 
-    if (isDynamicRoute) {
-      // Bei dynamischen Routen keine Umleitung
-      return;
-    }
+      if (isDynamicRoute) {
+        // Bei dynamischen Routen keine Umleitung
+        return;
+      }
 
-    if (isAuthenticated && inAuthGroup) {
-      router.replace("/(tabs)/threecards");
-    } else if (!isAuthenticated && !inAuthGroup && segments[0] !== undefined) {
-      router.replace("/(auth)");
+      if (isAuthenticated && inAuthGroup) {
+        router.replace("/(tabs)/threecards");
+        bugsnagService.leaveBreadcrumb("Redirected authenticated user", {
+          from: "(auth)",
+          to: "/(tabs)/threecards",
+        });
+      } else if (
+        !isAuthenticated &&
+        !inAuthGroup &&
+        segments[0] !== undefined
+      ) {
+        router.replace("/(auth)");
+        bugsnagService.leaveBreadcrumb("Redirected unauthenticated user", {
+          from: segments[0],
+          to: "/(auth)",
+        });
+      }
+    } catch (error: unknown) {
+      bugsnagService.notify(
+        error instanceof Error
+          ? error
+          : new Error("Navigation error in auth routing")
+      );
     }
   }, [isAuthenticated, segments, isLoading, router]);
 
@@ -217,7 +317,21 @@ function RootLayoutNav(): JSX.Element {
       <View style={styles.devMenu}>
         <Pressable
           style={styles.devButton}
-          onPress={() => navigateToCustomPath(router, "/dev-tools")}
+          onPress={() => {
+            try {
+              navigateToCustomPath(
+                router,
+                "/dev-tools" as CustomRoutePathString
+              );
+              bugsnagService.leaveBreadcrumb("Opened dev tools");
+            } catch (error: unknown) {
+              bugsnagService.notify(
+                error instanceof Error
+                  ? error
+                  : new Error("Failed to navigate to dev tools")
+              );
+            }
+          }}
         >
           <Text style={styles.devButtonText}>Debug-Tools</Text>
         </Pressable>
@@ -230,27 +344,47 @@ function RootLayoutNav(): JSX.Element {
     return <LoadingScreen />;
   }
 
-  // Typsichere Prüfung, ob es sich um eine dynamische Route handelt
-  if (
-    segments.length > 0 &&
-    typeof segments[0] === "string" &&
-    segments[0].startsWith("/")
-  ) {
-    const path = segments.join("/");
+  try {
+    // Typsichere Prüfung, ob es sich um eine dynamische Route handelt
+    if (
+      segments.length > 0 &&
+      typeof segments[0] === "string" &&
+      segments[0].startsWith("/")
+    ) {
+      const path = segments.join("/");
+      return (
+        <>
+          <DynamicRouteRenderer path={path} />
+          <DevMenu />
+        </>
+      );
+    }
+
     return (
       <>
-        <DynamicRouteRenderer path={path} />
+        <Slot />
         <DevMenu />
       </>
     );
-  }
+  } catch (error: unknown) {
+    bugsnagService.notify(
+      error instanceof Error
+        ? error
+        : new Error("Error in root layout rendering")
+    );
 
-  return (
-    <>
-      <Slot />
-      <DevMenu />
-    </>
-  );
+    // Fallback UI bei Fehlern
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ color: "red", marginBottom: 20 }}>
+          Ein Fehler ist aufgetreten
+        </Text>
+        <Pressable style={styles.devButton} onPress={() => router.replace("/")}>
+          <Text style={styles.devButtonText}>Neu laden</Text>
+        </Pressable>
+      </View>
+    );
+  }
 }
 
 export default function RootLayout(): JSX.Element | null {
@@ -261,7 +395,6 @@ export default function RootLayout(): JSX.Element | null {
 
   useEffect(() => {
     if (loaded) {
-      // Hier könnten Fehler auftreten, die abgefangen werden sollten
       SplashScreen.hideAsync().catch((error: unknown) => {
         bugsnagService.notify(
           error instanceof Error ? error : new Error(String(error))
@@ -278,20 +411,42 @@ export default function RootLayout(): JSX.Element | null {
     return null;
   }
 
-  return (
-    <DynamicRoutesProvider>
-      <UserProvider>
-        <AuthProvider>
-          <ThemeProvider
-            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-          >
-            <RootLayoutNav />
-            <StatusBar style="auto" />
-          </ThemeProvider>
-        </AuthProvider>
-      </UserProvider>
-    </DynamicRoutesProvider>
-  );
+  try {
+    return (
+      <DynamicRoutesProvider>
+        <UserProvider>
+          <AuthProvider>
+            <ThemeProvider
+              value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+            >
+              <RootLayoutNav />
+              <StatusBar style="auto" />
+            </ThemeProvider>
+          </AuthProvider>
+        </UserProvider>
+      </DynamicRoutesProvider>
+    );
+  } catch (error: unknown) {
+    bugsnagService.notify(
+      error instanceof Error ? error : new Error("Failed to render root layout")
+    );
+
+    // Minimale Fallback-UI, wenn alles andere fehlschlägt
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#1F2937",
+        }}
+      >
+        <Text style={{ color: "white" }}>
+          Die App konnte nicht geladen werden
+        </Text>
+      </View>
+    );
+  }
 }
 
 function LoadingScreen(): JSX.Element {
