@@ -1,12 +1,9 @@
-// ✅ Korrekte Imports für Bugsnag
 import Bugsnag, { Config } from '@bugsnag/js';
 import type { Event } from '@bugsnag/js';
+// Importiere die gemeinsamen Typen
+import type { BugsnagService, BugsnagMetadata } from '../types/bugsnag.types';
 
-// ✅ Flexiblere Typdefinition für Metadaten (Teil 1)
-type BugsnagMetadataValue = string | number | boolean | null | undefined | Record<string, unknown>;
-type BugsnagMetadata = BugsnagMetadataValue | Record<string, BugsnagMetadataValue>;
-
-// 2. Hilfsfunktion zum sicheren Konvertieren der Metadaten für Bugsnag
+// Hilfsfunktion zum sicheren Konvertieren der Metadaten für Bugsnag
 const prepareBugsnagMetadata = (metadata: BugsnagMetadata | undefined): Record<string, any> => {
   if (metadata === undefined) {
     return {};
@@ -22,18 +19,6 @@ const prepareBugsnagMetadata = (metadata: BugsnagMetadata | undefined): Record<s
     return result;
   }, {} as Record<string, any>);
 };
-
-// ✅ Explizite Interface-Definition für den Service
-interface BugsnagService {
-  /** Sendet einen Fehler an Bugsnag */
-  notify: (error: Error | string, metadata?: BugsnagMetadata) => unknown;
-  /** Erstellt einen Breadcrumb für den aktuellen Fehlerkontext */
-  leaveBreadcrumb: (message: string, metadata?: BugsnagMetadata) => void;
-  /** Setzt Benutzerinformationen für Bugsnag-Fehlerberichte */
-  setUser: (id?: string, name?: string, email?: string) => void;
-  /** Prüft, ob Bugsnag erfolgreich initialisiert wurde */
-  isStarted: () => boolean;
-}
 
 /**
  * Erstellt einen typsicheren Bugsnag-Service, der sowohl in Browser- als auch in

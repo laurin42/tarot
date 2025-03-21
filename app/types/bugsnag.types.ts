@@ -1,4 +1,6 @@
-export type BugsnagMetadata = Record<string, Record<string, unknown>>;
+// Die flexiblere Definition aus bugsnag.ts übernehmen
+export type BugsnagMetadataValue = string | number | boolean | null | undefined | Record<string, unknown>;
+export type BugsnagMetadata = BugsnagMetadataValue | Record<string, BugsnagMetadataValue>;
 
 export interface BugsnagService {
   /** Sendet einen Fehler an Bugsnag */
