@@ -4,7 +4,7 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Slot, useRouter, useSegments } from "expo-router";
+import { Slot, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import "react-native-reanimated";
@@ -36,7 +36,7 @@ initializeSplashScreen();
 function RootLayoutNav(): JSX.Element {
   const { isLoading } = useAuth();
   const segments = useSegments();
-  const router = useRouter();
+  // const router = useRouter(); // <-- ENTFERNEN oder für zukünftige Verwendung kommentieren
   const { registerRoute } = useDynamicRoutes();
 
   // Auth-Navigation Hook
@@ -59,8 +59,9 @@ function RootLayoutNav(): JSX.Element {
           registerRoute(path, component);
         });
         DynamicRouteService.clearPendingRoutes();
+        // Bei Zahlen als Metadaten
         bugsnagService.leaveBreadcrumb("Pending routes registered", {
-          count: pendingRoutes.length,
+          routes: { count: pendingRoutes.length }, // Strukturiert anstatt direkt pendingRoutes.length
         });
       }
     } catch (error: unknown) {

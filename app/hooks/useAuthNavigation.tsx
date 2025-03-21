@@ -32,8 +32,10 @@ export function useAuthNavigation(): void {
       if (isAuthenticated && inAuthGroup) {
         router.replace(toValidRoute(APP_ROUTES.TABS.THREECARDS));
         bugsnagService.leaveBreadcrumb("Redirected authenticated user", {
-          from: "(auth)",
-          to: APP_ROUTES.TABS.THREECARDS,
+          navigation: {
+            from: "(auth)",
+            to: APP_ROUTES.TABS.THREECARDS,
+          },
         });
       } else if (
         !isAuthenticated &&
@@ -42,8 +44,10 @@ export function useAuthNavigation(): void {
       ) {
         router.replace(toValidRoute(APP_ROUTES.AUTH));
         bugsnagService.leaveBreadcrumb("Redirected unauthenticated user", {
-          from: segments[0],
-          to: APP_ROUTES.AUTH,
+          navigation: {
+            from: segments[0],
+            to: APP_ROUTES.AUTH,
+          },
         });
       }
     } catch (error: unknown) {

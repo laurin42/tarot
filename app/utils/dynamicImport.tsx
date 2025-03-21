@@ -2,11 +2,20 @@ import React from "react";
 import { bugsnagService } from "../services/bugsnag";
 import { ErrorFallback } from "../components/development/ErrorFallback";
 
+// Statische Importe für alle möglichen Komponenten
+import BugsnagTest from "../dev-tools/BugsnagTest";
+// Weitere Komponenten hier importieren falls nötig
+
+// Komponenten-Mapping statt dynamischem Import
+const componentMap: Record<string, Record<string, React.ComponentType<any>>> = {
+  "../dev-tools/BugsnagTest": {
+    default: BugsnagTest,
+  },
+  // Weitere Module hier hinzufügen
+};
+
 /**
- * Importiert eine Komponente dynamisch und liefert einen Fallback bei Fehlern
- * @param modulePath Pfad zum Modul
- * @param exportName Name des Exports (default = 'default')
- * @param errorMessage Fehlermeldung bei Misserfolg
+ * Importiert eine Komponente aus einem vordefinierten Mapping
  */
 export function importComponentDynamically(
   modulePath: string,
@@ -14,7 +23,13 @@ export function importComponentDynamically(
   errorMessage: string = "Fehler beim Laden der Komponente"
 ): React.ComponentType<Record<string, unknown>> {
   try {
-    const Component = require(modulePath)[exportName];
+    const moduleExports = componentMap[modulePath];
+
+    if (!moduleExports) {
+      throw new Error(`Modul ${modulePath} nicht gefunden`);
+    }
+
+    const Component = moduleExports[exportName];
 
     if (!Component) {
       throw new Error(

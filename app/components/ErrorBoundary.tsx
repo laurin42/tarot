@@ -1,9 +1,10 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { bugsnagService } from "@/services/bugsnag";
+import React, { Component, ErrorInfo } from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { bugsnagService } from "../services/bugsnag";
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
+  fallback?: React.ReactNode;
 }
 
 interface ErrorBoundaryState {
@@ -11,7 +12,11 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-export class ErrorBoundary extends React.Component<
+/**
+ * ErrorBoundary-Komponente zur Behandlung von Renderfehlern
+ * Fängt Fehler in React-Komponenten ab und zeigt eine Fallback-UI
+ */
+export class ErrorBoundary extends Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
 > {
@@ -24,31 +29,25 @@ export class ErrorBoundary extends React.Component<
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    // Melde Fehler an Bugsnag
-    bugsnagService.notify(error, {
-      errorInfo: {
-        componentStack: errorInfo.componentStack,
-      },
-    });
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    // ✅ Korrigierter Aufruf ohne zweiten Parameter (gemäß Fehler "Expected 1 arguments")
+    bugsnagService.notify(error);
+    console.error("React component error:", error, errorInfo);
   }
-
-  resetError = (): void => {
-    this.setState({ hasError: false, error: null });
-  };
 
   render(): React.ReactNode {
     if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+
       return (
-        <View style={styles.container}>
-          <Text style={styles.title}>Etwas ist schief gelaufen</Text>
-          <Text style={styles.message}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Etwas ist schiefgelaufen</Text>
+          <Text style={styles.errorMessage}>
             {this.state.error?.message ||
-              "Ein unerwarteter Fehler ist aufgetreten"}
+              "Ein unbekannter Fehler ist aufgetreten."}
           </Text>
-          <TouchableOpacity style={styles.button} onPress={this.resetError}>
-            <Text style={styles.buttonText}>Noch einmal versuchen</Text>
-          </TouchableOpacity>
         </View>
       );
     }
@@ -58,34 +57,22 @@ export class ErrorBoundary extends React.Component<
 }
 
 const styles = StyleSheet.create({
-  container: {
+  errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#f8d7da",
   },
-  title: {
-    fontSize: 24,
+  errorTitle: {
+    fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 16,
-    color: "#e63946",
+    color: "#721c24",
+    marginBottom: 10,
   },
-  message: {
-    fontSize: 16,
+  errorMessage: {
+    fontSize: 14,
+    color: "#721c24",
     textAlign: "center",
-    marginBottom: 24,
-    color: "#343a40",
-  },
-  button: {
-    backgroundColor: "#457b9d",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
   },
 });

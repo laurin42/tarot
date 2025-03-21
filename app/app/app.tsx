@@ -53,9 +53,13 @@ function App(): JSX.Element {
 
         // ✅ Initialisierung mit typsicherer Konfiguration
         firebase.initializeApp(firebaseConfig);
+        // Bei Boolean und String als Metadaten
         bugsnagService.leaveBreadcrumb("Firebase initialized", {
-          success: true,
-          projectId, // Hilfreiche Metadaten für Debugging
+          firebase: {
+            // Strukturiertes Objekt
+            success: true,
+            projectId,
+          },
         });
       }
     } catch (error: unknown) {

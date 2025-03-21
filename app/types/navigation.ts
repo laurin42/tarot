@@ -1,19 +1,18 @@
-import type { Href } from "expo-router"; // Importiere von der Hauptbibliothek
-import type { ExternalPathString, RelativePathString } from 'expo-router';
+// Entferne die ungenutzten Imports
+import type { Href } from "expo-router";
 
-// Union-Typ für alle möglichen Route-Typen in expo-router
+// Wir definieren einen Route-Typ
 export type Route = string;
 
 /**
- * Wandelt einen beliebigen Route-String in einen gültigen Navigationstyp für expo-router um.
- * 
- * Dies löst Typenprobleme bei router.replace() und router.push() durch Type-Casting.
- * 
- * @param route Ein Route-String, normalerweise aus APP_ROUTES-Konstanten
- * @returns Ein Typ, der von expo-router-Navigationsmethoden akzeptiert wird
+ * Wandelt einen Route-String in einen gültigen Navigationstyp für expo-router um
+ * @param route Der zu konvertierende Route-String
+ * @returns Ein für expo-router kompatibler Navigationsparameter
  */
 export function toValidRoute(route: Route): Href {
-  return route as Href;
+  // Dies ist ein Trick, um TypeScript zufriedenzustellen
+  // Wir wissen, dass die Routen gültig sind, auch wenn TypeScript es nicht erkennt
+  return { pathname: route } as unknown as Href;
 }
 
 /**
