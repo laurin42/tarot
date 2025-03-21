@@ -1,20 +1,34 @@
 import Bugsnag from '@bugsnag/expo';
 import React from 'react';
 
-// Überprüfen Sie, ob Bugsnag bereits initialisiert wurde, um mehrfache Initialisierungen zu vermeiden
-if (!Bugsnag.isStarted()) {
-  // Initialisiere Bugsnag mit deinem API-Schlüssel
-  Bugsnag.start({
-    apiKey: process.env.EXPO_PUBLIC_BUGSNAG_API_KEY || '12345678901234567890123456789012',
-    releaseStage: process.env.EXPO_PUBLIC_ENVIRONMENT || 'development',
-    enabledReleaseStages: ['production', 'staging', 'development'],
-    onError: (event) => {
-      if (__DEV__) {
-        console.log('[Bugsnag] Error caught:', event);
+// Hilfsfunktion zum Prüfen, ob Umgebungsvariablen gesetzt sind
+function checkEnvironmentVariables() {
+  if (!process.env.EXPO_PUBLIC_BUGSNAG_API_KEY) {
+    console.warn('[Bugsnag] API-Key nicht gefunden. Prüfe deine .env-Datei.');
+    return false;
+  }
+  return true;
+}
+
+// Initialisierung mit Fehlerbehandlung
+try {
+  if (checkEnvironmentVariables() && !Bugsnag.isStarted()) {
+    console.log('[Bugsnag] Starte Bugsnag mit API-Key:', process.env.EXPO_PUBLIC_BUGSNAG_API_KEY);
+    Bugsnag.start({
+      apiKey: process.env.EXPO_PUBLIC_BUGSNAG_API_KEY || '12345678901234567890123456789012',
+      releaseStage: process.env.EXPO_PUBLIC_ENVIRONMENT || 'development',
+      enabledReleaseStages: ['production', 'staging', 'development'],
+      onError: (event) => {
+        if (__DEV__) {
+          console.log('[Bugsnag] Error caught:', event);
+        }
+        return true;
       }
-      return true;
-    }
-  });
+    });
+    console.log('[Bugsnag] Erfolgreich initialisiert:', Bugsnag.isStarted());
+  }
+} catch (error) {
+  console.error('[Bugsnag] Initialisierungsfehler:', error);
 }
 
 interface BugsnagMetadata {
@@ -24,7 +38,10 @@ interface BugsnagMetadata {
 // Erstelle einen Service für einfacheren Zugriff auf Bugsnag-Funktionen
 export const bugsnagService = {
   notify: (error: Error, metadata?: BugsnagMetadata) => {
-    if (!Bugsnag.isStarted()) return;
+    if (!Bugsnag.isStarted()) {
+      console.warn('[Bugsnag] Nicht initialisiert. Fehler konnte nicht gesendet werden.');
+      return;
+    }
     
     Bugsnag.notify(error, (event) => {
       if (metadata) {

@@ -4,8 +4,10 @@ import { bugsnagService } from "@/services/bugsnag";
 
 export default function BugsnagTest() {
   const [testStatus, setTestStatus] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleManualError = () => {
+    setIsLoading(true);
     try {
       bugsnagService.notify(new Error("Manueller Test-Fehler"), {
         test: {
@@ -16,12 +18,15 @@ export default function BugsnagTest() {
       });
       setTestStatus("Fehler wurde an Bugsnag gesendet");
     } catch (error: any) {
-      setTestStatus(`Fehler beim Senden: ${error?.message || error}`);
+      setTestStatus(`Fehler beim Senden: ${error?.message || String(error)}`);
       console.error("Bugsnag notify error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleBreadcrumb = () => {
+    setIsLoading(true);
     try {
       bugsnagService.leaveBreadcrumb("Test Breadcrumb", {
         action: "button_press",
@@ -29,8 +34,12 @@ export default function BugsnagTest() {
       });
       setTestStatus("Breadcrumb wurde erstellt");
     } catch (error: any) {
-      setTestStatus(`Fehler beim Breadcrumb: ${error?.message || error}`);
+      setTestStatus(
+        `Fehler beim Breadcrumb: ${error?.message || String(error)}`
+      );
       console.error("Bugsnag breadcrumb error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -40,11 +49,13 @@ export default function BugsnagTest() {
   };
 
   const handlePromiseRejection = () => {
+    setIsLoading(true);
     // Füge einen setTimeout hinzu, damit die Statusmeldung angezeigt wird,
     // bevor die Promise-Rejection den JavaScript-Thread blockiert
     setTestStatus("Promise-Rejection wird ausgelöst...");
     setTimeout(() => {
       Promise.reject(new Error("Test Promise-Rejection"));
+      setIsLoading(false);
     }, 500);
   };
 
@@ -57,6 +68,7 @@ export default function BugsnagTest() {
           title="1. Manuellen Fehler senden"
           onPress={handleManualError}
           color="#4CAF50"
+          disabled={isLoading}
         />
       </View>
 
@@ -65,6 +77,7 @@ export default function BugsnagTest() {
           title="2. Breadcrumb erstellen"
           onPress={handleBreadcrumb}
           color="#2196F3"
+          disabled={isLoading}
         />
       </View>
 
@@ -73,6 +86,7 @@ export default function BugsnagTest() {
           title="3. Unbehandelten Fehler auslösen"
           onPress={handleUncaughtError}
           color="#F44336"
+          disabled={isLoading}
         />
       </View>
 
@@ -81,6 +95,7 @@ export default function BugsnagTest() {
           title="4. Promise-Rejection auslösen"
           onPress={handlePromiseRejection}
           color="#FF9800"
+          disabled={isLoading}
         />
       </View>
 
@@ -99,6 +114,9 @@ export default function BugsnagTest() {
         </Text>
         <Text style={styles.infoText}>
           Environment: {process.env.EXPO_PUBLIC_ENVIRONMENT || "nicht gesetzt"}
+        </Text>
+        <Text style={styles.infoText}>
+          Bugsnag initialisiert: {bugsnagService.isStarted() ? "Ja" : "Nein"}
         </Text>
       </View>
     </View>
