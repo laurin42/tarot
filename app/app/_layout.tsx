@@ -4,59 +4,256 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack, Slot, useRouter, useSegments } from "expo-router";
+import { Slot, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import {
+  useEffect,
+  createContext,
+  useState,
+  useContext,
+  useCallback,
+} from "react";
 import "react-native-reanimated";
-import { StyleSheet, View, ActivityIndicator } from "react-native";
-
-if (typeof document !== "undefined") {
-  document.documentElement.classList.add("darkMode");
-}
+import {
+  StyleSheet,
+  View,
+  ActivityIndicator,
+  Text,
+  Pressable,
+} from "react-native";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 
 import "../global.css";
 import { UserProvider } from "../context/UserContext";
 import { AuthProvider, useAuth } from "../context/AuthContext";
+import {
+  DynamicRoute,
+  DynamicRoutesContextType,
+  DynamicRouteService,
+  CustomRoutePathString,
+  navigateToCustomPath,
+} from "../services/dynamicRoutes";
+import { bugsnagService } from "../services/bugsnag";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-// Füge diese Komponente hinzu
-function RootLayoutNav() {
+// Kontext für dynamische Routen
+const DynamicRoutesContext = createContext<DynamicRoutesContextType>({
+  routes: [],
+  registerRoute: () => {},
+  getRouteComponent: () => null,
+});
+
+// Provider für dynamische Routen
+function DynamicRoutesProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}): JSX.Element {
+  const [routes, setRoutes] = useState<DynamicRoute[]>([]);
+
+  // Tatsächliche Implementierung des Route-Registrierens
+  const registerRoute = useCallback(
+    (
+      path: string,
+      component: React.ComponentType<Record<string, unknown>>
+    ): void => {
+      console.log(`Registering route: ${path}`);
+      setRoutes((prevRoutes) => {
+        const existingRouteIndex = prevRoutes.findIndex(
+          (route) => route.path === path
+        );
+        if (existingRouteIndex >= 0) {
+          const updatedRoutes = [...prevRoutes];
+          updatedRoutes[existingRouteIndex] = { path, component };
+          return updatedRoutes;
+        } else {
+          return [...prevRoutes, { path, component }];
+        }
+      });
+    },
+    []
+  );
+
+  const getRouteComponent = useCallback(
+    (path: string): React.ComponentType<Record<string, unknown>> | null => {
+      const route = routes.find((r) => r.path === path);
+      return route ? route.component : null;
+    },
+    [routes]
+  );
+
+  return (
+    <DynamicRoutesContext.Provider
+      value={{ routes, registerRoute, getRouteComponent }}
+    >
+      {children}
+    </DynamicRoutesContext.Provider>
+  );
+}
+
+// Hook zum Verwenden der dynamischen Routen
+function useDynamicRoutes(): DynamicRoutesContextType {
+  return useContext(DynamicRoutesContext);
+}
+
+// Komponente für dynamische Routen-Anzeige
+function DynamicRouteRenderer({ path }: { path: string }): JSX.Element {
+  const { getRouteComponent } = useDynamicRoutes();
+  const Component = getRouteComponent(path);
+
+  if (!Component) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Route nicht gefunden: {path}</Text>
+      </View>
+    );
+  }
+
+  return <Component />;
+}
+
+// Registriere Debug-Route im Dev-Modus
+if (__DEV__) {
+  try {
+    DynamicRouteService.registerRoute(
+      `/dev-tools`,
+      (): React.ComponentType<Record<string, unknown>> => {
+        try {
+          const BugsnagTestComponent =
+            require("../dev-tools/BugsnagTest").default;
+          if (!BugsnagTestComponent) {
+            throw new Error("BugsnagTest-Komponente nicht gefunden");
+          }
+          return BugsnagTestComponent;
+        } catch (error: unknown) {
+          bugsnagService.notify(
+            error instanceof Error ? error : new Error(String(error))
+          );
+          console.error(
+            "Fehler beim Laden der BugsnagTest-Komponente:",
+            error instanceof Error ? error.message : String(error)
+          );
+          return () => (
+            <View
+              style={{
+                flex: 1,
+                padding: 20,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ color: "red" }}>
+                Fehler beim Laden der Debug-Tools
+              </Text>
+            </View>
+          );
+        }
+      }
+    );
+  } catch (error: unknown) {
+    bugsnagService.notify(
+      error instanceof Error ? error : new Error(String(error))
+    );
+    console.error(
+      "Fehler beim Registrieren der Debug-Route:",
+      error instanceof Error ? error.message : String(error)
+    );
+  }
+}
+
+// Komponente für Webseiten-spezifischen Code
+if (typeof document !== "undefined") {
+  document.documentElement.classList.add("darkMode");
+}
+
+// Navigationskomponente mit dynamischen Routen
+function RootLayoutNav(): JSX.Element {
   const { isAuthenticated, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const { registerRoute } = useDynamicRoutes();
+
+  // Registriere alle ausstehenden Routen
+  useEffect(() => {
+    // Hole Routen aus dem Service mit explizitem Typ
+    const pendingRoutes: ReadonlyArray<DynamicRoute> =
+      DynamicRouteService.getPendingRoutes();
+
+    if (pendingRoutes.length > 0) {
+      // ...
+    }
+  }, [registerRoute]);
 
   useEffect(() => {
-    if (isLoading) return; // Warte auf Laden des Auth-Zustands
+    if (isLoading) return;
 
-    console.log("Auth state changed:", { isAuthenticated });
-
-    // Überprüft, ob Nutzer im Auth-Bereich ist
     const inAuthGroup = segments[0] === "(auth)";
 
+    // Typsichere Prüfung auf dynamische Routen
+    const isDynamicRoute =
+      typeof segments[0] === "string" && segments[0].startsWith("/");
+
+    if (isDynamicRoute) {
+      // Bei dynamischen Routen keine Umleitung
+      return;
+    }
+
     if (isAuthenticated && inAuthGroup) {
-      // Angemeldeter Nutzer sollte zur App weitergeleitet werden
       router.replace("/(tabs)/threecards");
-    } else if (!isAuthenticated && !inAuthGroup) {
-      // Nicht angemeldeter Nutzer sollte zum Login weitergeleitet werden
+    } else if (!isAuthenticated && !inAuthGroup && segments[0] !== undefined) {
       router.replace("/(auth)");
     }
-  }, [isAuthenticated, segments, isLoading]);
+  }, [isAuthenticated, segments, isLoading, router]);
+
+  // Debug-Menü im Dev-Modus
+  function DevMenu(): JSX.Element | null {
+    if (!__DEV__) return null;
+
+    return (
+      <View style={styles.devMenu}>
+        <Pressable
+          style={styles.devButton}
+          onPress={() => navigateToCustomPath(router, "/dev-tools")}
+        >
+          <Text style={styles.devButtonText}>Debug-Tools</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   // Zeige einen Ladebildschirm während des Ladens
   if (isLoading) {
-    return <LoadingScreen />; // Du kannst hier deine eigene Loading-Komponente erstellen
+    return <LoadingScreen />;
   }
 
-  return <Slot />;
+  // Typsichere Prüfung, ob es sich um eine dynamische Route handelt
+  if (
+    segments.length > 0 &&
+    typeof segments[0] === "string" &&
+    segments[0].startsWith("/")
+  ) {
+    const path = segments.join("/");
+    return (
+      <>
+        <DynamicRouteRenderer path={path} />
+        <DevMenu />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Slot />
+      <DevMenu />
+    </>
+  );
 }
 
-// Anpassen der RootLayout-Komponente
-export default function RootLayout() {
+export default function RootLayout(): JSX.Element | null {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
@@ -64,7 +261,16 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded) {
-      SplashScreen.hideAsync();
+      // Hier könnten Fehler auftreten, die abgefangen werden sollten
+      SplashScreen.hideAsync().catch((error: unknown) => {
+        bugsnagService.notify(
+          error instanceof Error ? error : new Error(String(error))
+        );
+        console.error(
+          "Fehler beim Ausblenden des SplashScreens:",
+          error instanceof Error ? error.message : String(error)
+        );
+      });
     }
   }, [loaded]);
 
@@ -73,21 +279,22 @@ export default function RootLayout() {
   }
 
   return (
-    <UserProvider>
-      <AuthProvider>
-        <ThemeProvider
-          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-        >
-          <RootLayoutNav /> {/* Statt Stack direkt */}
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </AuthProvider>
-    </UserProvider>
+    <DynamicRoutesProvider>
+      <UserProvider>
+        <AuthProvider>
+          <ThemeProvider
+            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+          >
+            <RootLayoutNav />
+            <StatusBar style="auto" />
+          </ThemeProvider>
+        </AuthProvider>
+      </UserProvider>
+    </DynamicRoutesProvider>
   );
 }
 
-// Einfache Lade-Komponente
-function LoadingScreen() {
+function LoadingScreen(): JSX.Element {
   return (
     <View
       style={{
@@ -101,3 +308,28 @@ function LoadingScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  devMenu: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    opacity: 0.8,
+    zIndex: 1000,
+  },
+  devButton: {
+    backgroundColor: "#FF3B30",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  devButtonText: {
+    color: "white",
+    fontWeight: "bold",
+  },
+});

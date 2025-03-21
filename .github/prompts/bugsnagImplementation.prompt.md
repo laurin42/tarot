@@ -1,4 +1,7 @@
-"Optimiere meinen gesamten React Native (Expo) Code so, dass möglichst alle Fehler von Bugsnag erfasst werden. Verwende Best Practices für Fehlerhandling und TypeScript-Typensicherheit. Achte darauf, dass:
+"Optimiere meinen gesamten React Native (Expo) Code so, dass möglichst alle Fehler von Bugsnag erfasst werden. Verwende Best Practices für Fehlerhandling und TypeScript-Typensicherheit(Kleine, spezifische Typen → Direkt in der Datei.
+Längere, wiederverwendbare Typen → In eine eigene types/ Datei auslagern.
+API-Response-Typen & Modelle → Immer separat halten.
+). Achte darauf, dass:
 
 ✅ Jede Komponente Fehler innerhalb eines ErrorBoundary von Bugsnag abfängt.
 ✅ Asynchrone Funktionen mit try/catch-Blöcken gesichert sind und Bugsnag benachrichtigt wird.
@@ -9,3 +12,5 @@
 
 Korrigiere zudem alle TypeScript-Typen, um Laufzeitfehler durch bessere Typensicherheit zu vermeiden. Falls eine Fehlerquelle nicht direkt behandelbar ist, soll sie sauber an Bugsnag weitergeleitet werden."
 Add prompt contents..
+
+gib IMMER(!!!!) die betreffende datei an!
