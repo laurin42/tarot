@@ -1,5 +1,6 @@
 import { tarotCards, ISelectedAndShownCard } from "@/constants/tarotcards";
 import { storage } from "../utils/storage"; // Import storage utility
+import { optimizeImage } from "../utils/imageOptimization";
 
 export async function getRandomDrawnCards(): Promise<ISelectedAndShownCard[]> {
   const shuffledCards = [...tarotCards].sort(() => Math.random() - 0.5);
@@ -43,7 +44,17 @@ export async function getRandomDrawnCards(): Promise<ISelectedAndShownCard[]> {
     })
   );
 
-  return drawnCards.map((card) => ({
+  // Add optimization for card images
+  const optimizedCards = await Promise.all(
+    drawnCards.map(async (card) => {
+      if (card.image) {
+        card.image = await optimizeImage(card.image);
+      }
+      return card;
+    })
+  );
+
+  return optimizedCards.map((card) => ({
     ...card,
     showFront: false,
     isSelected: false,
