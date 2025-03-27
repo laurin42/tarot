@@ -3,15 +3,16 @@ import { adaptGeminiResponse } from "../types/gemini";
 
 // Gemini AI Client
 export class GeminiService {
-  private model;
+  private _model;
 
   constructor() {
-    const genAI = new GoogleGenerativeAI(process.env.API_KEY || (() => {
+    const genAI = new GoogleGenerativeAI(process.env.API_KEY || "") || (() => {
       console.error("API_KEY not found in environment");
+      console.log(process.env.API_KEY);
       throw new Error("API_KEY is required");
-    })());
+    })()
     
-    this.model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    this._model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   }
 
   // Gemini-Antworten verarbeiten
@@ -36,7 +37,7 @@ export class GeminiService {
   // Inhalt generieren
   public async generateContent(prompt: string): Promise<string> {
     try {
-      const response = await this.model.generateContent(prompt);
+      const response = await this._model.generateContent(prompt);
       return this.processGeminiResponse(response);
     } catch (error) {
       console.error("Failed to generate content:", error);
@@ -44,11 +45,14 @@ export class GeminiService {
     }
   }
 
-  // Getter für das Model (falls direkt benötigt)
-  public getModel() {
-    return this.model;
+  // Getter for the model
+  get model() {
+    return this._model;
   }
 }
 
 // Exportiere eine Singleton-Instanz
 export const geminiService = new GeminiService();
+
+// Exportiere auch das model direkt für bestehende Imports
+export const model = geminiService.model;

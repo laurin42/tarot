@@ -30,7 +30,7 @@ export const userController = {
   }),
 
   // Benutzerprofil aktualisieren
-  updateProfile: asyncHandler(async (req: Request<{authId: string}, {}, GoalsUpdateRequest>, res: Response) => {
+  updateProfile: asyncHandler<{authId: string}, any, GoalsUpdateRequest>(async (req, res) => {
     const { goals, gender, zodiacSign, birthday } = req.body;
     const { authId } = req.params;
     
