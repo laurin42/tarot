@@ -1,12 +1,13 @@
 import React, { useState, useRef } from "react";
-import { View, Text, ScrollView, StyleSheet, Platform } from "react-native";
+import { View, Text, ScrollView, Platform, StyleSheet } from "react-native";
 import { ISelectedAndShownCard } from "@/constants/tarotcards";
 import { useTarotSummary } from "@/hooks/useTarotSummary";
 import { useScrollEndDetection } from "@/hooks/useScrollEndDetection";
 import TarotCardWithLabel from "@/components/TarotCardWithLabel";
 import CardDetailModal from "@/components/CardDetailModal";
 import SummaryPanel from "@/components/SummaryPanel";
-import { colors, globalTextStyles, shadowStyles } from "@/styles/tarotTheme";
+import { commonStyles, globalTextStyles } from "@/styles/tarotTheme";
+import { glowEffects } from "@/styles/theme";
 
 interface SummaryViewProps {
   cards: ISelectedAndShownCard[];
@@ -31,17 +32,23 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
     setSelectedCardIndex(index);
   };
 
+  // Erstelle einen zusammengesetzten Style mit StyleSheet.flatten
+  const titleStyle = StyleSheet.flatten([
+    globalTextStyles.title,
+    Platform.OS === "ios" ? glowEffects.text : {},
+  ]);
+
   return (
-    <View style={styles.container}>
+    <View style={commonStyles.container}>
       <ScrollView
         ref={summaryScrollViewRef}
-        style={styles.mainScrollView}
+        style={{ flex: 1, width: "100%" }}
         onScroll={handleScroll}
         scrollEventThrottle={400}
       >
-        <Text style={styles.title}>Deine Kartenlegung</Text>
+        <Text style={titleStyle}>Deine Kartenlegung</Text>
 
-        <View style={styles.cardsContainer}>
+        <View style={commonStyles.cardsContainer}>
           {cards.map((card, index) => (
             <TarotCardWithLabel
               key={index}
@@ -72,35 +79,5 @@ const SummaryView: React.FC<SummaryViewProps> = ({ cards, onDismiss }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "transparent",
-    alignItems: "center",
-  },
-  title: {
-    ...globalTextStyles.title,
-    ...Platform.select({
-      ios: {
-        textShadowColor: "rgba(167, 139, 250, 0.5)",
-        textShadowOffset: { width: 0, height: 0 },
-        textShadowRadius: 10,
-      },
-    }),
-  },
-  cardsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-    alignItems: "flex-start",
-    width: "100%",
-    paddingHorizontal: 8,
-    marginBottom: 4,
-  },
-  mainScrollView: {
-    flex: 1,
-    width: "100%",
-  },
-});
 
 export default SummaryView;

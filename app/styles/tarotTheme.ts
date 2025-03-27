@@ -1,46 +1,65 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
+import { colors, glowEffects, spacing, typography } from './theme';
 
-export const colors = {
-  background: "rgba(31, 41, 55, 0.95)",
-  backgroundDarker: "rgba(31, 41, 55, 0.98)",
-  purple: "#A78BFA",
-  purpleTransparent: "rgba(139, 92, 246, 0.3)",
-  purpleGlow: "rgba(139, 92, 246, 0.4)",
-  orange: "rgba(249, 115, 22, 0.9)",
-  orangeLabel: "rgba(249, 115, 22, 0.7)",
-  white: "#FFFFFF",
-  error: "#EF4444",
-};
-
+// Tarot-spezifische Textsstile
 export const globalTextStyles = StyleSheet.create({
   title: {
-    color: colors.purple,
-    fontSize: 28,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginVertical: 24,
-    paddingHorizontal: 48,
+    ...typography.title,
+    marginVertical: spacing.lg,
+    paddingHorizontal: spacing.xl + spacing.md,
+    ...Platform.select({
+      ios: {
+        ...glowEffects.text,
+      },
+    }),
   },
   cardLabel: {
-    color: colors.orangeLabel,
+    color: colors.orangeLight,
     fontWeight: "bold",
     fontSize: 14,
     textAlign: "center",
   },
   cardName: {
-    color: colors.purple,
+    color: colors.primaryLight,
     fontSize: 14,
     fontWeight: "bold",
     textAlign: "center",
     lineHeight: 18,
   },
   buttonText: {
-    color: colors.white,
+    color: colors.text,
     fontWeight: "bold",
     fontSize: 16,
   },
+  summaryText: {
+    color: colors.text,
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: "left",
+  },
+  modalTitle: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: spacing.md,
+    textAlign: "center",
+  },
+  modalText: {
+    color: colors.text,
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: "left",
+    marginBottom: spacing.lg,
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 16,
+    textAlign: "center",
+    marginTop: spacing.lg,
+  },
 });
 
+// Container und Layout-Stile
 export const commonStyles = StyleSheet.create({
   container: {
     flex: 1,
@@ -49,33 +68,75 @@ export const commonStyles = StyleSheet.create({
   },
   button: {
     backgroundColor: colors.orange,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingVertical: spacing.sm + 4,
+    paddingHorizontal: spacing.lg,
     borderRadius: 8,
     alignItems: "center",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    backgroundColor: colors.backgroundOverlay,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: spacing.lg,
+  },
+  modalContent: {
+    backgroundColor: colors.backgroundDarker,
+    borderRadius: 16,
+    padding: spacing.lg,
+    paddingBottom: 0,
+    width: "100%",
+    maxHeight: "85%",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...glowEffects.medium,
+  },
+  summaryContainer: {
+    backgroundColor: colors.backgroundLight,
+    borderRadius: 16,
+    padding: spacing.lg,
+    marginTop: spacing.lg,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...glowEffects.medium,
+  },
+  cardsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    alignItems: "flex-start",
+    width: "100%",
+    paddingHorizontal: spacing.sm,
+    marginBottom: 4,
+  },
+  cardWrapper: {
+    alignItems: "center",
+    width: "29%",
+    maxWidth: "30%",
+    justifyContent: "flex-start",
+    backgroundColor: "transparent",
+    flexDirection: "column",
+    height: "auto",
+    marginHorizontal: 2,
+  },
+  buttonFullWidth: {
+    width: "100%",
+    paddingVertical: spacing.sm + 4,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.orange,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginTop: spacing.lg,
+    alignItems: "center",
   },
 });
 
+// Shadow-Effekte mit Wiederverwendung der glow-Definitionen
 export const shadowStyles = {
-  cardGlow: {
-    shadowColor: colors.purple,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-    elevation: 8,
-  },
-  modalGlow: {
-    shadowColor: colors.purple,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 10,
-  },
+  cardGlow: glowEffects.medium,
+  modalGlow: glowEffects.strong,
+  buttonGlow: glowEffects.subtle,
 };

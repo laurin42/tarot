@@ -2,13 +2,45 @@ import { Platform, Easing, Dimensions } from "react-native";
 
 const { width, height } = Dimensions.get("window");
 
+// Zentrale Farbpalette
+export const colors = {
+  // Primärfarben
+  primary: "#8B5CF6", // Hauptfarbe (Lila)
+  primaryLight: "#A78BFA",
+  primaryDark: "#7C3AED",
+  
+  // Hintergrundfarben
+  background: "#111827", // Dunkler Hintergrund
+  backgroundLight: "rgba(31, 41, 55, 0.95)",
+  backgroundDarker: "rgba(31, 41, 55, 0.98)",
+  backgroundOverlay: "rgba(0, 0, 0, 0.85)",
+  
+  // Textfarben
+  text: "#FFFFFF",
+  textSecondary: "#F3F4F6",
+  textMuted: "#9CA3AF",
+  
+  // Akzentfarben
+  orange: "rgba(249, 115, 22, 0.9)",
+  orangeLight: "rgba(249, 115, 22, 0.7)",
+  gold: "#FFD700",
+  error: "#EF4444",
+  success: "#6EE7B7",
+  
+  // Hinzufügen der fehlenden Farbe
+  purpleGlow: "rgba(139, 92, 246, 0.4)",
+
+  // Rahmenfarben
+  border: "rgba(139, 92, 246, 0.3)",
+  borderLight: "rgba(139, 92, 246, 0.2)",
+};
+
 // Glow-Effekte mit verschiedenen Intensitäten
 export const glowEffects = {
-  // Starker Glow für Hauptelemente
   strong: {
     ...Platform.select({
       ios: {
-        shadowColor: "#8B5CF6",
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.8,
         shadowRadius: 20,
@@ -18,12 +50,10 @@ export const glowEffects = {
       },
     }),
   },
-
-  // Mittlerer Glow für wichtige UI-Elemente
   medium: {
     ...Platform.select({
       ios: {
-        shadowColor: "#8B5CF6",
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.5,
         shadowRadius: 15,
@@ -33,12 +63,10 @@ export const glowEffects = {
       },
     }),
   },
-
-  // Schwacher Glow für subtile Hervorhebungen
   subtle: {
     ...Platform.select({
       ios: {
-        shadowColor: "#8B5CF6",
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.3,
         shadowRadius: 10,
@@ -48,19 +76,15 @@ export const glowEffects = {
       },
     }),
   },
-
-  // Speziell für Text-Glow
   text: {
-    textShadowColor: "rgba(139, 92, 246, 0.8)",
+    textShadowColor: `rgba(139, 92, 246, 0.8)`,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 10,
   },
-
-  // Goldener Glow für spezielle Elemente
   gold: {
     ...Platform.select({
       ios: {
-        shadowColor: "#FFD700",
+        shadowColor: colors.gold,
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.8,
         shadowRadius: 20,
@@ -73,25 +97,17 @@ export const glowEffects = {
   },
 };
 
-// Zentrale Farbpalette
-export const colors = {
-  primary: "#8B5CF6", // Hauptfarbe (Lila)
-  primaryLight: "#A78BFA",
-  primaryDark: "#7C3AED",
-  background: "#111827", // Dunkler Hintergrund
-  backgroundLight: "rgba(31, 41, 55, 0.95)",
-  text: "#FFFFFF",
-  textSecondary: "#F3F4F6",
-  border: "rgba(139, 92, 246, 0.3)",
-  gold: "#FFD700",
-};
-
 // Wiederverwendbare Rahmeneffekte
 export const borderEffects = {
   standard: {
     borderWidth: 1,
-    borderColor: "rgba(139, 92, 246, 0.3)",
+    borderColor: colors.border,
     borderRadius: 16,
+  },
+  subtle: {
+    borderWidth: 0.5,
+    borderColor: colors.border,
+    borderRadius: 8,
   },
   none: {
     borderWidth: 0,
@@ -106,6 +122,12 @@ export const typography = {
     fontWeight: "bold",
     color: colors.primaryLight,
   },
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: colors.primaryLight,
+    textAlign: "center",
+  },
   body: {
     fontSize: 17,
     lineHeight: 26,
@@ -116,9 +138,14 @@ export const typography = {
     fontWeight: "bold",
     color: colors.text,
   },
+  caption: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.textMuted,
+  },
 };
 
-// In c:\Users\lauri\tarot\app\styles\theme.tsx hinzufügen
+// Animation Presets
 export const animationPresets = {
   fadeIn: {
     duration: 800,
@@ -133,9 +160,9 @@ export const animationPresets = {
     easing: Easing.out(Easing.cubic),
     useNativeDriver: true,
   },
-  // Weitere Animation-Presets...
 };
 
+// Abstandswerte
 export const spacing = {
   xs: 4,
   sm: 8,
@@ -144,10 +171,12 @@ export const spacing = {
   xl: 32,
 };
 
+// Komponentengrößen
 export const sizes = {
   cardWidth: width * 0.6,
   cardHeight: width * 0.6 * 1.6, // Standard Kartenverhältnis
   buttonHeight: 48,
   indicatorHeight: 40,
-  // Weitere responsive Größen...
+  modalWidth: "90%",
+  modalMaxHeight: "85%",
 };
