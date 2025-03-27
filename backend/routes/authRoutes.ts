@@ -1,25 +1,12 @@
 import express from "express";
-import { usersTable } from "../db/schema";
-import { eq } from "drizzle-orm";
-import { generateToken } from '../middleware/auth';
-import { jwtDecode } from "jwt-decode";
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware } from "../middleware/auth";
+import { authController } from "../controllers/authController";
 
 const router = express.Router();
 
-// Move login endpoint
-router.post("/login", async (req, res) => {
-  // Your existing login logic
-});
-
-// Move me endpoint
-router.get("/me", authMiddleware, async (req, res) => {
-  // Your existing me logic 
-});
-
-// Move verify-token endpoint
-router.get("/verify-token", (req, res) => {
-  // Your existing verify logic
-});
+// Auth-Endpunkte
+router.post("/login", authController.login);
+router.get("/me", authMiddleware, authController.getProfile);
+router.get("/verify-token", authController.verifyToken);
 
 export default router;

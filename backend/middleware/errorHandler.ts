@@ -1,5 +1,6 @@
 // server/middleware/errorHandler.ts
 import { Request, Response, NextFunction } from 'express';
+import * as Sentry from '@sentry/node';
 
 interface AppError extends Error {
   statusCode?: number;
@@ -18,6 +19,17 @@ export class ApiError extends Error {
     Error.captureStackTrace(this, this.constructor);
   }
 }
+
+// Custom error handler with Sentry integration
+export const sentryErrorHandler = (
+  err: Error, 
+  req: Request, 
+  res: Response, 
+  next: NextFunction
+): void => {
+  Sentry.captureException(err);
+  next(err);
+};
 
 // Middleware für das Abfangen nicht gefundener Routen
 export const notFoundHandler = (req: Request, res: Response, next: NextFunction) => {
