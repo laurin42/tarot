@@ -28,6 +28,19 @@ import { ErrorDisplay } from "../components/ui/ErrorDisplay";
 import { LoadingScreen } from "../components/ui/LoadingScreen";
 import { initializeSplashScreen } from "../utils/splashScreen";
 import * as SplashScreen from "expo-splash-screen";
+import React, { useState } from "react";
+import { Stack } from "expo-router";
+import { Text, View } from "react-native";
+import { assetManager, AssetPriority } from "../utils/assetPreloader";
+import { tarotDeckOptimizer } from "../utils/tarotDeckOptimizer";
+import { tarotCards } from "../constants/tarotcards"; // Deine bestehende Kartendefinition
+
+// Kritische Assets für App-Start definieren
+const CRITICAL_IMAGES = [
+  require("../assets/splash.png"),
+  require("../assets/icon.png"),
+  require("../assets/logo.png"),
+];
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 initializeSplashScreen();
@@ -121,6 +134,7 @@ export default function RootLayout(): JSX.Element | null {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     if (loaded) {
@@ -136,8 +150,49 @@ export default function RootLayout(): JSX.Element | null {
     }
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
+  useEffect(() => {
+    // Assets vorbereiten und laden
+    async function prepareApp() {
+      try {
+        // Schriften registrieren
+        assetManager.registerFonts({
+          Montserrat: require("../assets/fonts/Montserrat-Regular.ttf"),
+          "Montserrat-Bold": require("../assets/fonts/Montserrat-Bold.ttf"),
+          "Montserrat-Light": require("../assets/fonts/Montserrat-Light.ttf"),
+        });
+
+        // Kritische UI-Assets registrieren
+        assetManager.registerImages(CRITICAL_IMAGES, AssetPriority.CRITICAL);
+
+        // Tarotkarten vorbereiten
+        const cardModules = tarotCards.map((card) => ({
+          id: card.id,
+          name: card.name,
+          image: card.image, // Nehme an, dass das ein require('./path/to/image') ist
+        }));
+
+        // Kritische Assets vorladen
+        await assetManager.preloadCriticalAssets();
+
+        // Tarot-Deck im Hintergrund initialisieren (nach App-Start)
+        tarotDeckOptimizer.initializeDeck(cardModules).catch(console.error);
+
+        setIsReady(true);
+      } catch (error) {
+        console.error("Error loading app assets:", error);
+        setIsReady(true); // Trotz Fehler fortsetzen
+      }
+    }
+
+    prepareApp();
+  }, []);
+
+  if (!loaded || !isReady) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Loading...</Text>
+      </View>
+    );
   }
 
   try {
