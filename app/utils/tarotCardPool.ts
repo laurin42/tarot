@@ -1,6 +1,6 @@
 import { tarotCards, ISelectedAndShownCard } from "@/constants/tarotcards";
-import { storage } from "../utils/storage"; // Import storage utility
-import { optimizeImage } from "../utils/imageOptimization";
+import { storage } from "./storage";
+import { optimizeImage } from "./imageOptimization";
 
 export async function getRandomDrawnCards(): Promise<ISelectedAndShownCard[]> {
   const shuffledCards = [...tarotCards].sort(() => Math.random() - 0.5);
@@ -98,46 +98,4 @@ export async function getRandomDrawnCard(): Promise<ISelectedAndShownCard> {
     console.error("Error fetching random card:", error);
     throw error;
   }
-}
-
-async function saveDrawnCards(drawnCards: ISelectedAndShownCard[]) {
-  const token = await storage.getItem("userToken");
-  if (!token) return;
-
-  await Promise.all(
-    drawnCards.map(async (card, index) => {
-      try {
-        const headers = {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        };
-
-        const saveResponse = await fetch(
-          `${
-            process.env.EXPO_PUBLIC_API_URL || "http://192.168.2.187:8000"
-          }/tarot/drawn-card`,
-          {
-            method: "POST",
-            headers,
-            body: JSON.stringify({
-              name: card.name,
-              description: card.explanation,
-              position: index, // Store card position (0=situation, 1=problem, 2=advice)
-            }),
-          }
-        );
-
-        if (saveResponse.ok) {
-          console.log(`✅ Card saved to user history: ${card.name}`);
-        } else {
-          console.error(
-            `❌ Failed to save card: ${card.name}`,
-            await saveResponse.text()
-          );
-        }
-      } catch (saveError) {
-        console.error("Failed to save card:", saveError);
-      }
-    })
-  );
 }

@@ -19,7 +19,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.laurin42.tarot"
+      "package": "com.laurin.tarot"
     },
     "web": {
       "bundler": "metro",
