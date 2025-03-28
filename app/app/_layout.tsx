@@ -187,6 +187,22 @@ export default function RootLayout(): JSX.Element | null {
     prepareApp();
   }, []);
 
+  useEffect(() => {
+    // Initialisiere den Optimizer mit allen verfügbaren Karten
+    const cardModules = tarotCards.map((card) => ({
+      id: card.id,
+      name: card.name,
+      image: card.image,
+    }));
+
+    // Starte Initialisierung im Hintergrund
+    tarotDeckOptimizer
+      .initializeDeck(cardModules)
+      .catch((err) =>
+        console.error("Failed to initialize tarot deck optimizer:", err)
+      );
+  }, []);
+
   if (!loaded || !isReady) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>

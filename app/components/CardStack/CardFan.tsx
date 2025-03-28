@@ -1,12 +1,9 @@
 import React, { memo } from "react";
 import { View, Animated, Pressable } from "react-native";
-import TarotCard from "../TarotCard";
 import { ISelectedAndShownCard } from "@/constants/tarotcards";
 import { layoutPatterns, globalStyles } from "@/styles/globalStyles";
 import { styles } from "@/styles/styles";
-
-// Optional: Verwendung der optimierten TarotCard-Komponente, wenn verfügbar
-// import OptimizedTarotCard from "../OptimizedTarotCard";
+import OptimizedTarotCard from "../OptimizedTarotCard";
 
 interface CardFanProps {
   cards: ISelectedAndShownCard[];
@@ -73,26 +70,16 @@ const CardFan = memo(
               style={[globalStyles.cardBase, styles.cardPressable]}
               onPress={() => onCardSelect(card)}
             >
-              <TarotCard
-                image={card.image}
+              <OptimizedTarotCard
+                cardId={card.id}
+                imageSource={card.image}
                 isShown={card.showFront || false}
+                size="medium"
                 style={{
                   width: cardDimensions.width,
                   height: cardDimensions.height,
                 }}
               />
-
-              {/* Alternative mit OptimizedTarotCard für bessere Performance
-            <OptimizedTarotCard
-              cardId={card.id}
-              imageSource={card.image}
-              isShown={card.showFront || false}
-              size="medium"
-              style={{
-                width: cardDimensions.width,
-                height: cardDimensions.height,
-              }}
-            /> */}
             </Pressable>
           </Animated.View>
         ))}

@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Dimensions } from "react-native";
-import TarotCard from "@/components/TarotCard";
+import OptimizedTarotCard from "@/components/OptimizedTarotCard";
 import { Shadow } from "react-native-shadow-2";
 import { ISelectedAndShownCard } from "@/constants/tarotcards";
 import { commonStyles, globalTextStyles } from "@/styles/tarotTheme";
@@ -57,9 +57,12 @@ const TarotCardWithLabel: React.FC<TarotCardWithLabelProps> = ({
             endColor="rgba(139, 92, 246, 0.0)"
             offset={[0, 0]}
           >
-            <TarotCard
-              image={card.image}
+            <OptimizedTarotCard
+              cardId={card.id}
+              imageSource={card.image}
               isShown={true}
+              size="small" // Für Listenansichten ist "small" effizienter
+              name={card.name}
               style={{
                 width: cardWidth,
                 height: cardWidth * 1.6,
@@ -91,4 +94,4 @@ const TarotCardWithLabel: React.FC<TarotCardWithLabelProps> = ({
   );
 };
 
-export default TarotCardWithLabel;
+export default React.memo(TarotCardWithLabel); // Optimierung durch Memoization

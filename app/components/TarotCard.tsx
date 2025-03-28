@@ -1,11 +1,11 @@
-// app/app/components/TarotCard.tsx
-import { Text, View, Image } from "react-native";
+import React from "react";
+import OptimizedTarotCard from "./OptimizedTarotCard";
 
 interface TarotCardProps {
   image: any;
   isShown: boolean;
   style?: any;
-  name?: string; // Make name optional with ?
+  name?: string;
 }
 
 export interface ITarotCard {
@@ -22,42 +22,29 @@ export default function TarotCard({
   isShown,
   style,
 }: TarotCardProps) {
+  // Extrahiere die ID aus dem Image-Pfad, falls verfügbar
+  // Fallback für alte Verwendungen ohne korrekte ID
+  const getCardIdFromImage = () => {
+    if (typeof image === "number") {
+      // Get the source code for the require() call
+      const imageSource = image.toString();
+      // Extract filename from path
+      const matches = imageSource.match(/tarot_cards\/([^.]+)/);
+      return matches
+        ? matches[1].toLowerCase().replace(/\s+/g, "_")
+        : "unknown";
+    }
+    return "unknown";
+  };
+
   return (
-    <View
-      style={[
-        {
-          position: "relative",
-          borderWidth: 0.4,
-          borderColor: "rgba(224, 224, 224, 1)",
-          borderRadius: 16,
-        },
-        style,
-      ]}
-    >
-      <Image
-        source={
-          isShown ? image : require("@/assets/images/tarot_cards/Card_back.png")
-        }
-        style={{
-          width: "100%",
-          height: "100%",
-          borderRadius: 16,
-        }}
-      />
-      {isShown && name && (
-        <Text
-          style={{
-            position: "absolute",
-            bottom: 4,
-            left: 4,
-            color: "white",
-            fontSize: 16,
-            fontWeight: "bold",
-          }}
-        >
-          {name}
-        </Text>
-      )}
-    </View>
+    <OptimizedTarotCard
+      cardId={getCardIdFromImage()}
+      imageSource={image}
+      isShown={isShown}
+      name={name}
+      style={style}
+      size="medium"
+    />
   );
 }
