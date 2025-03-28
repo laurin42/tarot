@@ -37,9 +37,9 @@ import { tarotCards } from "../constants/tarotcards"; // Deine bestehende Karten
 
 // Kritische Assets für App-Start definieren
 const CRITICAL_IMAGES = [
-  require("../assets/splash.png"),
-  require("../assets/icon.png"),
-  require("../assets/logo.png"),
+  require("../assets/images/splash.png"),
+  require("../assets/images/icon.png"),
+  require("../assets/images/logo.png"),
 ];
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.

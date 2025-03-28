@@ -7,6 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "tarot",
     "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.laurin.tarot",
@@ -47,9 +48,9 @@
       "checkAutomatically": "ON_LOAD"
     },
     "splash": {
-      "image": "./assets/images/splashscreen_logo.png",
+      "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#131313"
     }
   }
 }
