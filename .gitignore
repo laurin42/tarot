@@ -1,0 +1,74 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment variables (für ALLE Verzeichnisse)
+**/.env
+**/.env.*
+**/.env*.local
+**/.env.development
+**/.env.production
+**/.env.test
+**/.env.staging
+**/*.env
+!**/.env.example
+
+# Expo specific files
+**/.expo/
+**/expo-env.d.ts
+.expo-shared/
+metro-bundler-cache-*/
+*.metro/
+
+# Build outputs
+dist/
+*/dist/
+build/
+*/build/
+web-build/
+coverage/
+*/coverage/
+/android
+/ios
+
+# Debugging files
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.log
+logs/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Native files
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# TypeScript build files
+*.tsbuildinfo
+
+# Lock files (optional - entfernen, wenn Sie diese tracken möchten)
+package-lock.json
+yarn.lock
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.code-workspace
+
+# Temporary files
+*.swp
+*.swo
+
+# Miscellaneous
+app-example/
+
+# Optional: Docker und verwandte Dateien
+Dockerfile
+.dockerignore

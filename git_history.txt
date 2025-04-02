@@ -1,0 +1,851 @@
+commit 2a8439be7637e7805ce71db1ebe067eb322d86ef
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Apr 1 19:10:26 2025 +0200
+
+    Update app configuration: disable new architecture, enhance Babel configuration with module resolver, and improve Metro bundler settings for CSS support and asset handling.
+
+commit 23b44bf4eae6612a2e105f16afec826d54472646
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Apr 1 15:33:38 2025 +0200
+
+    Update .gitignore files to exclude android and ios directories; modify package.json for dependency version adjustments
+
+commit cdf2ee40dd511e788ed0142e975e3cd5354f3002
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Apr 1 14:25:52 2025 +0200
+
+    Refactor Android project structure: remove unused resources, update Gradle wrapper, and enhance splash screen configuration
+
+commit 5ee45e54037cbe9d46fbac5a3ee9ff5badbcef39
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Apr 1 11:19:18 2025 +0200
+
+    Refactor Firebase integration: centralize initialization, implement anonymous sign-in function, and update authentication context
+
+commit 35a498f2edea05f8998e1e9365f006b849b20e00
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Mar 31 19:37:15 2025 +0200
+
+    Enhance Firebase integration: implement anonymous login, improve initialization process, and update dependencies for Firebase packages
+
+commit 5e3a9dfabe191dee8fdf4549217ae33bf1bb935b
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Mar 31 18:56:34 2025 +0200
+
+    Implement anonymous authentication: add support for anonymous sign-in, enhance auth context, and update UI components for anonymous user experience
+
+commit 93d021e823fd9c3338c6af6a87f635f6dee19c90
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Mar 31 18:29:17 2025 +0200
+
+    Refactor backend configuration: update CORS settings for improved security and remove unused import in schema
+
+commit 716cc44a4fa3fe00b90c1ae0dfda74b6f887cdbe
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Mar 31 16:04:19 2025 +0200
+
+    Refactor frontend structure: remove entry point files, update package.json main entry, and enhance image optimization function to accept various source types
+
+commit 0fb5a6a16f51f76f8417b6a7d48494654f49067b
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Mar 31 14:47:37 2025 +0200
+
+    Refactor project structure: add new .npmrc files, remove unused assets, and implement Tailwind CSS
+
+commit f73a0460bebd3dcebd1f9e17490eea705e528e37
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Mar 31 14:38:41 2025 +0200
+
+    Refactor app structure: rename app, create entry point, update routing, and enhance error handling
+
+commit e597edb007ab21ebb5a10168be0b6e5e0dcdd2cb
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 28 17:15:46 2025 +0100
+
+    Refactor authentication routes: consolidate layout and screen components, remove unused files, and update app configuration
+
+commit bc0c9f5863e0d8cb44702d7351732e08701c1290
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 28 15:27:02 2025 +0100
+
+    Refactor metro.config.js: optimize SVG transformer and remove unused cache configurations
+
+commit 625ea6761612d81dee96e0a301ec3e444cf5babb
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 28 13:32:40 2025 +0100
+
+    Consolidate .gitignore files: remove app and backend .gitignore, and create a unified .gitignore for the entire project
+
+commit 696556ed837a8a9300c612677441f87690193264
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 28 13:31:36 2025 +0100
+
+    Remove sensitive environment files from repository
+
+commit 3b5cd46985371a947e99198653caab9cfd241899
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 28 13:27:28 2025 +0100
+
+    Update .gitignore files: streamline ignored patterns for app and add backend .gitignore
+
+commit 08ceffcf5babde37d9ac604a2b44fae1ac6ca218
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 28 13:23:06 2025 +0100
+
+    Remove prompt.md entry from .gitignore
+
+commit 5c50e1bbb2d8b2c447530498d7f5e0539951435b
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 28 13:20:33 2025 +0100
+
+    Add .gitignore to exclude prompt.md from version control
+
+commit f0936439f81408d580d2b7404d7c407f7563a21f
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 28 13:13:54 2025 +0100
+
+    Refactor app structure: update package name, remove unused app.js, and implement tarot card utility functions for saving and fetching drawn cards
+
+commit b1f894a86d459d0773d8f10ea4e641659a2d58fd
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 28 12:56:58 2025 +0100
+
+    Remove unused Expo and Android configuration files; clean up project structure
+
+commit 26409c2925d9b02212ac6be86264cb9e630d7999
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 28 12:37:54 2025 +0100
+
+    general cleanup
+
+commit f89787d2ddff447fe032652c1ceed55126f1514f
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 28 11:11:46 2025 +0100
+
+    Refactor tarot card components to use OptimizedTarotCard for improved performance; remove unused TarotCardImage component and enhance card initialization logic
+
+commit bf5d33e8479467ed5e1e216d39b57564591bda10
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 28 10:49:43 2025 +0100
+
+    Implement CardStack components and logic; add styles for gameplay area and card indicators
+
+commit b415313af2e2b630dcec95cfd57d9da7604a7dac
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 28 10:22:45 2025 +0100
+
+    Add caching and optimization for tarot card images; implement Metro cache clearing script and update package dependencies
+
+commit 720d5092626ee21fe3eef8df339acb532d805dba
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Thu Mar 27 18:39:04 2025 +0100
+
+    Integrate Sentry for error tracking; refactor asyncHandler for generic types and update userController to use new typing
+
+commit dc8f4ce4e0cc239479db3d0e8ca16c65940e513f
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Thu Mar 27 13:11:56 2025 +0100
+
+    Add Sentry integration for error handling; implement user and card routes, and set up database connection with Drizzle ORM
+
+commit ec178d1d291855b9367f9b02ba10c61b1ed1f73b
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Thu Mar 27 10:37:10 2025 +0100
+
+    Implement tarot API service for fetching and saving reading summaries; refactor SummaryPanel and SummaryView components for improved styling and functionality
+
+commit e2441654aaa951fa52d3228e49d3c255e0cfc2df
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Thu Mar 27 10:23:33 2025 +0100
+
+    Add image optimization utility and enhance card loading; implement scroll detection hook and new summary panel component
+
+commit c01cd3eac7945d84a56a2c93d48134be6a923e1f
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 21 17:15:25 2025 +0100
+
+    Refactor Bugsnag types; consolidate metadata definitions and improve type safety
+
+commit b7071d196f18a96abaf918fd8bfbf745888351dd
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 21 17:11:53 2025 +0100
+
+    Enhance Bugsnag integration; restructure metadata for breadcrumbs and improve error handling in ErrorBoundary
+
+commit 13a34525cede416e4054673d2bb87fbcc79d0e08
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 21 16:45:03 2025 +0100
+
+    Add dynamic routing and development tools; implement error handling and loading screens
+
+commit e421c29c4f761a02e1f8448a760671cd2d2bb58c
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 21 15:56:26 2025 +0100
+
+    Add type annotations to components and improve Firebase initialization error handling
+
+commit 107a460327c5137c318ceca0697ec00bb6c53ed6
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 21 14:51:49 2025 +0100
+
+    Refactor authentication structure; move AuthScreen to components and consolidate App logic into a single file
+
+commit 20e90cf238a797cbd558035a073ee0b6a83472d1
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 21 14:42:19 2025 +0100
+
+    Remove apiClient and UserProfile type; clean up unused services and types
+
+commit 5a9d6872a8787563f7b042cd617c6c70e03df3ef
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 21 14:30:03 2025 +0100
+
+    Remove unused hooks and components; delete useThemeColor, useCardDimensions, useDeckInitialization, CardHint, StartingInstructions, and GoalsScreen
+
+commit f9072abb3f632f9d787801b3db54b99c21a463c3
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 21 13:41:51 2025 +0100
+
+    Update package dependencies; upgrade expo-constants to 17.0.8, add expo-device and @react-native-community/netinfo
+
+commit bc41c76f649802bd36e224df5e25100cd4b285e6
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 21 11:40:31 2025 +0100
+
+    Integrate Bugsnag for error tracking; remove Sentry integration, update error handling components, and create DebugScreen for testing
+
+commit dbf9918e83a63242f18555bc09f74649c68936c3
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 21 10:07:04 2025 +0100
+
+    Integrate Bugsnag for error tracking; add installation and implementation prompts, and create ErrorBoundary component for enhanced error handling
+
+commit 4c5bf5486918b14eee4e6fd3e9c6672bd1123a7b
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 21 09:29:48 2025 +0100
+
+    remove Firebase Crashlytics integration; clean up related files and dependencies
+
+commit aec7720f0cc096a0b85dec06c7dbe4bcb6cc9d5f
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Thu Mar 20 16:01:42 2025 +0100
+
+    Remove Gradle wrapper files and update Kotlin version; integrate Firebase Crashlytics and adjust dependencies for stability
+
+commit e7dda5b4048a611f278bbcb9f7575101784a441c
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Thu Mar 20 13:37:20 2025 +0100
+
+    Add custom Gradle properties and Kotlin version configuration for Android build
+
+commit f2e7e20531cce056f124212183e1538838843d58
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Thu Mar 20 09:34:14 2025 +0100
+
+    Remove Sentry integration and implement Firebase Crashlytics; update dependencies and add test components for error handling
+
+commit 60484b56e8f44f21254da8dc475f12c32ec6b9d6
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Wed Mar 19 18:28:49 2025 +0100
+
+    Add prompt for creating a new React form component with guidelines for design system, state management, and validation
+
+commit afbb960064987905f50b8d085023c945a6abe125
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Wed Mar 19 14:49:47 2025 +0100
+
+    Refactor Sentry integration: update package version, initialize Sentry in index.tsx, and modify ErrorService to skip redundant initialization
+
+commit 1ffc67d7edd64991ffd9c761bd52ee8323600255
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Wed Mar 19 13:11:01 2025 +0100
+
+    Integrate Sentry for error tracking; implement ErrorService and SentryTest components; add error handling to ErrorBoundary; set up tarot and auth routes
+
+commit 3b29c03ce5c9bf5cf79c9e95f3fa04065b75f7ed
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Wed Mar 19 11:24:41 2025 +0100
+
+    Integrate Sentry for error tracking; implement ErrorService and ErrorDisplay components; enhance API client with error handling
+
+commit bcd2d4ee9c662c13f805eecc297518f9c9ee8250
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Wed Mar 19 10:00:40 2025 +0100
+
+    Add ErrorBoundary component and error handling middleware; integrate Sentry for error reporting
+
+commit 5825e74f8963e924cc12bee22bfd85e8d2eafa49
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 18 09:14:36 2025 +0100
+
+    Refactor TabLayout to use SafeAreaView for improved layout; implement TabBarBackground for consistent styling; enhance globalStyles with glowingText for better visibility
+
+commit 82a61154adf09ffb818d02b608fdc82c993a7963
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 18 08:30:44 2025 +0100
+
+    Refactor animation hooks: remove unused useFloatingAnimation and useCardAnimations; add useCardSelectionAnimation for improved card selection handling
+
+commit b9957714dd77b1cc21efadd8bd0a57242797ce48
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Mar 17 17:23:34 2025 +0100
+
+    Implement animated card positioning and fade-in effect for DrawnCardsDisplay; update CardStackView to handle new animations and callbacks
+
+commit e8270b76e84edead8588ad379d747e8511ef895a
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Mar 17 17:10:07 2025 +0100
+
+    Add react-native-shadow-2 for enhanced card display; update SummaryView for dynamic sizing and improved styling
+
+commit a16ee5ef50bb13bf3411fe1c982b049f4d800df8
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Mar 17 15:07:33 2025 +0100
+
+    Redirect root route to ThreeCards tab; update navigation and layout for improved user experience
+
+commit 93380fd34305a8b4427372f86b469151de193551
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Mar 17 12:52:16 2025 +0100
+
+    Add user profile fields and update UserContext for enhanced user data management
+
+commit 5b242c8ed2d174d3a8cf9106d443da83bf3f956a
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Mar 17 12:24:56 2025 +0100
+
+    Update TabLayout imports
+
+commit 0e40c11c40c94c4b63f0d245b79d8eb7340cea65
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Mar 17 12:20:55 2025 +0100
+
+    Add SVG icons for DailyCard, ThreeCards, and Profile; update TabLayout for new icons
+
+commit 9a7ed6fae954953bb195f53edfb375eafdabfae2
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Mar 17 09:15:46 2025 +0100
+
+    Remove ExploreScreen component; implement DailyCardScreen for drawing and displaying tarot cards
+
+commit b51b0e32d34d180b17f8085d7ad4938c83db284f
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 14 17:11:39 2025 +0100
+
+    Implement authentication redirection and loading screen; enhance card selection with instructional overlay
+
+commit 46f18c6161551ef0d5a92f4b9ba0c32707a3a7bc
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 14 15:23:12 2025 +0100
+
+    Enhance DrawnCardsDisplay and SummaryView components with improved scroll handling and card name display
+
+commit aa99a85066b26bb2249d2f2f6a8ce8a1b22f614b
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 14 13:29:13 2025 +0100
+
+    Refactor card handling logic to pass predetermined cards and simplify drawn cards display
+
+commit 56a15c9962766d2ddb2e54e04e8351233d8367e8
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Mar 14 11:46:20 2025 +0100
+
+    Update CORS origin and redirect URIs; refactor card saving logic
+
+commit 5273277a9ad9c9bdf8bd591c415c534f6ffd9ed6
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Wed Mar 12 17:25:06 2025 +0100
+
+    Configure CORS to allow requests from localhost with credentials
+
+commit 8407b9ca50aa05685f6130f28260cd1873d37311
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 11 16:27:21 2025 +0100
+
+    Update Gradle and wrapper versions to 8.6.0 and 8.13 respectively
+
+commit 4001b59cf8fc231cd1cc1f6dad85041b8d3061e4
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 11 14:54:33 2025 +0100
+
+    Update launcher foreground drawable references to remove file extension
+
+commit 8e52467cdeb68b219221a1f4bb597fd1235eb722
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 11 12:45:02 2025 +0100
+
+    Remove hasInstallScript property from package-lock.json
+
+commit c22894d196b6612eefd9e1009c80fa60bec6bb1d
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 11 12:35:27 2025 +0100
+
+    Update launcher icon references and remove duplicate icon removal script
+
+commit 28ff1ff6ea104faaf5dc3c78122b6b4bb2b1c651
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 11 12:21:07 2025 +0100
+
+    Rename splash screen background color to icon background in colors.xml
+
+commit 4e0bd1d1660c63f461aa6adbb6c2ed973e356c61
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 11 11:52:15 2025 +0100
+
+    Remove splash screen logo image from mipmap resources
+
+commit b893d4774bf283a531f5edad73e3fd7e6474fcf6
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 11 11:41:17 2025 +0100
+
+    Remove unused launcher icon images from mipmap resources
+
+commit 8a7cb41b72ba486fbae8ec437c4cd268963aa26d
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 11 11:35:05 2025 +0100
+
+    Add launcher foreground icons for various mipmap densities
+
+commit 5203f30bb31e0ccd110577d3b87ef31873300e47
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 11 10:30:07 2025 +0100
+
+    Remove unused splash screen logo images from mipmap resources
+
+commit 92832fa0917e448681748c8dea9cce850b3297fd
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 11 09:40:48 2025 +0100
+
+    Remove duplicate launcher icons and add script for automatic cleanup; update app configuration for splash screen and post-install script.
+
+commit 2e8f705e5025a996a3ac7ab5482813a383ac9e10
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Mar 10 16:29:59 2025 +0100
+
+    Add Firebase dependencies and include google-services.json for authentication
+
+commit e673aa8559068446036a6678b4276f62a33b4c4a
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Thu Mar 6 15:53:54 2025 +0100
+
+    Refactor application namespace and update configuration files; remove app.config.js; adjust authentication request handling and package versions for consistency.
+
+commit c1041d912db5c526a3eb27504634f02f96b59706
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Thu Mar 6 11:52:38 2025 +0100
+
+    Refactor user authentication: change auth_id column type to text in users table; update package dependencies for jwt-decode and pg; enhance drizzle configuration with strict and verbose options; improve sign-out functionality by clearing additional auth-related storage items.
+
+commit 3aaf340159dcf971375919d303c61a2c4431e2dc
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Thu Mar 6 09:55:25 2025 +0100
+
+    Enhance drawn cards functionality: add userId, position, and sessionId to drawnCardsTable; implement authentication token handling in card fetching and saving; save reading summaries with sessionId.
+
+commit ecf85ffc57561fd33efa007a5f9380ae82ee8d3e
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Wed Mar 5 17:43:35 2025 +0100
+
+    Refactor user authentication: add optional authId to UserProfile, improve token verification and error handling, and update AuthScreen to handle Google sign-in more robustly.
+
+commit 1732fa06a98cc8f79b8c090e9ee7182aead5e2a4
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 4 17:40:54 2025 +0100
+
+    Enhance profile screen: add user picture, name, and email display; implement sign-out functionality; improve goal update feedback with success message; refactor styles and layout for better user experience.
+
+commit 90b1a1634c42d10fe1436ab9a8c162f1375b7a60
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 4 17:22:39 2025 +0100
+
+    Add example environment configuration file
+
+commit d5090dc481011cf3b16d73e8047a42b846b525f0
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 4 17:19:00 2025 +0100
+
+    update gitignore files
+
+commit 2bf70b48873ebda9ca784d1a266ae4bb4937276f
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 4 17:01:58 2025 +0100
+
+    Add .gitignore and .env.example
+
+commit 4c71a1766ff0fe34b2423913ee2cffa2c86c3878
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 4 17:00:50 2025 +0100
+
+    Remove .env files from git
+
+commit 536750cd1b9e0b4544320dda3855481e5e19806f
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 4 09:51:03 2025 +0100
+
+    remove unused splash screen assets; update app name and package namespace; configure Gradle settings; adjust color resources; update dependencies
+
+commit 1f339a12c4ec57f41f9be751fac12147429ff4ff
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Mar 4 09:24:58 2025 +0100
+
+    update iOS config to disable non-exempt encryption; refactor AuthScreen import path and remove unused component; update package dependencies
+
+commit dec78802856236548ea80ab612d9731eeec4c2ea
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Mar 3 16:54:36 2025 +0100
+
+    refactor project structure; update package name to 'com.laurin.tarot' and configure Google authentication
+
+commit 7bd42d8c9280186e5bb3634e5b9406868754e755
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Mar 3 09:24:29 2025 +0100
+
+    add initial Android project structure; configure resources, Gradle settings, and ProGuard rules
+
+commit 7e6c89de97f26e2f2fc7389d9aae460b6fb0f8d0
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Sun Mar 2 18:30:45 2025 +0100
+
+    implement authentication flow; add user profile interface and JWT middleware
+
+commit 2fc3fa7b55648d960d39074f0c24abf1f59e15ac
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Feb 28 14:25:17 2025 +0100
+
+    replace CardImage component with TarotCard; enhance explanation display with scrollable view
+
+commit 520eaad237dc93af6e4cccaf711c2e0d4568e892
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Feb 28 11:46:29 2025 +0100
+
+    enhance styling and layout for improved readability
+
+commit 14e9489f8e5471e44b0ac74d9d799f40decba029
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Thu Feb 27 13:22:20 2025 +0100
+
+    improve SummaryView styling and structure; update card display and modal components for better readability
+
+commit 3eb3bcaf10f752f774dd33965fb820f1b6c824dc
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Thu Feb 27 12:56:26 2025 +0100
+
+    summaryView optimization
+
+commit 27c87aa701f364f8ff6d5ce06de0671b589587f5
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Thu Feb 27 12:37:39 2025 +0100
+
+    SummaryView implementation
+
+commit ebc2703df420f9d7dfe415a96e8c9e6328b90a39
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Thu Feb 27 11:02:51 2025 +0100
+
+    restoring original features with more modularity
+
+commit 0f9eb558b260866a582c8fddbc3b8aa925a6163f
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Wed Feb 26 21:00:01 2025 +0100
+
+    feat: add deck initialization hook and enhance card animation logic; update card handling and remove unused floating animation
+
+commit bf25e178a8ee95dbda778ce4b49c6dbc77e5202b
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Feb 25 16:09:17 2025 +0100
+
+    feat: enhance card display with image support; add floating animation hook and card dimensions management
+
+commit 8b6de9e9ca94807156528a8fd890a07e85524ecb
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Feb 21 16:21:42 2025 +0100
+
+    tailwind try and succes
+
+commit b56dedea95297d806a51803afc9164f12d904925
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Feb 14 13:56:35 2025 +0100
+
+    feat: implement floating animation hook; enhance card display responsiveness and add summary endpoint
+
+commit c84780ee10ed86d0754aa8aa188bde708e49386b
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Thu Feb 13 18:39:48 2025 +0100
+
+    refactor: update drawn cards fetching logic; implement initial drawn cards retrieval and explanation handling
+
+commit 5d2892617da08acaafd7b96cbb06a8ff6233b6c8
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Thu Feb 13 17:23:00 2025 +0100
+
+    refactor: update card handling to use ISelectedAndShownCard interface; enhance drawn cards fetching and storage logic
+
+commit c08f4bb700c2041ac6838d7c0ff0ad4ee7b5de00
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Wed Feb 12 17:53:45 2025 +0100
+
+    fix: update API endpoints to use local network IP address for drawn cards functionality
+
+commit 07b479589eb2e39645acd989baecbbc99b786406
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Wed Feb 12 16:43:01 2025 +0100
+
+    refactor: update database schema for drawn cards; remove tarot cards table and adjust related endpoints
+
+commit e14f27f2f3460b80d7833a51295c4e83124b6166
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Feb 11 19:55:20 2025 +0100
+
+    implement drawn cards storage and update error handling; enhance database schema for drawn cards
+
+commit 34b17cec785eaf211b4b72b2f59e8f1faa92dcb0
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Feb 10 18:24:29 2025 +0100
+
+    add CardHint and CardImage components; implement SummaryView and update tarot card handling
+
+commit 877b3e2f297caf3c05b9358514280d22d2439793
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Feb 10 18:23:59 2025 +0100
+
+    add FetchCardExplanation component for fetching and displaying tarot card explanations
+
+commit afcae1d57f3f3d8cc8a86e5095c3e679617cb6a1
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Fri Feb 7 16:57:55 2025 +0100
+
+    animations try and error
+
+commit e32189a6ead38ca757726f8c0ff02d98f3716012
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Wed Feb 5 13:23:51 2025 +0100
+
+    gluestack install
+
+commit 39cadc9dbd0a2fdb7fcb619f5eaff6a8a2c6c729
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Wed Feb 5 13:21:20 2025 +0100
+
+    nativebase config
+
+commit f151e4eb53fb7499c81e40529a16bc0d03e911a8
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Wed Feb 5 09:54:47 2025 +0100
+
+    nativebase config
+
+commit 808297de3447c52897ee9f7f87f20738db324ba1
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Wed Feb 5 08:20:33 2025 +0100
+
+    nativeBase Config
+
+commit 866eb191fb5e6e03926a8001a206821e4303c745
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Feb 4 15:28:41 2025 +0100
+
+    nativewind config not so complete...
+
+commit 175817831cb779b37efb7da5bbfd6bf2ac2ea805
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Feb 4 11:09:52 2025 +0100
+
+    nativewind/babel config complete
+
+commit 1b5ef2f8a00f9f3242af38583febcbe398fb527d
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Feb 4 08:14:46 2025 +0100
+
+    tailwind/babel install
+
+commit 44af5dc39b8a0d7b85219a0e48fd6b49c52f683c
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Mon Feb 3 08:43:20 2025 +0100
+
+    reorganised components structure
+
+commit b076fea229305f3a2c4cfce2d1ea2d640af68abf
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Jan 28 17:24:18 2025 +0100
+
+    updated DrawnCardsDisplay.tsx
+
+commit 7b29afdbca3ae91019980c70abd27dd23eca5356
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Jan 28 17:22:50 2025 +0100
+
+    implemented DrawnCardDisplay component
+
+commit 34cb405a9d96d5f254894da80e1be02f06c2fdd3
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Tue Jan 28 10:25:55 2025 +0100
+
+    reorganised components structure
+
+commit d4047bf6e8b2e3f0b18036379a0f635b83315d7c
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Sun Jan 26 13:15:53 2025 +0100
+
+    yes
+
+commit e8c746b991ad52d4438458bdf79348a73dc6d835
+Merge: bc20ad0d bcfa6b0f
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Sun Jan 26 02:56:39 2025 +0100
+
+    Merge branch 'main' of https://github.com/laurin42/tarot
+
+commit bc20ad0d1bb94e49d0df7b7df9261d1fcbb790c7
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Sun Jan 26 02:56:34 2025 +0100
+
+    yes
+
+commit bcfa6b0fcf144f032f6734634017f61d55a951e8
+Author: atoczynski <artur.torcz@gmail.com>
+Date:   Sun Jan 26 02:52:34 2025 +0100
+
+    Add database configuration and schema for Tarot cards and users
+
+commit 8bbc6ab039fcfb14096befe9e17a54ccf877e172
+Author: atoczynski <artur.torcz@gmail.com>
+Date:   Sun Jan 26 02:08:43 2025 +0100
+
+    Update backend routes and TarotCard component styling
+
+commit f986af4bf11d70b7820c4c1603abc45287abce86
+Merge: 7cba4ee1 683344e6
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Sun Jan 26 02:05:45 2025 +0100
+
+    Merge branch 'main' of https://github.com/laurin42/tarot
+
+commit 7cba4ee15dab882942745e24833742ae29d32d1e
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Sun Jan 26 02:04:34 2025 +0100
+
+    card drawing
+
+commit 683344e627e7c9560371827009492b8131e63b63
+Merge: 758fe289 70c34543
+Author: atoczynski <artur.torcz@gmail.com>
+Date:   Sun Jan 26 01:03:45 2025 +0100
+
+    Merge branch 'main' of github.com:laurin42/tarot
+
+commit 758fe289cde0d0e86ca84ea9e298ab55f182c6bb
+Author: atoczynski <artur.torcz@gmail.com>
+Date:   Sun Jan 26 01:02:23 2025 +0100
+
+    Add Tarot card fetch endpoint and update Expo version
+
+commit 70c34543cc21795dbf8eb5dfe438f72c7e32946a
+Merge: e10d7eb1 3b7d2e13
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Sun Jan 26 01:01:44 2025 +0100
+
+    Merge branch 'main' of https://github.com/laurin42/tarot
+
+commit e10d7eb1af3dac99c362817b12d2f8d65f3757bc
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Sun Jan 26 01:01:33 2025 +0100
+
+    yes
+
+commit 3b7d2e13568c685d55f2c68d05e74782490888bc
+Author: atoczynski <artur.torcz@gmail.com>
+Date:   Sun Jan 26 01:01:06 2025 +0100
+
+    Add card visibility toggle to TarotCard component
+
+commit aa4246667602230f3e94eca10416ab79724e54fc
+Author: atoczynski <artur.torcz@gmail.com>
+Date:   Sun Jan 26 00:20:36 2025 +0100
+
+    Implement initial app start screen and enhance TarotCard component
+
+commit 88e73d5478be742a1e262ce1691f9d6f4ca4d83a
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Sat Jan 25 23:39:26 2025 +0100
+
+    yes
+
+commit c924e07841e4af0963e88523284e8823a31ed213
+Merge: 93bbafd4 e92058c6
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Sat Jan 25 23:36:25 2025 +0100
+
+    Merge branch 'main' of https://github.com/laurin42/tarot
+
+commit 93bbafd41d4bdf61249f04a8dff249573f25af1f
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Sat Jan 25 23:36:15 2025 +0100
+
+    yes
+
+commit e92058c6df59faba617272cac27208f3205171a2
+Author: atoczynski <artur.torcz@gmail.com>
+Date:   Sat Jan 25 23:18:58 2025 +0100
+
+    Add additional tarot card images to assets
+
+commit 7e5f31494d90d86ad78e2d21573c00288ea991f8
+Merge: 0524a588 1e32d60f
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Sat Jan 25 23:16:02 2025 +0100
+
+    Merge branch 'main' of https://github.com/laurin42/tarot
+
+commit 0524a588081f1a3148daa425b2b75a4e5863e83d
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Sat Jan 25 23:15:41 2025 +0100
+
+    yes
+
+commit 1e32d60f9d3be71aa75e19027bd02cd607e4904c
+Author: atoczynski <artur.torcz@gmail.com>
+Date:   Sat Jan 25 23:14:45 2025 +0100
+
+    Add tarot card constants and enhance backend route validation
+
+commit 9a277555ac9c7e22c2abbadbebaebd4e64d4ba2d
+Author: atoczynski <artur.torcz@gmail.com>
+Date:   Sat Jan 25 22:52:41 2025 +0100
+
+    Add concurrently and POST route for backend AI interaction
+
+commit 98a2efe199a3ac2abae74510c2f7151b22dd5f41
+Author: atoczynski <artur.torcz@gmail.com>
+Date:   Sat Jan 25 22:47:33 2025 +0100
+
+    Integrate Google Gemini AI into Express backend
+
+commit 08da1879175ff0e9efba4ff49734e5ebbcbc029b
+Author: atoczynski <artur.torcz@gmail.com>
+Date:   Sat Jan 25 22:30:55 2025 +0100
+
+    Add build script and remove unused Express import
+
+commit 4e5868692e3c7aaa963bed1c04359d5dce4ac4cb
+Author: atoczynski <artur.torcz@gmail.com>
+Date:   Sat Jan 25 22:25:47 2025 +0100
+
+    Migrate backend to TypeScript and add development configurations
+
+commit 583e44d89d5310f94d04cc33908cdeba0b75986a
+Author: atoczynski <artur.torcz@gmail.com>
+Date:   Sat Jan 25 22:10:49 2025 +0100
+
+    Initialize backend with Express server and basic configuration
+
+commit bc2e18593c6871dd5cfad645d1f074388b6cf7fe
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Sat Jan 25 22:02:06 2025 +0100
+
+    setup frontend
+
+commit e00373c4d92b9ecde2182e661b2986cc5bd941c7
+Author: laurin42 <laurin.schmidt@yahoo.com>
+Date:   Sat Jan 25 21:55:44 2025 +0100
+
+    Initial commit
