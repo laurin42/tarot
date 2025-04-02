@@ -1,0 +1,326 @@
+# Frontend Commits (Chronological Order)
+
+# Project Setup and Configuration
+dec78802856236548ea80ab612d9731eeec4c2ea
+refactor project structure; update package name to 'com.laurin.tarot' and configure Google authentication
+
+1f339a12c4ec57f41f9be751fac12147429ff4ff
+update iOS config to disable non-exempt encryption; refactor AuthScreen import path and remove unused component; update package dependencies
+
+536750cd1b9e0b4544320dda3855481e5e19806f
+remove unused splash screen assets; update app name and package namespace; configure Gradle settings; adjust color resources; update dependencies
+
+# Environment and Configuration
+90b1a1634c42d10fe1436ab9a8c162f1375b7a60
+Add example environment configuration file
+
+d5090dc481011cf3b16d73e8047a42b846b525f0
+update gitignore files
+
+2bf70b48873ebda9ca784d1a266ae4bb4937276f
+Add .gitignore and .env.example
+
+4c71a1766ff0fe34b2423913ee2cffa2c86c3878
+Remove .env files from git
+
+# Authentication and User Management
+2e8f705e5025a996a3ac7ab5482813a383ac9e10
+Add Firebase dependencies and include google-services.json for authentication
+
+e673aa8559068446036a6678b4276f62a33b4c4a
+Refactor application namespace and update configuration files; remove app.config.js; adjust authentication request handling and package versions for consistency.
+
+ecf85ffc57561fd33efa007a5f9380ae82ee8d3e
+Refactor user authentication: add optional authId to UserProfile, improve token verification and error handling, and update AuthScreen to handle Google sign-in more robustly.
+
+1732fa06a98cc8f79b8c090e9ee7182aead5e2a4
+Enhance profile screen: add user picture, name, and email display; implement sign-out functionality; improve goal update feedback with success message; refactor styles and layout for better user experience.
+
+# UI Components and Layout
+5825e74f8963e924cc12bee22bfd85e8d2eafa49
+Refactor TabLayout to use SafeAreaView for improved layout; implement TabBarBackground for consistent styling; enhance globalStyles with glowingText for better visibility
+
+0e40c11c40c94c4b63f0d245b79d8eb7340cea65
+Add SVG icons for DailyCard, ThreeCards, and Profile; update TabLayout for new icons
+
+5b242c8ed2d174d3a8cf9106d443da83bf3f956a
+Update TabLayout imports
+
+# Card Components and Game Logic
+f89787d2ddff447fe032652c1ceed55126f1514f
+Refactor tarot card components to use OptimizedTarotCard for improved performance; remove unused TarotCardImage component and enhance card initialization logic
+
+bf5d33e8479467ed5e1e216d39b57564591bda10
+Implement CardStack components and logic; add styles for gameplay area and card indicators
+
+b9957714dd77b1cc21efadd8bd0a57242797ce48
+Implement animated card positioning and fade-in effect for DrawnCardsDisplay; update CardStackView to handle new animations and callbacks
+
+e8270b76e84edead8588ad379d747e8511ef895a
+Add react-native-shadow-2 for enhanced card display; update SummaryView for dynamic sizing and improved styling
+
+aa99a85066b26bb2249d2f2f6a8ce8a1b22f614b
+Refactor card handling logic to pass predetermined cards and simplify drawn cards display
+
+46f18c6161551ef0d5a92f4b9ba0c32707a3a7bc
+Enhance DrawnCardsDisplay and SummaryView components with improved scroll handling and card name display
+
+# Performance and Asset Management
+b415313af2e2b630dcec95cfd57d9da7604a7dac
+Add caching and optimization for tarot card images; implement Metro cache clearing script and update package dependencies
+
+e2441654aaa951fa52d3228e49d3c255e0cfc2df
+Add image optimization utility and enhance card loading; implement scroll detection hook and new summary panel component
+
+# Android Configuration
+8407b9ca50aa05685f6130f28260cd1873d37311
+Update Gradle and wrapper versions to 8.6.0 and 8.13 respectively
+
+e7dda5b4048a611f278bbcb9f7575101784a441c
+Add custom Gradle properties and Kotlin version configuration for Android build
+
+# App Icons and Resources
+4001b59cf8fc231cd1cc1f6dad85041b8d3061e4
+Update launcher foreground drawable references to remove file extension
+
+c22894d196b6612eefd9e1009c80fa60bec6bb1d
+Update launcher icon references and remove duplicate icon removal script
+
+28ff1ff6ea104faaf5dc3c78122b6b4bb2b1c651
+Rename splash screen background color to icon background in colors.xml
+
+4e0bd1d1660c63f461aa6adbb6c2ed973e356c61
+Remove splash screen logo image from mipmap resources
+
+b893d4774bf283a531f5edad73e3fd7e6474fcf6
+Remove unused launcher icon images from mipmap resources
+
+8a7cb41b72ba486fbae8ec437c4cd268963aa26d
+Add launcher foreground icons for various mipmap densities
+
+5203f30bb31e0ccd110577d3b87ef31873300e47
+Remove unused splash screen logo images from mipmap resources
+
+92832fa0917e448681748c8dea9cce850b3297fd
+Remove duplicate launcher icons and add script for automatic cleanup; update app configuration for splash screen and post-install script.
+
+# Error Handling and Monitoring
+bcd2d4ee9c662c13f805eecc297518f9c9ee8250
+Add ErrorBoundary component and error handling middleware; integrate Sentry for error reporting
+
+3b29c03ce5c9bf5cf79c9e95f3fa04065b75f7ed
+Integrate Sentry for error tracking; implement ErrorService and ErrorDisplay components; enhance API client with error handling
+
+1ffc67d7edd64991ffd9c761bd52ee8323600255
+Integrate Sentry for error tracking; implement ErrorService and SentryTest components; add error handling to ErrorBoundary; set up tarot and auth routes
+
+afbb960064987905f50b8d085023c945a6abe125
+Refactor Sentry integration: update package version, initialize Sentry in index.tsx, and modify ErrorService to skip redundant initialization
+
+f2e7e20531cce056f124212183e1538838843d58
+Remove Sentry integration and implement Firebase Crashlytics; update dependencies and add test components for error handling
+
+4c5bf5486918b14eee4e6fd3e9c6672bd1123a7b
+remove Firebase Crashlytics integration; clean up related files and dependencies
+
+aec7720f0cc096a0b85dec06c7dbe4bcb6cc9d5f
+Remove Gradle wrapper files and update Kotlin version; integrate Firebase Crashlytics and adjust dependencies for stability
+
+# Latest Updates
+2a8439be7637e7805ce71db1ebe067eb322d86ef
+Update app configuration: disable new architecture, enhance Babel configuration with module resolver, and improve Metro bundler settings for CSS support and asset handling.
+
+23b44bf4eae6612a2e105f16afec826d54472646
+Update .gitignore files to exclude android and ios directories; modify package.json for dependency version adjustments
+
+cdf2ee40dd511e788ed0142e975e3cd5354f3002
+Refactor Android project structure: remove unused resources, update Gradle wrapper, and enhance splash screen configuration
+
+5ee45e54037cbe9d46fbac5a3ee9ff5badbcef39
+Refactor Firebase integration: centralize initialization, implement anonymous sign-in function, and update authentication context
+
+35a498f2edea05f8998e1e9365f006b849b20e00
+Enhance Firebase integration: implement anonymous login, improve initialization process, and update dependencies for Firebase packages
+
+5e3a9dfabe191dee8fdf4549217ae33bf1bb935b
+Implement anonymous authentication: add support for anonymous sign-in, enhance auth context, and update UI components for anonymous user experience
+
+716cc44a4fa3fe00b90c1ae0dfda74b6f887cdbe
+Refactor frontend structure: remove entry point files, update package.json main entry, and enhance image optimization function to accept various source types
+
+0fb5a6a16f51f76f8417b6a7d48494654f49067b
+Refactor project structure: add new .npmrc files, remove unused assets, and implement Tailwind CSS
+
+f73a0460bebd3dcebd1f9e17490eea705e528e37
+Refactor app structure: rename app, create entry point, update routing, and enhance error handling
+
+e597edb007ab21ebb5a10168be0b6e5e0dcdd2cb
+Refactor authentication routes: consolidate layout and screen components, remove unused files, and update app configuration
+
+bc0c9f5863e0d8cb44702d7351732e08701c1290
+Refactor metro.config.js: optimize SVG transformer and remove unused cache configurations
+
+f89787d2ddff447fe032652c1ceed55126f1514f
+Refactor tarot card components to use OptimizedTarotCard for improved performance; remove unused TarotCardImage component and enhance card initialization logic
+
+bf5d33e8479467ed5e1e216d39b57564591bda10
+Implement CardStack components and logic; add styles for gameplay area and card indicators
+
+b415313af2e2b630dcec95cfd57d9da7604a7dac
+Add caching and optimization for tarot card images; implement Metro cache clearing script and update package dependencies
+
+ec178d1d291855b9367f9b02ba10c61b1ed1f73b
+Implement tarot API service for fetching and saving reading summaries; refactor SummaryPanel and SummaryView components for improved styling and functionality
+
+e2441654aaa951fa52d3228e49d3c255e0cfc2df
+Add image optimization utility and enhance card loading; implement scroll detection hook and new summary panel component
+
+b7071d196f18a96abaf918fd8bfbf745888351dd
+Enhance Bugsnag integration; restructure metadata for breadcrumbs and improve error handling in ErrorBoundary
+
+13a34525cede416e4054673d2bb87fbcc79d0e08
+Add dynamic routing and development tools; implement error handling and loading screens
+
+e421c29c4f761a02e1f8448a760671cd2d2bb58c
+Add type annotations to components and improve Firebase initialization error handling
+
+107a460327c5137c318ceca0697ec00bb6c53ed6
+Refactor authentication structure; move AuthScreen to components and consolidate App logic into a single file
+
+20e90cf238a797cbd558035a073ee0b6a83472d1
+Remove apiClient and UserProfile type; clean up unused services and types
+
+5a9d6872a8787563f7b042cd617c6c70e03df3ef
+Remove unused hooks and components; delete useThemeColor, useCardDimensions, useDeckInitialization, CardHint, StartingInstructions, and GoalsScreen
+
+f9072abb3f632f9d787801b3db54b99c21a463c3
+Update package dependencies; upgrade expo-constants to 17.0.8, add expo-device and @react-native-community/netinfo
+
+bc41c76f649802bd36e224df5e25100cd4b285e6
+Integrate Bugsnag for error tracking; remove Sentry integration, update error handling components, and create DebugScreen for testing
+
+dbf9918e83a63242f18555bc09f74649c68936c3
+Integrate Bugsnag for error tracking; add installation and implementation prompts, and create ErrorBoundary component for enhanced error handling
+
+4c5bf5486918b14eee4e6fd3e9c6672bd1123a7b
+remove Firebase Crashlytics integration; clean up related files and dependencies
+
+aec7720f0cc096a0b85dec06c7dbe4bcb6cc9d5f
+Remove Gradle wrapper files and update Kotlin version; integrate Firebase Crashlytics and adjust dependencies for stability
+
+e7dda5b4048a611f278bbcb9f7575101784a441c
+Add custom Gradle properties and Kotlin version configuration for Android build
+
+f2e7e20531cce056f124212183e1538838843d58
+Remove Sentry integration and implement Firebase Crashlytics; update dependencies and add test components for error handling
+
+afbb960064987905f50b8d085023c945a6abe125
+Refactor Sentry integration: update package version, initialize Sentry in index.tsx, and modify ErrorService to skip redundant initialization
+
+1ffc67d7edd64991ffd9c761bd52ee8323600255
+Integrate Sentry for error tracking; implement ErrorService and SentryTest components; add error handling to ErrorBoundary; set up tarot and auth routes
+
+3b29c03ce5c9bf5cf79c9e95f3fa04065b75f7ed
+Integrate Sentry for error tracking; implement ErrorService and ErrorDisplay components; enhance API client with error handling
+
+bcd2d4ee9c662c13f805eecc297518f9c9ee8250
+Add ErrorBoundary component and error handling middleware; integrate Sentry for error reporting
+
+5825e74f8963e924cc12bee22bfd85e8d2eafa49
+Refactor TabLayout to use SafeAreaView for improved layout; implement TabBarBackground for consistent styling; enhance globalStyles with glowingText for better visibility
+
+82a61154adf09ffb818d02b608fdc82c993a7963
+Refactor animation hooks: remove unused useFloatingAnimation and useCardAnimations; add useCardSelectionAnimation for improved card selection handling
+
+b9957714dd77b1cc21efadd8bd0a57242797ce48
+Implement animated card positioning and fade-in effect for DrawnCardsDisplay; update CardStackView to handle new animations and callbacks
+
+e8270b76e84edead8588ad379d747e8511ef895a
+Add react-native-shadow-2 for enhanced card display; update SummaryView for dynamic sizing and improved styling
+
+a16ee5ef50bb13bf3411fe1c982b049f4d800df8
+Redirect root route to ThreeCards tab; update navigation and layout for improved user experience
+
+93380fd34305a8b4427372f86b469151de193551
+Add user profile fields and update UserContext for enhanced user data management
+
+5b242c8ed2d174d3a8cf9106d443da83bf3f956a
+Update TabLayout imports
+
+0e40c11c40c94c4b63f0d245b79d8eb7340cea65
+Add SVG icons for DailyCard, ThreeCards, and Profile; update TabLayout for new icons
+
+9a7ed6fae954953bb195f53edfb375eafdabfae2
+Remove ExploreScreen component; implement DailyCardScreen for drawing and displaying tarot cards
+
+b51b0e32d34d180b17f8085d7ad4938c83db284f
+Implement authentication redirection and loading screen; enhance card selection with instructional overlay
+
+46f18c6161551ef0d5a92f4b9ba0c32707a3a7bc
+Enhance DrawnCardsDisplay and SummaryView components with improved scroll handling and card name display
+
+aa99a85066b26bb2249d2f2f6a8ce8a1b22f614b
+Refactor card handling logic to pass predetermined cards and simplify drawn cards display
+
+8407b9ca50aa05685f6130f28260cd1873d37311
+Update Gradle and wrapper versions to 8.6.0 and 8.13 respectively
+
+4001b59cf8fc231cd1cc1f6dad85041b8d3061e4
+Update launcher foreground drawable references to remove file extension
+
+8e52467cdeb68b219221a1f4bb597fd1235eb722
+Remove hasInstallScript property from package-lock.json
+
+c22894d196b6612eefd9e1009c80fa60bec6bb1d
+Update launcher icon references and remove duplicate icon removal script
+
+28ff1ff6ea104faaf5dc3c78122b6b4bb2b1c651
+Rename splash screen background color to icon background in colors.xml
+
+4e0bd1d1660c63f461aa6adbb6c2ed973e356c61
+Remove splash screen logo image from mipmap resources
+
+b893d4774bf283a531f5edad73e3fd7e6474fcf6
+Remove unused launcher icon images from mipmap resources
+
+8a7cb41b72ba486fbae8ec437c4cd268963aa26d
+Add launcher foreground icons for various mipmap densities
+
+5203f30bb31e0ccd110577d3b87ef31873300e47
+Remove unused splash screen logo images from mipmap resources
+
+92832fa0917e448681748c8dea9cce850b3297fd
+Remove duplicate launcher icons and add script for automatic cleanup; update app configuration for splash screen and post-install script.
+
+2e8f705e5025a996a3ac7ab5482813a383ac9e10
+Add Firebase dependencies and include google-services.json for authentication
+
+e673aa8559068446036a6678b4276f62a33b4c4a
+Refactor application namespace and update configuration files; remove app.config.js; adjust authentication request handling and package versions for consistency.
+
+ecf85ffc57561fd33efa007a5f9380ae82ee8d3e
+Refactor user authentication: add optional authId to UserProfile, improve token verification and error handling, and update AuthScreen to handle Google sign-in more robustly.
+
+1732fa06a98cc8f79b8c090e9ee7182aead5e2a4
+Enhance profile screen: add user picture, name, and email display; implement sign-out functionality; improve goal update feedback with success message; refactor styles and layout for better user experience.
+
+90b1a1634c42d10fe1436ab9a8c162f1375b7a60
+Add example environment configuration file
+
+d5090dc481011cf3b16d73e8047a42b846b525f0
+update gitignore files
+
+2bf70b48873ebda9ca784d1a266ae4bb4937276f
+Add .gitignore and .env.example
+
+4c71a1766ff0fe34b2423913ee2cffa2c86c3878
+Remove .env files from git
+
+536750cd1b9e0b4544320dda3855481e5e19806f
+remove unused splash screen assets; update app name and package namespace; configure Gradle settings; adjust color resources; update dependencies
+
+1f339a12c4ec57f41f9be751fac12147429ff4ff
+update iOS config to disable non-exempt encryption; refactor AuthScreen import path and remove unused component; update package dependencies
+
+dec78802856236548ea80ab612d9731eeec4c2ea
+refactor project structure; update package name to 'com.laurin.tarot' and configure Google authentication

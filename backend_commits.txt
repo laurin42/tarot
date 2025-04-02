@@ -1,0 +1,44 @@
+# Backend Commits (Chronological Order)
+
+# Database and Schema Updates
+3aaf340159dcf971375919d303c61a2c4431e2dc
+Enhance drawn cards functionality: add userId, position, and sessionId to drawnCardsTable; implement authentication token handling in card fetching and saving; save reading summaries with sessionId.
+
+c1041d912db5c526a3eb27504634f02f96b59706
+Refactor user authentication: change auth_id column type to text in users table; update package dependencies for jwt-decode and pg; enhance drizzle configuration with strict and verbose options; improve sign-out functionality by clearing additional auth-related storage items.
+
+# CORS and Security Configuration
+5273277a9ad9c9bdf8bd591c415c534f6ffd9ed6
+Configure CORS to allow requests from localhost with credentials
+
+56a15c9962766d2ddb2e54e04e8351233d8367e8
+Update CORS origin and redirect URIs; refactor card saving logic
+
+93d021e823fd9c3338c6af6a87f635f6dee19c90
+Refactor backend configuration: update CORS settings for improved security and remove unused import in schema
+
+# Error Handling and Monitoring
+dc8f4ce4e0cc239479db3d0e8ca16c65940e513f
+Add Sentry integration for error handling; implement user and card routes, and set up database connection with Drizzle ORM
+
+720d5092626ee21fe3eef8df339acb532d805dba
+Integrate Sentry for error tracking; refactor asyncHandler for generic types and update userController to use new typing
+
+c01cd3eac7945d84a56a2c93d48134be6a923e1f
+Refactor Bugsnag types; consolidate metadata definitions and improve type safety
+
+# Dependencies and Updates
+f9072abb3f632f9d787801b3db54b99c21a463c3
+Update package dependencies; upgrade expo-constants to 17.0.8, add expo-device and @react-native-community/netinfo
+
+bc41c76f649802bd36e224df5e25100cd4b285e6
+Integrate Bugsnag for error tracking; remove Sentry integration, update error handling components, and create DebugScreen for testing
+
+dbf9918e83a63242f18555bc09f74649c68936c3
+Integrate Bugsnag for error tracking; add installation and implementation prompts, and create ErrorBoundary component for enhanced error handling
+
+4c5bf5486918b14eee4e6fd3e9c6672bd1123a7b
+remove Firebase Crashlytics integration; clean up related files and dependencies
+
+f2e7e20531cce056f124212183e1538838843d58
+Remove Sentry integration and implement Firebase Crashlytics; update dependencies and add test components for error handling
